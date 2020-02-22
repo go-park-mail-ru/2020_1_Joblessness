@@ -10,32 +10,35 @@ func StartRouter() {
 	apiRouter := router.PathPrefix("/api").Subrouter()
 
 	//Марат
-	apiRouter.HandleFunc("/user/session", HandleRegistration).Methods("Put")
-	apiRouter.HandleFunc("/user/session", HandleAuthorisation).Methods("Post")
+	//apiRouter.HandleFunc("/user/session", HandleRegistration).Methods("Put")
+	//apiRouter.HandleFunc("/user/session", HandleAuthorisation).Methods("Post")
+
+	authApi := NewAuthHandler()
+	apiRouter.HandleFunc("login", authApi.Login)
 
 	//Миша
-	apiRouter.HandleFunc("/user/{id}", HandleSetPrivateInfo).Methods("Put")
-	apiRouter.HandleFunc("/user/{id}", HandleGetPrivateInfo).Methods("Get")
-	apiRouter.HandleFunc("/avatar/{id}", HandleSetAvatar).Methods("Put")
-	apiRouter.HandleFunc("/avatar/{id}", HandleGetAvatar).Methods("Get")
+	//apiRouter.HandleFunc("/user/{id}", HandleSetPrivateInfo).Methods("Put")
+	//apiRouter.HandleFunc("/user/{id}", HandleGetPrivateInfo).Methods("Get")
+	//apiRouter.HandleFunc("/avatar/{id}", HandleSetAvatar).Methods("Put")
+	//apiRouter.HandleFunc("/avatar/{id}", HandleGetAvatar).Methods("Get")
 
 	//Huvalk
-	apiRouter.HandleFunc("/resume", HandleCreateResume).Methods("Post")
+	//apiRouter.HandleFunc("/resume", HadleCreateResume).Methods("Post")
 	//apiRouter.HandleFunc("/resume/{id}", HandleChangeResume).Methods("Put")
-	apiRouter.HandleFunc("/resume/{id}", HandleGetResume).Methods("Get")
-	apiRouter.HandleFunc("/resume/{id}", HandleRemoveResume).Methods("Delete")
+	//apiRouter.HandleFunc("/resume/{id}", HandleGetResume).Methods("Get")
+	//apiRouter.HandleFunc("/resume/{id}", HandleRemoveResume).Methods("Delete")
 
 	//Huvalk
-	apiRouter.HandleFunc("/vacancy", HandleCreateVacancy).Methods("Post")
+	//apiRouter.HandleFunc("/vacancy", HandleCreateVacancy).Methods("Post")
 	//apiRouter.HandleFunc("/vacancy/{id}", HandleChangeVacancy).Methods("Put")
-	apiRouter.HandleFunc("/vacancy/{id}", HandleGetVacancy).Methods("Get")
-	apiRouter.HandleFunc("/vacancy/{id}", HandleRemoveVacancy).Methods("Delete")
+	//apiRouter.HandleFunc("/vacancy/{id}", HandleGetVacancy).Methods("Get")
+	//apiRouter.HandleFunc("/vacancy/{id}", HandleRemoveVacancy).Methods("Delete")
 
 	//Сережа М
-	apiRouter.HandleFunc("/resume/short/{id}", HandleGetShortResume).Methods("Get")
-	apiRouter.HandleFunc("/vacancy/short/{id}", HandleGetShortVacancy).Methods("Get")
-	apiRouter.HandleFunc("/vacancys/{from}/{to}", HandleGetShortVacancy).Methods("Get")
+	//apiRouter.HandleFunc("/resume/short/{id}", HandleGetShortResume).Methods("Get")
+	//apiRouter.HandleFunc("/vacancy/short/{id}", HandleGetShortVacancy).Methods("Get")
+	//apiRouter.HandleFunc("/vacancys/{from}/{to}", HandleGetShortVacancy).Methods("Get")
 
 	http.Handle("/", router)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8000", router)
 }
