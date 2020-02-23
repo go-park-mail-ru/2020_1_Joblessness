@@ -89,6 +89,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	session, err := r.Cookie("session_id")
+	fmt.Println("session cook", session)
 	if err == http.ErrNoCookie {
 		http.Error(w, `No session`, 401)
 		return
