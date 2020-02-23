@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"net/http"
 	"time"
@@ -37,6 +38,11 @@ func NewAuthHandler() *AuthHandler {
 }
 
 func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("/login request")
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+
 	user, ok := api.users[r.FormValue("login")]
 	if !ok {
 		http.Error(w, `Not found`, 404)

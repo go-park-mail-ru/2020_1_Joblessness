@@ -1,20 +1,21 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
 func StartRouter() {
-	router := mux.NewRouter().StrictSlash(true)
-	apiRouter := router.PathPrefix("/api").Subrouter()
+	router := mux.NewRouter()//.StrictSlash(true)
+	//apiRouter := router.PathPrefix("/api").Subrouter()
 
 	//Марат
 	//apiRouter.HandleFunc("/user/session", HandleRegistration).Methods("Put")
 	//apiRouter.HandleFunc("/user/session", HandleAuthorisation).Methods("Post")
 
 	authApi := NewAuthHandler()
-	apiRouter.HandleFunc("login", authApi.Login)
+	router.HandleFunc("/login", authApi.Login).Methods("POST")
 
 	//Миша
 	//apiRouter.HandleFunc("/user/{id}", HandleSetPrivateInfo).Methods("Put")
@@ -40,5 +41,6 @@ func StartRouter() {
 	//apiRouter.HandleFunc("/vacancys/{from}/{to}", HandleGetShortVacancy).Methods("Get")
 
 	http.Handle("/", router)
+	fmt.Println("Server started")
 	http.ListenAndServe(":8000", router)
 }
