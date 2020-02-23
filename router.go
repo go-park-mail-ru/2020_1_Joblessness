@@ -9,8 +9,7 @@ import (
 func echoFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users/logout")
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	Cors.EnableCors(&w, r)
 
 	params := mux.Vars(r)
 	message := params["message"]
