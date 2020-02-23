@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -49,16 +50,16 @@ func NewAuthHandler() *AuthHandler {
 func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users/login")
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	var data map[string]string
+	json.NewDecoder(r.Body).Decode(&data)
 
-	user, ok := api.users[r.FormValue("login")]
+	user, ok := api.users[data["login"]]
 	if !ok {
 		http.Error(w, `Not found`, 404)
 		return
 	}
 
-	if user.Password != r.FormValue("password") {
+	if user.Password != data["password"] {
 		http.Error(w, `Wrong password`, 400)
 		return
 	}
@@ -74,14 +75,15 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, cookie)
 
-	fmt.Println(api.users)
+	type Response struct {
+		ID uint `json:"id"`
+	}
+	jsonData, _ := json.Marshal(Response{user.ID})
+	w.Write(jsonData)
 }
 
 func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users/logout")
-
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
@@ -103,20 +105,20 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users")
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	var data map[string]string
+	json.NewDecoder(r.Body).Decode(&data)
 
-	login := r.FormValue("login")
+	login := data["login"]
 	if _, ok := api.users[login]; ok {
 		http.Error(w, `Login already exist`, 400)
 		return
 	}
-	password := r.FormValue("password")
+	password := data["password"]
 
-	firstName := r.FormValue("first-name")
-	lastName := r.FormValue("last-name")
-	email := r.FormValue("email")
-	phoneNumber := r.FormValue("phone-number")
+	firstName := data["first-name"]
+	lastName := data["last-name"]
+	email := data["email"]
+	phoneNumber := data["phone-number"]
 
 	api.users[login] = &User{uint(len(api.users) + 1), login, password, firstName, lastName, email, phoneNumber}
 
