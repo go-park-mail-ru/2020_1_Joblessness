@@ -30,7 +30,7 @@ func StartRouter() {
 	router.HandleFunc("/users", authApi.Register).Methods("POST")
 
 	router.HandleFunc("/user/{id}", authApi.GetUserPage).Methods("GET")
-	router.HandleFunc("/users/{id}/avatar", authApi.SetAvatar).Methods("PUT")
+	router.HandleFunc("/users/{id}/avatar", authApi.SetAvatar).Methods("POST", "OPTIONS")
 
 	//Миша
 	//apiRouter.HandleFunc("/user/{id}", HandleSetPrivateInfo).Methods("Put")
