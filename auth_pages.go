@@ -9,8 +9,13 @@ import (
 
 type User struct {
 	ID uint
-	Username string
+	Login string
 	Password string
+
+	FirstName string
+	SecondName string
+	Email string
+	PhoneNumber string
 }
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -32,7 +37,7 @@ func NewAuthHandler() *AuthHandler {
 	return &AuthHandler {
 		sessions: make(map[string]uint, 10),
 		users:    map[string]*User {
-			"marat1k": {1, "marat1k", "password"},
+			"marat1k": {1, "marat1k", "password", "", "", "", ""},
 		},
 	}
 }
@@ -93,4 +98,23 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users")
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+	login := r.FormValue("login")
+	if _, ok := api.users[login]; ok {
+		http.Error(w, `Login already exist`, 400)
+		return
+	}
+	password := r.FormValue("password")
+
+	firstName := r.FormValue("first-name")
+	secondName := r.FormValue("second-name")
+	email := r.FormValue("email")
+	phoneNumber := r.FormValue("phone-number")
+
+	api.users[login] = &User{uint(len(api.users) + 1), login, password, firstName, secondName, email, phoneNumber}
+
+	fmt.Println(api.users)
 }
