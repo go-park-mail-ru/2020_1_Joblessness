@@ -6,9 +6,21 @@ import (
 	"net/http"
 )
 
+func echoFunc(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("POST /users/logout")
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+	params := mux.Vars(r)
+	message := params["message"]
+	fmt.Fprintf(w, "Hello %s!", message)
+}
+
 func StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()//.StrictSlash(true)
 
+	router.HandleFunc("/echo/{message}", echoFunc)
 	//Марат
 	//apiRouter.HandleFunc("/user/session", HandleRegistration).Methods("Put")
 	//apiRouter.HandleFunc("/user/session", HandleAuthorisation).Methods("Post")
