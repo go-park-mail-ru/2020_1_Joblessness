@@ -22,14 +22,14 @@ type UserAvatar struct {
 	Avatar string `json:"avatar,omitempty"`
 }
 
-type Summary struct {
+type UserSummary struct {
 	Title string `json:"title"`
 }
 
-func (api *AuthHandler) configureSummary(id uint) (userSummaries []Summary) {
+func (api *AuthHandler) configureSummary(id uint) (userSummaries []UserSummary) {
 	userSummary, found := api.userSummary[id]
 	if !found {
-		return []Summary{}
+		return []UserSummary{}
 	}
 
 	userSummaries = append(userSummaries, userSummary)

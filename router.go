@@ -21,6 +21,7 @@ func StartRouter() {
 
 	router.HandleFunc("/echo/{message}", echoFunc)
 
+	// users
 	authApi := NewAuthHandler()
 
 	router.HandleFunc("/users/login", authApi.Login).Methods("POST")
@@ -30,6 +31,7 @@ func StartRouter() {
 	router.HandleFunc("/user/{id}", authApi.GetUserPage).Methods("GET")
 	router.HandleFunc("/users/{id}/avatar", authApi.SetAvatar).Methods("POST", "OPTIONS")
 
+	// vacancies
 	vacancyApi := NewVacancyHandler()
 
 	router.HandleFunc("/vacancies", vacancyApi.CreateVacancy).Methods("POST")
@@ -37,6 +39,15 @@ func StartRouter() {
 	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.GetVacancy).Methods("GET")
 	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.ChangeVacancy).Methods("PUT")
 	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.DeleteVacancy).Methods("DELETE")
+
+	// summaries
+	summaryApi := NewSummaryHandler()
+
+	router.HandleFunc("/summaries", summaryApi.CreateSummary).Methods("POST")
+	router.HandleFunc("/summaries", summaryApi.GetSummaries).Methods("GET")
+	router.HandleFunc("/summaries/{summary_id}", summaryApi.GetSummary).Methods("GET")
+	router.HandleFunc("/summaries/{summary_id}", summaryApi.ChangeSummary).Methods("PUT")
+	router.HandleFunc("/summaries/{summary_id}", summaryApi.DeleteSummary).Methods("DELETE")
 
 	//Миша
 	//apiRouter.HandleFunc("/user/{id}", HandleSetPrivateInfo).Methods("Put")
