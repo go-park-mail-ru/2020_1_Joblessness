@@ -15,7 +15,9 @@ func StartRouter() {
 	//apiRouter.HandleFunc("/user/session", HandleAuthorisation).Methods("Post")
 
 	authApi := NewAuthHandler()
-	router.HandleFunc("/login", authApi.Login).Methods("POST")
+	router.HandleFunc("/users/login", authApi.Login).Methods("POST")
+	router.HandleFunc("/users/logout", authApi.Logout).Methods("POST")
+	router.HandleFunc("/users", authApi.Register).Methods("POST")
 
 	//Миша
 	//apiRouter.HandleFunc("/user/{id}", HandleSetPrivateInfo).Methods("Put")
