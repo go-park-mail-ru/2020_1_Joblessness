@@ -9,17 +9,22 @@ import (
 func StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()//.StrictSlash(true)
 
-	//Марат
-	//apiRouter.HandleFunc("/user/session", HandleRegistration).Methods("Put")
-	//apiRouter.HandleFunc("/user/session", HandleAuthorisation).Methods("Post")
-
 	authApi := NewAuthHandler()
+
 	router.HandleFunc("/users/login", authApi.Login).Methods("POST")
 	router.HandleFunc("/users/logout", authApi.Logout).Methods("POST")
 	router.HandleFunc("/users", authApi.Register).Methods("POST")
 
 	router.HandleFunc("/user/{id}", authApi.GetUserPage).Methods("GET")
 	router.HandleFunc("/users/{id}/avatar", authApi.SetAvatar).Methods("PUT")
+
+	vacancyApi := NewVacancyHandler()
+
+	router.HandleFunc("/vacancies", vacancyApi.CreateVacancy).Methods("POST")
+	router.HandleFunc("/vacancies", vacancyApi.GetVacancies).Methods("GET")
+	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.GetVacancy).Methods("GET")
+	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.ChangeVacancy).Methods("PUT")
+	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.DeleteVacancy).Methods("DELETE")
 
 	//Миша
 	//apiRouter.HandleFunc("/user/{id}", HandleSetPrivateInfo).Methods("Put")
