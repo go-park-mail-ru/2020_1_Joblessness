@@ -7,8 +7,7 @@ import (
 )
 
 func StartRouter() {
-	router := mux.NewRouter()//.StrictSlash(true)
-	//apiRouter := router.PathPrefix("/api").Subrouter()
+	router := mux.NewRouter().PathPrefix("/api").Subrouter()//.StrictSlash(true)
 
 	//Марат
 	//apiRouter.HandleFunc("/user/session", HandleRegistration).Methods("Put")
@@ -18,6 +17,9 @@ func StartRouter() {
 	router.HandleFunc("/users/login", authApi.Login).Methods("POST")
 	router.HandleFunc("/users/logout", authApi.Logout).Methods("POST")
 	router.HandleFunc("/users", authApi.Register).Methods("POST")
+
+	router.HandleFunc("/user/{id}", authApi.GetUserPage).Methods("GET")
+	router.HandleFunc("/users/{id}/avatar", authApi.SetAvatar).Methods("PUT")
 
 	//Миша
 	//apiRouter.HandleFunc("/user/{id}", HandleSetPrivateInfo).Methods("Put")

@@ -31,6 +31,8 @@ func getSID(n int) string {
 type AuthHandler struct {
 	sessions map[string]uint
 	users map[string]*User
+	userAvatars map[uint]string
+	userSummary map[uint]Summary
 }
 
 func NewAuthHandler() *AuthHandler {
@@ -39,6 +41,8 @@ func NewAuthHandler() *AuthHandler {
 		users:    map[string]*User {
 			"marat1k": {1, "marat1k", "password", "", "", "", ""},
 		},
+		userAvatars: map[uint]string{},
+		userSummary: map[uint]Summary{},
 	}
 }
 
