@@ -6,8 +6,20 @@ import (
 	"net/http"
 )
 
+func echoFunc(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("POST /users/logout")
+
+	Cors.EnableCors(&w, r)
+
+	params := mux.Vars(r)
+	message := params["message"]
+	fmt.Fprintf(w, "Hello %s!", message)
+}
+
 func StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()//.StrictSlash(true)
+
+	router.HandleFunc("/echo/{message}", echoFunc)
 
 	authApi := NewAuthHandler()
 
@@ -16,7 +28,7 @@ func StartRouter() {
 	router.HandleFunc("/users", authApi.Register).Methods("POST")
 
 	router.HandleFunc("/user/{id}", authApi.GetUserPage).Methods("GET")
-	router.HandleFunc("/users/{id}/avatar", authApi.SetAvatar).Methods("PUT")
+	router.HandleFunc("/users/{id}/avatar", authApi.SetAvatar).Methods("POST", "OPTIONS")
 
 	vacancyApi := NewVacancyHandler()
 
