@@ -13,7 +13,7 @@ type User struct {
 	Password string
 
 	FirstName string
-	SecondName string
+	LastName string
 	Email string
 	PhoneNumber string
 }
@@ -110,11 +110,11 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("password")
 
 	firstName := r.FormValue("first-name")
-	secondName := r.FormValue("second-name")
+	lastName := r.FormValue("last-name")
 	email := r.FormValue("email")
 	phoneNumber := r.FormValue("phone-number")
 
-	api.users[login] = &User{uint(len(api.users) + 1), login, password, firstName, secondName, email, phoneNumber}
+	api.users[login] = &User{uint(len(api.users) + 1), login, password, firstName, lastName, email, phoneNumber}
 
 	fmt.Println(api.users)
 }
