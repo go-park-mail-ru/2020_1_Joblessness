@@ -9,7 +9,7 @@ import (
 func echoFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users/logout")
 
-	Cors.EnableCors(&w, r)
+	Cors.PrivateApi(&w, r)
 
 	params := mux.Vars(r)
 	message := params["message"]
@@ -28,8 +28,9 @@ func StartRouter() {
 	router.HandleFunc("/users/logout", authApi.Logout).Methods("POST")
 	router.HandleFunc("/users", authApi.Register).Methods("POST")
 
-	router.HandleFunc("/user/{id}", authApi.GetUserPage).Methods("GET")
-	router.HandleFunc("/users/{id}/avatar", authApi.SetAvatar).Methods("POST", "OPTIONS")
+	router.HandleFunc("/user/{user_id}", authApi.GetUserPage).Methods("GET")
+	router.HandleFunc("/users/{user_id}/avatar", authApi.SetAvatar).Methods("POST")
+	router.HandleFunc("/user/{user_id}", authApi.SetUserInfo).Methods("PUT")
 
 	// vacancies
 	vacancyApi := NewVacancyHandler()

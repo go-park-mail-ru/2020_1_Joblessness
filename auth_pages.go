@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"time"
@@ -53,9 +52,6 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
-
-	res, _ := ioutil.ReadAll((*r).Body)
-	fmt.Print("form", string(res))
 
 	user, ok := api.users[data["login"]]
 	if !ok {
@@ -108,9 +104,6 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users")
-
-	res, _ := ioutil.ReadAll((*r).Body)
-	fmt.Print("form", string(res))
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
