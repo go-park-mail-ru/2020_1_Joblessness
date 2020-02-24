@@ -150,8 +150,8 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		w.WriteHeader(http.StatusUnauthorized)
 		fmt.Println("Problems not with cookies ")
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
