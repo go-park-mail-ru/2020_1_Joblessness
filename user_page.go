@@ -34,7 +34,7 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Response struct {
-		Status uint `json:"status"`
+		Status int `json:"status"`
 		Data Data `json:"data,omitempty"`
 	}
 

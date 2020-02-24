@@ -2,7 +2,10 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -113,7 +116,7 @@ func TestLogout(t *testing.T) {
 	}
 }
 
-func TestLogoutWrongCookie(t *testing.T) {
+func TestFailedLogoutWrongCookie(t *testing.T) {
 	t.Parallel()
 
 	h := NewAuthHandler()
@@ -279,8 +282,18 @@ func TestFailedGetUserPageNoUserFound(t *testing.T) {
 
 	h.GetUserPage(w, r)
 
-	if w.Code != http.StatusNotFound {
-		t.Error("status is not 404")
+	if w.Code != http.StatusOK {
+		t.Error("status is not 200")
+	}
+
+	bytes, _ := ioutil.ReadAll(w.Body)
+	str := string(bytes)
+	fmt.Println(str)
+
+	var result map[string]string
+	_ = json.NewDecoder(w.Body).Decode(&result)
+	if result["status"] != "401" {
+		t.Error("Real status is not 401")
 	}
 }
 
@@ -341,8 +354,8 @@ func TestFailedSetUserInfoNoRights(t *testing.T) {
 
 	h.SetUserInfo(w, r)
 
-	if w.Code != http.StatusForbidden {
-		t.Error("status is not 403")
+	if w.Code != http.StatusOK {
+		t.Error("status is not 200")
 	}
 }
 
