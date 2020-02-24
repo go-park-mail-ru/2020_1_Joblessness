@@ -20,6 +20,7 @@ func StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()//.StrictSlash(true)
 
 	router.HandleFunc("/echo/{message}", echoFunc)
+	router.Methods("OPTIONS").HandlerFunc(Cors.Preflight)
 
 	// users
 	authApi := NewAuthHandler()
