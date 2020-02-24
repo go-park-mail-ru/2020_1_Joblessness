@@ -131,6 +131,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userId, found := api.sessions[session.Value]
+	fmt.Println("session id is ", session.Value)
 	if !found {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -150,6 +151,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 
 	if currentUser == nil {
 		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Println("Problems not with cookies ")
 		return
 	}
 
