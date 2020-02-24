@@ -1,0 +1,791 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">/home/huvalk/Back/2020_1_Joblessness/auth_pages.go (100.0%)</option>
+				
+				<option value="file1">/home/huvalk/Back/2020_1_Joblessness/custom_cors.go (75.0%)</option>
+				
+				<option value="file2">/home/huvalk/Back/2020_1_Joblessness/main.go (0.0%)</option>
+				
+				<option value="file3">/home/huvalk/Back/2020_1_Joblessness/resume.go (0.0%)</option>
+				
+				<option value="file4">/home/huvalk/Back/2020_1_Joblessness/router.go (0.0%)</option>
+				
+				<option value="file5">/home/huvalk/Back/2020_1_Joblessness/user_page.go (78.5%)</option>
+				
+				<option value="file6">/home/huvalk/Back/2020_1_Joblessness/vacancy_list.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "encoding/json"
+        "fmt"
+        "math/rand"
+        "net/http"
+        "time"
+)
+
+type User struct {
+        ID uint
+        Login string
+        Password string
+
+        FirstName string
+        LastName string
+        Email string
+        PhoneNumber string
+}
+
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func getSID(n int) string <span class="cov8" title="1">{
+        b := make([]rune, n)
+        for i := range b </span><span class="cov8" title="1">{
+                b[i] = letters[rand.Intn(len(letters))]
+        }</span>
+        <span class="cov8" title="1">return string(b)</span>
+}
+
+type AuthHandler struct {
+        sessions map[string]uint
+        users map[string]*User
+        userAvatars map[uint]string
+        userSummary map[uint]UserSummary
+}
+
+func NewAuthHandler() *AuthHandler <span class="cov8" title="1">{
+        return &amp;AuthHandler {
+                sessions: make(map[string]uint, 10),
+                users:    map[string]*User {
+                        "marat1k": {1, "marat1k", "ABCDE12345", "Marat", "Ishimbaev", "m@m.m", "89032909821"},
+                },
+                userAvatars: map[uint]string{},
+                userSummary: map[uint]UserSummary{},
+        }
+}</span>
+
+func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        fmt.Println("POST /users/login")
+
+        var data map[string]string
+        json.NewDecoder(r.Body).Decode(&amp;data)
+
+        user, ok := api.users[data["login"]]
+        if !ok </span><span class="cov8" title="1">{
+                http.Error(w, `Not found`, 404)
+                return
+        }</span>
+
+        <span class="cov8" title="1">if user.Password != data["password"] </span><span class="cov8" title="1">{
+                http.Error(w, `Wrong password`, 400)
+                return
+        }</span>
+
+        <span class="cov8" title="1">SID := getSID(64)
+
+        api.sessions[SID] = user.ID
+
+        cookie := &amp;http.Cookie {
+                Name: "session_id",
+                Value: SID,
+                Expires: time.Now().Add(time.Hour),
+        }
+        http.SetCookie(w, cookie)
+
+        type Response struct {
+                ID uint `json:"id"`
+        }
+        jsonData, _ := json.Marshal(Response{user.ID})
+        w.Write(jsonData)</span>
+}
+
+func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        fmt.Println("POST /users/logout")
+
+        session, err := r.Cookie("session_id")
+        if err == http.ErrNoCookie </span><span class="cov8" title="1">{
+                http.Error(w, `No session`, 401)
+                return
+        }</span>
+
+        <span class="cov8" title="1">if _, ok := api.sessions[session.Value]; !ok </span><span class="cov8" title="1">{
+                http.Error(w, `No session`, 401)
+                return
+        }</span>
+
+        <span class="cov8" title="1">delete(api.sessions, session.Value)
+
+        session.Expires = time.Now().AddDate(0, 0, -1)
+        http.SetCookie(w, session)</span>
+}
+
+func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        fmt.Println("POST /users")
+
+        var data map[string]string
+        json.NewDecoder(r.Body).Decode(&amp;data)
+
+        login := data["login"]
+        if _, ok := api.users[login]; ok </span><span class="cov8" title="1">{
+                http.Error(w, `Login already exist`, 400)
+                return
+        }</span>
+        <span class="cov8" title="1">password := data["password"]
+
+        firstName := data["first-name"]
+        lastName := data["last-name"]
+        email := data["email"]
+        phoneNumber := data["phone-number"]
+
+        api.users[login] = &amp;User{uint(len(api.users) + 1), login, password, firstName, lastName, email, phoneNumber}
+
+        fmt.Println(api.users)</span>
+}</pre>
+		
+		<pre class="file" id="file1" style="display: none">package main
+
+import (
+        "fmt"
+        "net/http"
+)
+
+type CorsHandler struct {
+        allowedOrigins []string
+}
+
+func (corsList *CorsHandler) AddOrigin(originName string) <span class="cov0" title="0">{
+        corsList.allowedOrigins = append(corsList.allowedOrigins, originName)
+}</span>
+
+func Preflight(w http.ResponseWriter, req *http.Request) {<span class="cov0" title="0">
+        //Cors.PrivateApi(&amp;w, req)
+}</span>
+
+func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Request) bool <span class="cov8" title="1">{
+        referer := req.Header.Get("Referer")
+        origin := req.Header.Get("Origin")
+
+        fmt.Println(referer, origin)
+        result := false
+        for _, origins := range corsList.allowedOrigins </span><span class="cov0" title="0">{
+                if origin == origins </span><span class="cov0" title="0">{
+                        result = true
+                        break</span>
+                }
+        }
+
+        <span class="cov8" title="1">result = true
+
+        if result </span><span class="cov8" title="1">{
+                (*w).Header().Set("Access-Control-Allow-Origin", "*")
+                (*w).Header().Set("Access-Control-Allow-Credentials", "true")
+                (*w).Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+                (*w).Header().Set("Access-Control-Allow-Headers", "Content-Type")
+        }</span>
+        <span class="cov8" title="1">return result</span>
+}</pre>
+		
+		<pre class="file" id="file2" style="display: none">package main
+
+var Cors = CorsHandler{
+        allowedOrigins: []string{},
+}
+
+func main() <span class="cov0" title="0">{
+
+        Cors.AddOrigin("http://localhost:8080")
+        Cors.AddOrigin("https://compassionate-wescoff-a0cb89.netlify.com")
+
+        StartRouter()
+}</pre>
+		
+		<pre class="file" id="file3" style="display: none">package main
+
+import (
+        "encoding/json"
+        "fmt"
+        "github.com/gorilla/mux"
+        "net/http"
+        "strconv"
+)
+
+type Summary struct {
+        ID uint `json:"id"`
+        FirstName string `json:"first-name"`
+        LastName string `json:"last-name"`
+        PhoneNumber string `json:"phone-number"`
+        Email string `json:"email"`
+        BirthDate string `json:"birth-date"`
+        Gender string `json:"gender"`
+        Experience string `json:"experience"`
+        Education string `json:"education"`
+}
+
+type SummaryHandler struct {
+        summaries map[uint]*Summary
+}
+
+var SummaryId uint
+
+func getNewSummaryId() uint <span class="cov0" title="0">{
+        SummaryId++
+        return SummaryId
+}</span>
+
+func NewSummaryHandler() *SummaryHandler <span class="cov0" title="0">{
+        newId := getNewSummaryId()
+
+        return &amp;SummaryHandler {
+                summaries: map[uint]*Summary {
+                        newId: {newId, "first name", "last name", "phone number", "kek@mail.ru", "01/01/1900", "gender", "experience", "bmstu"},
+                },
+        }
+}</span>
+
+func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        fmt.Println("POST /summaries")
+
+        var data map[string]string
+        json.NewDecoder(r.Body).Decode(&amp;data)
+
+        newId := getNewVacancyId()
+        api.summaries[newId] = &amp;Summary{
+                newId,
+                data["first-name"],
+                data["last-name"],
+                data["phone-number"],
+                data["email"],
+                data["birth-date"],
+                data["gender"],
+                data["experience"],
+                data["education"],
+        }
+}</span>
+
+func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        fmt.Println("GET /summaries")
+
+        var summaries []Summary
+        for _, summary := range api.summaries </span><span class="cov0" title="0">{
+                summaries = append(summaries, *summary)
+        }</span>
+
+        <span class="cov0" title="0">jsonData, _ := json.Marshal(summaries)
+
+        w.Write(jsonData)</span>
+}
+
+func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        fmt.Println("GET /summaries/{summary_id}")
+
+        summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
+
+        summary, ok := api.summaries[uint(summaryId)]
+        if !ok </span><span class="cov0" title="0">{
+                http.Error(w, `Not found`, 404)
+                return
+        }</span>
+
+        <span class="cov0" title="0">jsonData, _ := json.Marshal(summary)
+
+        w.Write(jsonData)</span>
+}
+
+func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        fmt.Println("PUT /summaries/{summary_id}")
+
+        summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
+
+        if _, ok := api.summaries[uint(summaryId)]; !ok </span><span class="cov0" title="0">{
+                http.Error(w, `Not found`, 404)
+                return
+        }</span>
+
+        <span class="cov0" title="0">var data map[string]string
+        json.NewDecoder(r.Body).Decode(&amp;data)
+
+        api.summaries[uint(summaryId)] = &amp;Summary{
+                uint(summaryId),
+                data["first-name"],
+                data["last-name"],
+                data["phone-number"],
+                data["email"],
+                data["birth-date"],
+                data["gender"],
+                data["experience"],
+                data["education"],
+        }</span>
+}
+
+func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        fmt.Println("DELETE /summaries/{summary_id}")
+
+        summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
+
+        delete(api.summaries, uint(summaryId))
+}</pre>
+		
+		<pre class="file" id="file4" style="display: none">package main
+
+import (
+        "fmt"
+        "github.com/gorilla/mux"
+        "net/http"
+)
+
+func echoFunc(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        fmt.Println("POST /users/logout")
+
+        //Cors.PrivateApi(&amp;w, r)
+
+        params := mux.Vars(r)
+        message := params["message"]
+        fmt.Fprintf(w, "Hello %s!", message)
+}</span>
+
+func StartRouter() <span class="cov0" title="0">{
+        router := mux.NewRouter().PathPrefix("/api").Subrouter()//.StrictSlash(true)
+
+        router.HandleFunc("/echo/{message}", echoFunc)
+
+        // users
+        authApi := NewAuthHandler()
+
+        router.HandleFunc("/users/login", authApi.Login).Methods("POST")
+        router.HandleFunc("/users/logout", authApi.Logout).Methods("POST")
+        router.HandleFunc("/users", authApi.Register).Methods("POST")
+
+        router.HandleFunc("/user/{user_id}", authApi.GetUserPage).Methods("GET")
+        router.HandleFunc("/users/{user_id}/avatar", authApi.SetAvatar).Methods("POST")
+        router.HandleFunc("/user/{user_id}", authApi.SetUserInfo).Methods("PUT")
+
+        // vacancies
+        vacancyApi := NewVacancyHandler()
+
+        router.HandleFunc("/vacancies", vacancyApi.CreateVacancy).Methods("POST")
+        router.HandleFunc("/vacancies", vacancyApi.GetVacancies).Methods("GET")
+        router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.GetVacancy).Methods("GET")
+        router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.ChangeVacancy).Methods("PUT")
+        router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.DeleteVacancy).Methods("DELETE")
+
+        // summaries
+        summaryApi := NewSummaryHandler()
+
+        router.HandleFunc("/summaries", summaryApi.CreateSummary).Methods("POST")
+        router.HandleFunc("/summaries", summaryApi.GetSummaries).Methods("GET")
+        router.HandleFunc("/summaries/{summary_id}", summaryApi.GetSummary).Methods("GET")
+        router.HandleFunc("/summaries/{summary_id}", summaryApi.ChangeSummary).Methods("PUT")
+        router.HandleFunc("/summaries/{summary_id}", summaryApi.DeleteSummary).Methods("DELETE")
+
+        //Миша
+        //apiRouter.HandleFunc("/user/{id}", HandleSetPrivateInfo).Methods("Put")
+        //apiRouter.HandleFunc("/user/{id}", HandleGetPrivateInfo).Methods("Get")
+        //apiRouter.HandleFunc("/avatar/{id}", HandleSetAvatar).Methods("Put")
+        //apiRouter.HandleFunc("/avatar/{id}", HandleGetAvatar).Methods("Get")
+
+        //Huvalk
+        //apiRouter.HandleFunc("/resume", HadleCreateResume).Methods("Post")
+        //apiRouter.HandleFunc("/resume/{id}", HandleChangeResume).Methods("Put")
+        //apiRouter.HandleFunc("/resume/{id}", HandleGetResume).Methods("Get")
+        //apiRouter.HandleFunc("/resume/{id}", HandleRemoveResume).Methods("Delete")
+
+        //Huvalk
+        //apiRouter.HandleFunc("/vacancy", HandleCreateVacancy).Methods("Post")
+        //apiRouter.HandleFunc("/vacancy/{id}", HandleChangeVacancy).Methods("Put")
+        //apiRouter.HandleFunc("/vacancy/{id}", HandleGetVacancy).Methods("Get")
+        //apiRouter.HandleFunc("/vacancy/{id}", HandleRemoveVacancy).Methods("Delete")
+
+        //Сережа М
+        //apiRouter.HandleFunc("/resume/short/{id}", HandleGetShortResume).Methods("Get")
+        //apiRouter.HandleFunc("/vacancy/short/{id}", HandleGetShortVacancy).Methods("Get")
+        //apiRouter.HandleFunc("/vacancys/{from}/{to}", HandleGetShortVacancy).Methods("Get")
+
+        http.Handle("/", router)
+        fmt.Println("Server started")
+        http.ListenAndServe(":8000", router)
+}</pre>
+		
+		<pre class="file" id="file5" style="display: none">package main
+
+import (
+        "encoding/json"
+        "fmt"
+        "github.com/gorilla/mux"
+        "net/http"
+        "strconv"
+)
+
+type UserPage struct {
+        User interface{} `json:"user,omitempty"`
+        Summaries interface{} `json:"summaries"`
+}
+
+type UserInfo struct {
+        Firstname string `json:"first-name,omitempty"`
+        Lastname string `json:"last-name,omitempty"`
+        Tag string `json:"tag,omitempty"`
+        Avatar string `json:"avatar,omitempty"`
+}
+
+type UserSummary struct {
+        Title string `json:"title"`
+}
+
+func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        fmt.Println("GET /user/{user_id}")
+        Cors.PrivateApi(&amp;w, r)
+
+        session, err := r.Cookie("session_id")
+        if err == http.ErrNoCookie </span><span class="cov0" title="0">{
+                http.Error(w, `No session`, 401)
+                return
+        }</span>
+        <span class="cov8" title="1">_ , found := api.sessions[session.Value]
+        if !found </span><span class="cov0" title="0">{
+                http.Error(w, `No session`, 401)
+                return
+        }</span>
+
+        <span class="cov8" title="1">var currentUser *User
+        userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
+
+        for _, user := range api.users </span><span class="cov8" title="1">{
+                if (*user).ID == uint(userId) </span><span class="cov8" title="1">{
+                        currentUser = user
+                }</span>
+        }
+
+        <span class="cov8" title="1">if currentUser == nil </span><span class="cov8" title="1">{
+                http.Error(w, `No user found`, 404)
+                return
+        }</span>
+
+        <span class="cov8" title="1">userAvatar, found := api.userAvatars[currentUser.ID]
+        if !found </span><span class="cov8" title="1">{
+                userAvatar = "default-avatar.jpg"
+        }</span>
+
+        <span class="cov8" title="1">encoder := json.NewEncoder(w)
+        encoder.Encode(UserPage{
+                User: UserInfo{
+                        Firstname: currentUser.FirstName,
+                        Lastname:  currentUser.LastName,
+                        Tag:       "",
+                        Avatar:    userAvatar,
+                },
+                Summaries: []UserSummary{},
+        })</span>
+}
+
+func (api *AuthHandler) SetUserInfo(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        fmt.Println("PUT /user/{user_id}")
+        Cors.PrivateApi(&amp;w, r)
+
+        session, err := r.Cookie("session_id")
+        fmt.Println("session cookie: ", session.Name)
+        if err == http.ErrNoCookie </span><span class="cov0" title="0">{
+                http.Error(w, `No session`, 401)
+                return
+        }</span>
+        <span class="cov8" title="1">userId, found := api.sessions[session.Value]
+        if !found </span><span class="cov0" title="0">{
+                http.Error(w, `No session`, 401)
+                return
+        }</span>
+        <span class="cov8" title="1">if         reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId </span><span class="cov8" title="1">{
+                http.Error(w, `Insufficient rights`, 403)
+                return
+        }</span>
+
+        <span class="cov8" title="1">var currentUser *User
+
+        for _, user := range api.users </span><span class="cov8" title="1">{
+                if (*user).ID == uint(userId) </span><span class="cov8" title="1">{
+                        currentUser = user
+                }</span>
+        }
+
+        <span class="cov8" title="1">if currentUser == nil </span><span class="cov0" title="0">{
+                http.Error(w, `No user found`, 401)
+                return
+        }</span>
+
+        <span class="cov8" title="1">var data map[string]string
+        decoder := json.NewDecoder(r.Body)
+        decoder.Decode(&amp;data)
+//TODO Проверять есть ли все поля
+        (*currentUser).LastName = data["last-name"]
+        (*currentUser).FirstName = data["first-name"]
+        (*currentUser).Password = data["password"]</span>
+}
+
+func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) <span class="cov8" title="1">{
+        fmt.Println("/users/{user_id}/avatar")
+        Cors.PrivateApi(&amp;w, r)
+
+        defer r.Body.Close()
+
+        session, err := r.Cookie("session_id")
+        fmt.Println("session cookie: ", session)
+        if err == http.ErrNoCookie </span><span class="cov0" title="0">{
+                http.Error(w, `No session`, 401)
+                return
+        }</span>
+        <span class="cov8" title="1">userId, found := api.sessions[session.Value]
+        if !found </span><span class="cov0" title="0">{
+                http.Error(w, `No session`, 401)
+                return
+        }</span>
+        <span class="cov8" title="1">if         reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId </span><span class="cov8" title="1">{
+                http.Error(w, `Insufficient rights`, 403)
+                return
+        }</span>
+
+        <span class="cov8" title="1">var currentUser *User
+
+        for _, user := range api.users </span><span class="cov8" title="1">{
+                if (*user).ID == userId </span><span class="cov8" title="1">{
+                        currentUser = user
+                }</span>
+        }
+
+        <span class="cov8" title="1">if currentUser == nil </span><span class="cov0" title="0">{
+                http.Error(w, `No user found`, 401)
+                return
+        }</span>
+
+        <span class="cov8" title="1">var data map[string]string
+        decoder := json.NewDecoder(r.Body)
+        decoder.Decode(&amp;data)
+
+        avatar, found := data["avatar"]
+        if !found </span><span class="cov0" title="0">{
+                avatar = "default-avatar.jpg"
+        }</span>
+
+        <span class="cov8" title="1">api.userAvatars[userId] = avatar</span>
+}</pre>
+		
+		<pre class="file" id="file6" style="display: none">package main
+
+import (
+        "encoding/json"
+        "fmt"
+        "github.com/gorilla/mux"
+        "net/http"
+        "strconv"
+)
+
+type Vacancy struct {
+        ID uint `json:"id"`
+        Name string `json:"name"`
+        Description string `json:"description"`
+        Skills string `json:"skills"`
+        Salary string `json:"salary"`
+        Address string `json:"address"`
+        PhoneNumber string `json:"phone-number"`
+}
+
+type VacancyHandler struct {
+        vacancies map[uint]*Vacancy
+}
+
+var vacancyId uint
+
+func getNewVacancyId() uint <span class="cov0" title="0">{
+        vacancyId++
+        return vacancyId
+}</span>
+
+func NewVacancyHandler() *VacancyHandler <span class="cov0" title="0">{
+        newId := getNewVacancyId()
+
+        return &amp;VacancyHandler {
+                vacancies: map[uint]*Vacancy {
+                        newId: {newId, "name", "description", "skills", "100500", "address", "phone number"},
+                },
+        }
+}</span>
+
+func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        fmt.Println("POST /vacancies")
+
+        var data map[string]string
+        json.NewDecoder(r.Body).Decode(&amp;data)
+
+        name := data["name"]
+        if name == "" </span><span class="cov0" title="0">{
+                http.Error(w, `Empty name`, 400)
+                return
+        }</span>
+
+        <span class="cov0" title="0">description := data["description"]
+        skills := data["skills"]
+        salary := data["salary"]
+        address := data["address"]
+        phoneNumber := data["phone-number"]
+
+        newId := getNewVacancyId()
+        api.vacancies[newId] = &amp;Vacancy{newId, name, description, skills, salary, address, phoneNumber}</span>
+}
+
+func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        fmt.Println("GET /vacancies")
+
+        var vacancies []Vacancy
+        for _, vacancy := range api.vacancies </span><span class="cov0" title="0">{
+                vacancies = append(vacancies, *vacancy)
+        }</span>
+
+        <span class="cov0" title="0">jsonData, _ := json.Marshal(vacancies)
+
+        w.Write(jsonData)</span>
+}
+
+func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        fmt.Println("GET /vacancies/{vacancy_id}")
+
+        vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+
+        vacancy, ok := api.vacancies[uint(vacancyId)]
+        if !ok </span><span class="cov0" title="0">{
+                http.Error(w, `Not found`, 404)
+                return
+        }</span>
+
+        <span class="cov0" title="0">jsonData, _ := json.Marshal(vacancy)
+
+        w.Write(jsonData)</span>
+}
+
+func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        fmt.Println("PUT /vacancies/{vacancy_id}")
+
+        vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+
+        if _, ok := api.vacancies[uint(vacancyId)]; !ok </span><span class="cov0" title="0">{
+                http.Error(w, `Not found`, 404)
+                return
+        }</span>
+
+        <span class="cov0" title="0">var data map[string]string
+        json.NewDecoder(r.Body).Decode(&amp;data)
+
+        name := data["name"]
+        if name == "" </span><span class="cov0" title="0">{
+                http.Error(w, `Empty name`, 400)
+                return
+        }</span>
+
+        <span class="cov0" title="0">description := data["description"]
+        skills := data["skills"]
+        salary := data["salary"]
+        address := data["address"]
+        phoneNumber := data["phone-number"]
+
+        api.vacancies[uint(vacancyId)] = &amp;Vacancy{uint(vacancyId), name, description, skills, salary, address, phoneNumber}</span>
+}
+
+func (api *VacancyHandler) DeleteVacancy(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        fmt.Println("DELETE /vacancies/{vacancy_id}")
+
+        vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+
+        delete(api.vacancies, uint(vacancyId))
+}</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

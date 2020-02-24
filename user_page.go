@@ -49,7 +49,7 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		http.Error(w, `No user found`, 401)
+		http.Error(w, `No user found`, 404)
 		return
 	}
 
@@ -75,7 +75,7 @@ func (api *AuthHandler) SetUserInfo(w http.ResponseWriter, r *http.Request) {
 	Cors.PrivateApi(&w, r)
 
 	session, err := r.Cookie("session_id")
-	fmt.Println("session cookie: ", session)
+	fmt.Println("session cookie: ", session.Name)
 	if err == http.ErrNoCookie {
 		http.Error(w, `No session`, 401)
 		return
