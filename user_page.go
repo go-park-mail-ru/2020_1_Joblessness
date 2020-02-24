@@ -95,6 +95,7 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 
 	var currentUser *User
 
+	fmt.Println("Количество пользователей", len(api.users))
 	for _, user := range api.users {
 		if (*user).ID == uint(userId) {
 			currentUser = user
@@ -126,17 +127,15 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session)
 	if err == http.ErrNoCookie {
-		fmt.Println("No session cookie")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	userId, found := api.sessions[session.Value]
-	fmt.Println("session id is ", session.Value, " and its ", found)
 	if !found {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	if 	reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
+	if reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -150,7 +149,6 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		fmt.Println("Problems not with cookies ")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
