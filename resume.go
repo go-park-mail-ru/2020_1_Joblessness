@@ -59,6 +59,13 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		data["experience"],
 		data["education"],
 	}
+
+	type Response struct {
+		Status uint `json:"status"`
+	}
+
+	jsonData, _ := json.Marshal(Response{200})
+	w.Write(jsonData)
 }
 
 func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) {
@@ -69,8 +76,12 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 		summaries = append(summaries, *summary)
 	}
 
-	jsonData, _ := json.Marshal(summaries)
+	type Response struct {
+		Status uint `json:"status"`
+		Data []Summary `json:"data"`
+	}
 
+	jsonData, _ := json.Marshal(Response{200, summaries})
 	w.Write(jsonData)
 }
 
@@ -85,8 +96,12 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, _ := json.Marshal(summary)
+	type Response struct {
+		Status uint `json:"status"`
+		Data Summary `json:"data"`
+	}
 
+	jsonData, _ := json.Marshal(Response{200, *summary})
 	w.Write(jsonData)
 }
 
@@ -114,6 +129,13 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 		data["experience"],
 		data["education"],
 	}
+
+	type Response struct {
+		Status uint `json:"status"`
+	}
+
+	jsonData, _ := json.Marshal(Response{200})
+	w.Write(jsonData)
 }
 
 func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
@@ -122,4 +144,11 @@ func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request)
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
 
 	delete(api.summaries, uint(summaryId))
+
+	type Response struct {
+		Status uint `json:"status"`
+	}
+
+	jsonData, _ := json.Marshal(Response{200})
+	w.Write(jsonData)
 }
