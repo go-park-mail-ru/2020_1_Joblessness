@@ -131,7 +131,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userId, found := api.sessions[session.Value]
-	fmt.Println("session id is ", session.Value)
+	fmt.Println("session id is ", session.Value, " and its ", found)
 	if !found {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
