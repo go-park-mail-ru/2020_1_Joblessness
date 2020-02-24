@@ -54,21 +54,14 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
-	type Response struct {
-		Status uint `json:"status"`
-		ID uint `json:"id,omitempty"`
-	}
-
 	user, ok := api.users[data["login"]]
 	if !ok {
-		jsonData, _ := json.Marshal(Response{Status:404})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	if user.Password != data["password"] {
-		jsonData, _ := json.Marshal(Response{Status:404})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -83,7 +76,12 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, cookie)
 
-	jsonData, _ := json.Marshal(Response{200, user.ID})
+	type Response struct {
+		ID uint `json:"id"`
+	}
+
+	jsonData, _ := json.Marshal(Response{user.ID})
+	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }
 
@@ -91,20 +89,14 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users/logout")
 	Cors.PrivateApi(&w, r)
 
-	type Response struct {
-		Status uint `json:"status"`
-	}
-
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
-		jsonData, _ := json.Marshal(Response{401})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	if _, ok := api.sessions[session.Value]; !ok {
-		jsonData, _ := json.Marshal(Response{401})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -113,28 +105,31 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
 
-	jsonData, _ := json.Marshal(Response{200})
-	w.Write(jsonData)
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users")
 	Cors.PrivateApi(&w, r)
 
-	type Response struct {
-		Status uint `json:"status"`
-	}
-
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
 	login := data["login"]
 	if _, ok := api.users[login]; ok {
-		jsonData, _ := json.Marshal(Response{400})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	if login == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	password := data["password"]
+	if password == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	firstName := data["first-name"]
 	lastName := data["last-name"]
@@ -143,6 +138,5 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	api.users[login] = &User{uint(len(api.users) + 1), login, password, firstName, lastName, email, phoneNumber}
 
-	jsonData, _ := json.Marshal(Response{200})
-	w.Write(jsonData)
+	w.WriteHeader(http.StatusCreated)
 }

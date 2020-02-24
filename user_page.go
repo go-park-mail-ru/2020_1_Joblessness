@@ -28,28 +28,18 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("GET /user/{user_id}")
 	Cors.PrivateApi(&w, r)
 
-	type Data struct {
-		User UserInfo `json:"user"`
-		Summaries []UserSummary `json:"summaries"`
-	}
-
-	type Response struct {
-		Status int `json:"status"`
-		Data Data `json:"data,omitempty"`
-	}
-
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		jsonData, _ := json.Marshal(Response{Status:401})
-		w.Write(jsonData)
-		return
-	}
-	_ , found := api.sessions[session.Value]
-	if !found {
-		jsonData, _ := json.Marshal(Response{Status:401})
-		w.Write(jsonData)
-		return
-	}
+	//session, err := r.Cookie("session_id")
+	//if err == http.ErrNoCookie {
+	//	jsonData, _ := json.Marshal(Response{Status:401})
+	//	w.Write(jsonData)
+	//	return
+	//}
+	//_ , found := api.sessions[session.Value]
+	//if !found {
+	//	jsonData, _ := json.Marshal(Response{Status:401})
+	//	w.Write(jsonData)
+	//	return
+	//}
 
 	var currentUser *User
 	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
@@ -61,8 +51,7 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		jsonData, _ := json.Marshal(Response{Status:401})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -71,37 +60,36 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 		userAvatar = "default-avatar.jpg"
 	}
 
-	jsonData, _ := json.Marshal(Response{200, Data{
+	type Response struct {
+		User UserInfo `json:"user"`
+		Summaries []UserSummary `json:"summaries"`
+	}
+
+	jsonData, _ := json.Marshal(Response{
 		UserInfo{currentUser.FirstName, currentUser.LastName, "", userAvatar},
 		[]UserSummary{},
-	}})
+	})
+	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
 
-func (api *AuthHandler) SetUserInfo(w http.ResponseWriter, r *http.Request) {
+func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("PUT /user/{user_id}")
 	Cors.PrivateApi(&w, r)
-
-	type Response struct {
-		Status uint `json:"status"`
-	}
 
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session.Name)
 	if err == http.ErrNoCookie {
-		jsonData, _ := json.Marshal(Response{401})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	userId, found := api.sessions[session.Value]
 	if !found {
-		jsonData, _ := json.Marshal(Response{401})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	if reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
-		jsonData, _ := json.Marshal(Response{403})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
@@ -114,8 +102,7 @@ func (api *AuthHandler) SetUserInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		jsonData, _ := json.Marshal(Response{401})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -127,36 +114,28 @@ func (api *AuthHandler) SetUserInfo(w http.ResponseWriter, r *http.Request) {
 	(*currentUser).FirstName = data["first-name"]
 	(*currentUser).Password = data["password"]
 
-	jsonData, _ := json.Marshal(Response{200})
-	w.Write(jsonData)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("/users/{user_id}/avatar")
+	fmt.Println("POST /users/{user_id}/avatar")
 	Cors.PrivateApi(&w, r)
 
 	defer r.Body.Close()
 
-	type Response struct {
-		Status uint `json:"status"`
-	}
-
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session)
 	if err == http.ErrNoCookie {
-		jsonData, _ := json.Marshal(Response{401})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	userId, found := api.sessions[session.Value]
 	if !found {
-		jsonData, _ := json.Marshal(Response{401})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	if 	reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
-		jsonData, _ := json.Marshal(Response{403})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
@@ -169,8 +148,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		jsonData, _ := json.Marshal(Response{401})
-		w.Write(jsonData)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -185,6 +163,5 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 
 	api.userAvatars[userId] = avatar
 
-	jsonData, _ := json.Marshal(Response{200})
-	w.Write(jsonData)
+	w.WriteHeader(http.StatusCreated)
 }

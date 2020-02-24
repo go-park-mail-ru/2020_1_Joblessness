@@ -22,11 +22,12 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 	referer := req.Header.Get("Referer")
 	origin := req.Header.Get("Origin")
 
-	fmt.Println(referer, origin)
+	fmt.Println("Origin: ", referer, origin)
 	result := false
 	for _, origins := range corsList.allowedOrigins {
 		if origin == origins {
 			result = true
+			fmt.Println("Allowed")
 			break
 		}
 	}
@@ -34,8 +35,8 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 	result = true
 
 	if result {
-		(*w).Header().Set("Access-Control-Allow-Origin", "*")
-		(*w).Header().Set("Content-Type", "application/json")
+		(*w).Header().Set("Access-Control-Allow-Origin", origin)
+		//(*w).Header().Set("Content-Type", "application/json")
 		(*w).Header().Set("Access-Control-Allow-Credentials", "true")
 		(*w).Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
 		(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Origin")

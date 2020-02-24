@@ -61,12 +61,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		data["education"],
 	}
 
-	type Response struct {
-		Status uint `json:"status"`
-	}
-
-	jsonData, _ := json.Marshal(Response{200})
-	w.Write(jsonData)
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) {
@@ -78,12 +73,8 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 		summaries = append(summaries, *summary)
 	}
 
-	type Response struct {
-		Status uint `json:"status"`
-		Data []Summary `json:"data"`
-	}
-
-	jsonData, _ := json.Marshal(Response{200, summaries})
+	jsonData, _ := json.Marshal(summaries)
+	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
 
@@ -95,16 +86,12 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 
 	summary, ok := api.summaries[uint(summaryId)]
 	if !ok {
-		http.Error(w, `Not found`, 404)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	type Response struct {
-		Status uint `json:"status"`
-		Data Summary `json:"data"`
-	}
-
-	jsonData, _ := json.Marshal(Response{200, *summary})
+	jsonData, _ := json.Marshal(summary)
+	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
 
@@ -115,7 +102,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
 
 	if _, ok := api.summaries[uint(summaryId)]; !ok {
-		http.Error(w, `Not found`, 404)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -134,12 +121,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 		data["education"],
 	}
 
-	type Response struct {
-		Status uint `json:"status"`
-	}
-
-	jsonData, _ := json.Marshal(Response{200})
-	w.Write(jsonData)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
@@ -148,12 +130,12 @@ func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request)
 
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
 
-	delete(api.summaries, uint(summaryId))
-
-	type Response struct {
-		Status uint `json:"status"`
+	if _, ok := api.summaries[uint(summaryId)]; !ok {
+		w.WriteHeader(http.StatusNotFound)
+		return
 	}
 
-	jsonData, _ := json.Marshal(Response{200})
-	w.Write(jsonData)
+	delete(api.summaries, uint(summaryId))
+
+	w.WriteHeader(http.StatusNoContent)
 }
