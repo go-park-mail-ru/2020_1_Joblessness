@@ -53,14 +53,21 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
+	type Response struct {
+		Status uint `json:"status"`
+		ID uint `json:"id,omitempty"`
+	}
+
 	user, ok := api.users[data["login"]]
 	if !ok {
-		http.Error(w, `Not found`, 404)
+		jsonData, _ := json.Marshal(Response{Status:404})
+		w.Write(jsonData)
 		return
 	}
 
 	if user.Password != data["password"] {
-		http.Error(w, `Wrong password`, 400)
+		jsonData, _ := json.Marshal(Response{Status:404})
+		w.Write(jsonData)
 		return
 	}
 
@@ -75,24 +82,27 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, cookie)
 
-	type Response struct {
-		ID uint `json:"id"`
-	}
-	jsonData, _ := json.Marshal(Response{user.ID})
+	jsonData, _ := json.Marshal(Response{200, user.ID})
 	w.Write(jsonData)
 }
 
 func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users/logout")
 
+	type Response struct {
+		Status uint `json:"status"`
+	}
+
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
-		http.Error(w, `No session`, 401)
+		jsonData, _ := json.Marshal(Response{401})
+		w.Write(jsonData)
 		return
 	}
 
 	if _, ok := api.sessions[session.Value]; !ok {
-		http.Error(w, `No session`, 401)
+		jsonData, _ := json.Marshal(Response{401})
+		w.Write(jsonData)
 		return
 	}
 
@@ -100,17 +110,25 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	http.SetCookie(w, session)
+
+	jsonData, _ := json.Marshal(Response{200})
+	w.Write(jsonData)
 }
 
 func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users")
+
+	type Response struct {
+		Status uint `json:"status"`
+	}
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
 	login := data["login"]
 	if _, ok := api.users[login]; ok {
-		http.Error(w, `Login already exist`, 400)
+		jsonData, _ := json.Marshal(Response{400})
+		w.Write(jsonData)
 		return
 	}
 	password := data["password"]
@@ -122,5 +140,6 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	api.users[login] = &User{uint(len(api.users) + 1), login, password, firstName, lastName, email, phoneNumber}
 
-	fmt.Println(api.users)
+	jsonData, _ := json.Marshal(Response{200})
+	w.Write(jsonData)
 }

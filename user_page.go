@@ -28,14 +28,26 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("GET /user/{user_id}")
 	Cors.PrivateApi(&w, r)
 
+	type Data struct {
+		User UserInfo `json:"user"`
+		Summaries []UserSummary `json:"summaries"`
+	}
+
+	type Response struct {
+		Status uint `json:"status"`
+		Data Data `json:"data,omitempty"`
+	}
+
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
-		http.Error(w, `No session`, 401)
+		jsonData, _ := json.Marshal(Response{Status:401})
+		w.Write(jsonData)
 		return
 	}
 	_ , found := api.sessions[session.Value]
 	if !found {
-		http.Error(w, `No session`, 401)
+		jsonData, _ := json.Marshal(Response{Status:401})
+		w.Write(jsonData)
 		return
 	}
 
@@ -49,7 +61,8 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		http.Error(w, `No user found`, 401)
+		jsonData, _ := json.Marshal(Response{Status:401})
+		w.Write(jsonData)
 		return
 	}
 
@@ -58,35 +71,37 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 		userAvatar = "default-avatar.jpg"
 	}
 
-	encoder := json.NewEncoder(w)
-	encoder.Encode(UserPage{
-		User: UserInfo{
-			Firstname: currentUser.FirstName,
-			Lastname:  currentUser.LastName,
-			Tag:       "",
-			Avatar:    userAvatar,
-		},
-		Summaries: []UserSummary{},
-	})
+	jsonData, _ := json.Marshal(Response{200, Data{
+		UserInfo{currentUser.FirstName, currentUser.LastName, "", userAvatar},
+		[]UserSummary{},
+	}})
+	w.Write(jsonData)
 }
 
 func (api *AuthHandler) SetUserInfo(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("PUT /user/{user_id}")
 	Cors.PrivateApi(&w, r)
 
+	type Response struct {
+		Status uint `json:"status"`
+	}
+
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session)
 	if err == http.ErrNoCookie {
-		http.Error(w, `No session`, 401)
+		jsonData, _ := json.Marshal(Response{401})
+		w.Write(jsonData)
 		return
 	}
 	userId, found := api.sessions[session.Value]
 	if !found {
-		http.Error(w, `No session`, 401)
+		jsonData, _ := json.Marshal(Response{401})
+		w.Write(jsonData)
 		return
 	}
-	if 	reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
-		http.Error(w, `Insufficient rights`, 403)
+	if reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
+		jsonData, _ := json.Marshal(Response{403})
+		w.Write(jsonData)
 		return
 	}
 
@@ -99,7 +114,8 @@ func (api *AuthHandler) SetUserInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		http.Error(w, `No user found`, 401)
+		jsonData, _ := json.Marshal(Response{401})
+		w.Write(jsonData)
 		return
 	}
 
@@ -110,6 +126,9 @@ func (api *AuthHandler) SetUserInfo(w http.ResponseWriter, r *http.Request) {
 	(*currentUser).LastName = data["last-name"]
 	(*currentUser).FirstName = data["first-name"]
 	(*currentUser).Password = data["password"]
+
+	jsonData, _ := json.Marshal(Response{200})
+	w.Write(jsonData)
 }
 
 func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
@@ -118,19 +137,26 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 
 	defer r.Body.Close()
 
+	type Response struct {
+		Status uint `json:"status"`
+	}
+
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session)
 	if err == http.ErrNoCookie {
-		http.Error(w, `No session`, 401)
+		jsonData, _ := json.Marshal(Response{401})
+		w.Write(jsonData)
 		return
 	}
 	userId, found := api.sessions[session.Value]
 	if !found {
-		http.Error(w, `No session`, 401)
+		jsonData, _ := json.Marshal(Response{401})
+		w.Write(jsonData)
 		return
 	}
 	if 	reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
-		http.Error(w, `Insufficient rights`, 403)
+		jsonData, _ := json.Marshal(Response{403})
+		w.Write(jsonData)
 		return
 	}
 
@@ -143,7 +169,8 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		http.Error(w, `No user found`, 401)
+		jsonData, _ := json.Marshal(Response{401})
+		w.Write(jsonData)
 		return
 	}
 
@@ -157,4 +184,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.userAvatars[userId] = avatar
+
+	jsonData, _ := json.Marshal(Response{200})
+	w.Write(jsonData)
 }
