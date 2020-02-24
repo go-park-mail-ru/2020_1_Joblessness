@@ -126,6 +126,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session)
 	if err == http.ErrNoCookie {
+		fmt.Println("No session cookie")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
