@@ -80,13 +80,11 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session)
 	if err != http.ErrNoCookie {
-		fmt.Println("session cookie: 1")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	userId, found := api.sessions[session.Value]
 	if !found {
-		fmt.Println("session cookie: 2")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -105,7 +103,6 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		fmt.Println("session cookie: 3")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
