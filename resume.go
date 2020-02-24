@@ -43,6 +43,7 @@ func NewSummaryHandler() *SummaryHandler {
 
 func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /summaries")
+	Cors.PrivateApi(&w, r)
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
@@ -70,6 +71,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 
 func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("GET /summaries")
+	Cors.PrivateApi(&w, r)
 
 	var summaries []Summary
 	for _, summary := range api.summaries {
@@ -87,6 +89,7 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 
 func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("GET /summaries/{summary_id}")
+	Cors.PrivateApi(&w, r)
 
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
 
@@ -107,6 +110,7 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 
 func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("PUT /summaries/{summary_id}")
+	Cors.PrivateApi(&w, r)
 
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
 
@@ -140,6 +144,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 
 func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("DELETE /summaries/{summary_id}")
+	Cors.PrivateApi(&w, r)
 
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
 

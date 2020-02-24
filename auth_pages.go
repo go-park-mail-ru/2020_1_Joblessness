@@ -49,6 +49,7 @@ func NewAuthHandler() *AuthHandler {
 
 func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users/login")
+	Cors.PrivateApi(&w, r)
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
@@ -88,6 +89,7 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users/logout")
+	Cors.PrivateApi(&w, r)
 
 	type Response struct {
 		Status uint `json:"status"`
@@ -117,6 +119,7 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users")
+	Cors.PrivateApi(&w, r)
 
 	type Response struct {
 		Status uint `json:"status"`
