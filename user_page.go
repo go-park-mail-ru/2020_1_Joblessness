@@ -79,7 +79,7 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session)
-	if err == http.ErrNoCookie {
+	if err != http.ErrNoCookie {
 		fmt.Println("session cookie: 1")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -129,7 +129,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session)
-	if err == http.ErrNoCookie {
+	if err != http.ErrNoCookie {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
