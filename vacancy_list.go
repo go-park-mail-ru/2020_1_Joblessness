@@ -52,7 +52,7 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 
 	name := data["name"]
 	if name == "" {
-		jsonData, _ := json.Marshal(Response{400})
+		jsonData, _ := json.Marshal(Response{http.StatusBadRequest})
 		w.Write(jsonData)
 		return
 	}
@@ -66,7 +66,7 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 	newId := getNewVacancyId()
 	api.vacancies[newId] = &Vacancy{newId, name, description, skills, salary, address, phoneNumber}
 
-	jsonData, _ := json.Marshal(Response{200})
+	jsonData, _ := json.Marshal(Response{http.StatusCreated})
 	w.Write(jsonData)
 }
 
@@ -84,7 +84,7 @@ func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) 
 		Data []Vacancy `json:"data"`
 	}
 
-	jsonData, _ := json.Marshal(Response{200, vacancies})
+	jsonData, _ := json.Marshal(Response{http.StatusOK, vacancies})
 	w.Write(jsonData)
 }
 
@@ -101,12 +101,12 @@ func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 	vacancy, ok := api.vacancies[uint(vacancyId)]
 	if !ok {
-		jsonData, _ := json.Marshal(Response{Status:404})
+		jsonData, _ := json.Marshal(Response{Status:http.StatusNotFound})
 		w.Write(jsonData)
 		return
 	}
 
-	jsonData, _ := json.Marshal(Response{200, *vacancy})
+	jsonData, _ := json.Marshal(Response{http.StatusOK, *vacancy})
 	w.Write(jsonData)
 }
 
@@ -121,7 +121,7 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 	}
 
 	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
-		jsonData, _ := json.Marshal(Response{404})
+		jsonData, _ := json.Marshal(Response{http.StatusNotFound})
 		w.Write(jsonData)
 		return
 	}
@@ -131,7 +131,7 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 
 	name := data["name"]
 	if name == "" {
-		jsonData, _ := json.Marshal(Response{Status:400})
+		jsonData, _ := json.Marshal(Response{Status:http.StatusBadRequest})
 		w.Write(jsonData)
 		return
 	}
@@ -144,7 +144,7 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 
 	api.vacancies[uint(vacancyId)] = &Vacancy{uint(vacancyId), name, description, skills, salary, address, phoneNumber}
 
-	jsonData, _ := json.Marshal(Response{200})
+	jsonData, _ := json.Marshal(Response{http.StatusNoContent})
 	w.Write(jsonData)
 }
 
@@ -154,12 +154,17 @@ func (api *VacancyHandler) DeleteVacancy(w http.ResponseWriter, r *http.Request)
 
 	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
 
-	delete(api.vacancies, uint(vacancyId))
-
 	type Response struct {
 		Status uint `json:"status"`
 	}
 
-	jsonData, _ := json.Marshal(Response{200})
+	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
+		jsonData, _ := json.Marshal(Response{http.StatusNotFound})
+		w.Write(jsonData)
+	}
+
+	delete(api.vacancies, uint(vacancyId))
+
+	jsonData, _ := json.Marshal(Response{http.StatusOK})
 	w.Write(jsonData)
 }

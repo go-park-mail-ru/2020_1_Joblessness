@@ -38,18 +38,18 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 		Data Data `json:"data,omitempty"`
 	}
 
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
-		jsonData, _ := json.Marshal(Response{Status:401})
-		w.Write(jsonData)
-		return
-	}
-	_ , found := api.sessions[session.Value]
-	if !found {
-		jsonData, _ := json.Marshal(Response{Status:401})
-		w.Write(jsonData)
-		return
-	}
+	//session, err := r.Cookie("session_id")
+	//if err == http.ErrNoCookie {
+	//	jsonData, _ := json.Marshal(Response{Status:401})
+	//	w.Write(jsonData)
+	//	return
+	//}
+	//_ , found := api.sessions[session.Value]
+	//if !found {
+	//	jsonData, _ := json.Marshal(Response{Status:401})
+	//	w.Write(jsonData)
+	//	return
+	//}
 
 	var currentUser *User
 	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
@@ -61,7 +61,7 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		jsonData, _ := json.Marshal(Response{Status:401})
+		jsonData, _ := json.Marshal(Response{Status:http.StatusNotFound})
 		w.Write(jsonData)
 		return
 	}
@@ -71,7 +71,7 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 		userAvatar = "default-avatar.jpg"
 	}
 
-	jsonData, _ := json.Marshal(Response{200, Data{
+	jsonData, _ := json.Marshal(Response{http.StatusOK, Data{
 		UserInfo{currentUser.FirstName, currentUser.LastName, "", userAvatar},
 		[]UserSummary{},
 	}})
@@ -89,18 +89,18 @@ func (api *AuthHandler) SetUserInfo(w http.ResponseWriter, r *http.Request) {
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session)
 	if err == http.ErrNoCookie {
-		jsonData, _ := json.Marshal(Response{401})
+		jsonData, _ := json.Marshal(Response{http.StatusUnauthorized})
 		w.Write(jsonData)
 		return
 	}
 	userId, found := api.sessions[session.Value]
 	if !found {
-		jsonData, _ := json.Marshal(Response{401})
+		jsonData, _ := json.Marshal(Response{http.StatusUnauthorized})
 		w.Write(jsonData)
 		return
 	}
 	if reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
-		jsonData, _ := json.Marshal(Response{403})
+		jsonData, _ := json.Marshal(Response{http.StatusForbidden})
 		w.Write(jsonData)
 		return
 	}
@@ -114,7 +114,7 @@ func (api *AuthHandler) SetUserInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		jsonData, _ := json.Marshal(Response{401})
+		jsonData, _ := json.Marshal(Response{http.StatusUnauthorized})
 		w.Write(jsonData)
 		return
 	}
@@ -127,7 +127,7 @@ func (api *AuthHandler) SetUserInfo(w http.ResponseWriter, r *http.Request) {
 	(*currentUser).FirstName = data["first-name"]
 	(*currentUser).Password = data["password"]
 
-	jsonData, _ := json.Marshal(Response{200})
+	jsonData, _ := json.Marshal(Response{http.StatusOK})
 	w.Write(jsonData)
 }
 
@@ -144,18 +144,18 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session)
 	if err == http.ErrNoCookie {
-		jsonData, _ := json.Marshal(Response{401})
+		jsonData, _ := json.Marshal(Response{http.StatusUnauthorized})
 		w.Write(jsonData)
 		return
 	}
 	userId, found := api.sessions[session.Value]
 	if !found {
-		jsonData, _ := json.Marshal(Response{401})
+		jsonData, _ := json.Marshal(Response{http.StatusUnauthorized})
 		w.Write(jsonData)
 		return
 	}
 	if 	reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
-		jsonData, _ := json.Marshal(Response{403})
+		jsonData, _ := json.Marshal(Response{http.StatusForbidden})
 		w.Write(jsonData)
 		return
 	}
@@ -169,7 +169,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		jsonData, _ := json.Marshal(Response{401})
+		jsonData, _ := json.Marshal(Response{http.StatusUnauthorized})
 		w.Write(jsonData)
 		return
 	}
@@ -185,6 +185,6 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 
 	api.userAvatars[userId] = avatar
 
-	jsonData, _ := json.Marshal(Response{200})
+	jsonData, _ := json.Marshal(Response{http.StatusNoContent})
 	w.Write(jsonData)
 }
