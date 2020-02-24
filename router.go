@@ -26,7 +26,7 @@ func StartRouter() {
 
 	router.HandleFunc("/users/login", authApi.Login).Methods("POST")
 	router.HandleFunc("/users/logout", authApi.Logout).Methods("POST")
-	router.HandleFunc("/users", authApi.Register).Methods("POST", "OPTION")
+	router.HandleFunc("/users", authApi.Register).Methods("POST", "OPTIONS")
 
 	router.HandleFunc("/user/{user_id}", authApi.GetUserPage).Methods("GET")
 	router.HandleFunc("/users/{user_id}/avatar", authApi.SetAvatar).Methods("POST")
