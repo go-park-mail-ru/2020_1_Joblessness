@@ -16,9 +16,18 @@ func echoFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello %s!", message)
 }
 
+
+func contentTipeMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		next.ServeHTTP(w, r)
+	})
+}
+
 func StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()//.StrictSlash(true)
 
+	router.Use(contentTipeMiddleware)
 	router.HandleFunc("/echo/{message}", echoFunc)
 	router.Methods("OPTIONS").HandlerFunc(Cors.Preflight)
 
