@@ -40,7 +40,7 @@ func StartRouter() {
 
 	router.HandleFunc("/user/{user_id}", authApi.GetUserPage).Methods("GET")
 	router.HandleFunc("/users/{user_id}/avatar", authApi.SetAvatar).Methods("POST")
-	router.HandleFunc("/user/{user_id}", authApi.ChangeUserInfo).Methods("PUT")
+	router.HandleFunc("/user/{user_id}", authApi.ChangeUserInfo).Methods("POST")
 
 	// vacancies
 	vacancyApi := NewVacancyHandler()
