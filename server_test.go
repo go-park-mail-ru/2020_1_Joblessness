@@ -2,10 +2,7 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -116,7 +113,7 @@ func TestLogout(t *testing.T) {
 	}
 }
 
-func TestFailedLogoutWrongCookie(t *testing.T) {
+func TestLogoutWrongCookie(t *testing.T) {
 	t.Parallel()
 
 	h := NewAuthHandler()
@@ -190,14 +187,14 @@ func TestRegistration(t *testing.T) {
 	}
 
 	expectedUser := User{
-			ID: 2,
-			Login: "huvalk",
-			Password: "ABE12345",
-			FirstName: "first",
-			LastName: "last",
-			Email: "m@m.m",
-			PhoneNumber: "89032909812",
-		}
+		ID: 2,
+		Login: "huvalk",
+		Password: "ABE12345",
+		FirstName: "first",
+		LastName: "last",
+		Email: "m@m.m",
+		PhoneNumber: "89032909812",
+	}
 
 	reflect.DeepEqual(h.users["huvalk"], expectedUser)
 }
@@ -282,22 +279,12 @@ func TestFailedGetUserPageNoUserFound(t *testing.T) {
 
 	h.GetUserPage(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Error("status is not 200")
-	}
-
-	bytes, _ := ioutil.ReadAll(w.Body)
-	str := string(bytes)
-	fmt.Println(str)
-
-	var result map[string]string
-	_ = json.NewDecoder(w.Body).Decode(&result)
-	if result["status"] != "401" {
-		t.Error("Real status is not 401")
+	if w.Code != http.StatusNotFound {
+		t.Error("status is not 404")
 	}
 }
 
-func TestSetUserInfo(t *testing.T) {
+func TestChangeUserInfo(t *testing.T) {
 	t.Parallel()
 
 	h := NewAuthHandler()
@@ -318,7 +305,7 @@ func TestSetUserInfo(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	h.SetUserInfo(w, r)
+	h.ChangeUserInfo(w, r)
 
 	if w.Code != http.StatusOK{
 		t.Error("status is not 200")
@@ -330,7 +317,7 @@ func TestSetUserInfo(t *testing.T) {
 }
 
 //TODO можно добавить еще тестов
-func TestFailedSetUserInfoNoRights(t *testing.T) {
+func TestFailedChangeUserInfoNoRights(t *testing.T) {
 	t.Parallel()
 
 	h := NewAuthHandler()
@@ -352,10 +339,10 @@ func TestFailedSetUserInfoNoRights(t *testing.T) {
 
 	w := httptest.NewRecorder()
 
-	h.SetUserInfo(w, r)
+	h.ChangeUserInfo(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Error("status is not 200")
+	if w.Code != http.StatusForbidden {
+		t.Error("status is not 403")
 	}
 }
 
