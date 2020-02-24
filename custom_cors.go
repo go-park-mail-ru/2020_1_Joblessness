@@ -14,7 +14,7 @@ func (corsList *CorsHandler) AddOrigin(originName string) {
 }
 
 func Preflight(w http.ResponseWriter, req *http.Request) {
-	Cors.PrivateApi(&w, req)
+	//Cors.PrivateApi(&w, req)
 }
 
 func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Request) bool {

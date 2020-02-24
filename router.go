@@ -9,7 +9,7 @@ import (
 func echoFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users/logout")
 
-	Cors.PrivateApi(&w, r)
+	//Cors.PrivateApi(&w, r)
 
 	params := mux.Vars(r)
 	message := params["message"]

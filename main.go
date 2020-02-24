@@ -1,6 +1,5 @@
 package main
 
-
 var Cors = CorsHandler{
 	allowedOrigins: []string{},
 }

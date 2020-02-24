@@ -40,7 +40,7 @@ func NewAuthHandler() *AuthHandler {
 	return &AuthHandler {
 		sessions: make(map[string]uint, 10),
 		users:    map[string]*User {
-			"marat1k": {1, "marat1k", "ABCDE12345", "", "", "", ""},
+			"marat1k": {1, "marat1k", "ABCDE12345", "Marat", "Ishimbaev", "m@m.m", "89032909821"},
 		},
 		userAvatars: map[uint]string{},
 		userSummary: map[uint]UserSummary{},
