@@ -27,12 +27,14 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 	for _, origins := range corsList.allowedOrigins {
 		if origin == origins {
 			result = true
+			fmt.Println("Allowed")
 			break
 		}
 	}
 
+	result = true
+
 	if result {
-		fmt.Println("Allowed")
 		(*w).Header().Set("Access-Control-Allow-Origin", origin)
 		(*w).Header().Set("Content-Type", "application/json")
 		(*w).Header().Set("Access-Control-Allow-Credentials", "true")
