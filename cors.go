@@ -31,8 +31,8 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 		}
 	}
 
-	fmt.Println("Allowed")
 	if result {
+		fmt.Println("Allowed")
 		(*w).Header().Set("Access-Control-Allow-Origin", origin)
 		(*w).Header().Set("Content-Type", "application/json")
 		(*w).Header().Set("Access-Control-Allow-Credentials", "true")
