@@ -48,7 +48,7 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 
 	name := data["name"]
 	if name == "" {
-		http.Error(w, "Empty name", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -86,7 +86,7 @@ func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 	vacancy, ok := api.vacancies[uint(vacancyId)]
 	if !ok {
-		http.Error(w, "Not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -102,7 +102,7 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
 
 	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
-		http.Error(w, "Not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -111,7 +111,7 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 
 	name := data["name"]
 	if name == "" {
-		http.Error(w, "Empty name", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -133,7 +133,7 @@ func (api *VacancyHandler) DeleteVacancy(w http.ResponseWriter, r *http.Request)
 	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
 
 	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
-		http.Error(w, "Not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 

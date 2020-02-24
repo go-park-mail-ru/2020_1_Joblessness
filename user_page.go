@@ -51,7 +51,7 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		http.Error(w, "Not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -80,16 +80,16 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session)
 	if err == http.ErrNoCookie {
-		http.Error(w, "Not authorized", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	userId, found := api.sessions[session.Value]
 	if !found {
-		http.Error(w, "Not authorized", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	if reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
-		http.Error(w, "Forbidden", http.StatusForbidden)
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
@@ -102,7 +102,7 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		http.Error(w, "Not authorized", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -126,16 +126,16 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	session, err := r.Cookie("session_id")
 	fmt.Println("session cookie: ", session)
 	if err == http.ErrNoCookie {
-		http.Error(w, "Not authorized", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	userId, found := api.sessions[session.Value]
 	if !found {
-		http.Error(w, "Not authorized", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	if 	reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
-		http.Error(w, "Forbidden", http.StatusForbidden)
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
@@ -148,7 +148,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if currentUser == nil {
-		http.Error(w, "Not authorized", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 

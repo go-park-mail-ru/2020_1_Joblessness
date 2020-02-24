@@ -86,7 +86,7 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 
 	summary, ok := api.summaries[uint(summaryId)]
 	if !ok {
-		http.Error(w, "Not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -102,7 +102,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
 
 	if _, ok := api.summaries[uint(summaryId)]; !ok {
-		http.Error(w, "Not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
@@ -131,7 +131,7 @@ func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request)
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
 
 	if _, ok := api.summaries[uint(summaryId)]; !ok {
-		http.Error(w, "Not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 

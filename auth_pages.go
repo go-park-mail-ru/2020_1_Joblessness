@@ -56,12 +56,12 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	user, ok := api.users[data["login"]]
 	if !ok {
-		http.Error(w, "Not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	if user.Password != data["password"] {
-		http.Error(w, "Not found", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -91,12 +91,12 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
-		http.Error(w, "No session", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	if _, ok := api.sessions[session.Value]; !ok {
-		http.Error(w, "No session", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
@@ -117,17 +117,17 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	login := data["login"]
 	if _, ok := api.users[login]; ok {
-		http.Error(w, "User with this login already exists", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if login == "" {
-		http.Error(w, "Empty login", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	password := data["password"]
 	if password == "" {
-		http.Error(w, "Empty password", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
