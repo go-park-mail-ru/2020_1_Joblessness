@@ -77,7 +77,7 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		MaxAge: 100000,
 		Path: "/",
 		SameSite: http.SameSiteStrictMode,
-		Secure: true,
+		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
 
