@@ -57,14 +57,13 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	log.Println("Sessions available: ", len(api.sessions))
 	session, err := r.Cookie("session_id")
 	if err == nil {
-		log.Println("Cookie available: ", session.Value)
-		return
+		_ , found := api.sessions[session.Value]
+		if found {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
 	}
-	_ , found := api.sessions[session.Value]
-	if found {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
+
 	user, ok := api.users[data["login"]]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
