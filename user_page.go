@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -25,7 +25,7 @@ type UserSummary struct {
 }
 
 func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("GET /user/{user_id}")
+	log.Println("GET /user/{user_id}")
 	Cors.PrivateApi(&w, r)
 
 	//session, err := r.Cookie("session_id")
@@ -74,11 +74,11 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("PUT /user/{user_id}")
+	log.Println("PUT /user/{user_id}")
 	Cors.PrivateApi(&w, r)
 
 	session, err := r.Cookie("session_id")
-	fmt.Println("session cookie: ", session)
+	log.Println("session cookie: ", session)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
@@ -95,7 +95,7 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 
 	var currentUser *User
 
-	fmt.Println("Количество пользователей", len(api.users))
+	log.Println("Количество пользователей", len(api.users))
 	for _, user := range api.users {
 		if (*user).ID == uint(userId) {
 			currentUser = user
@@ -119,13 +119,13 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("POST /users/{user_id}/avatar")
+	log.Println("POST /users/{user_id}/avatar")
 	Cors.PrivateApi(&w, r)
 
 	defer r.Body.Close()
 
 	session, err := r.Cookie("session_id")
-	fmt.Println("session cookie: ", session)
+	log.Println("session cookie: ", session)
 	if err == http.ErrNoCookie {
 		w.WriteHeader(http.StatusUnauthorized)
 		return

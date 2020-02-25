@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -22,12 +22,12 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 	referer := req.Header.Get("Referer")
 	origin := req.Header.Get("Origin")
 
-	fmt.Println("Origin: ", referer, origin)
+	log.Println("Origin: ", referer, origin)
 	result := false
 	for _, origins := range corsList.allowedOrigins {
 		if origin == origins {
 			result = true
-			fmt.Println("Allowed")
+			log.Println("Allowed")
 			break
 		}
 	}

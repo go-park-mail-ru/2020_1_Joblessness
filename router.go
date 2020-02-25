@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/kabukky/httpscerts"
+	"log"
 	"net/http"
 )
 
@@ -82,8 +84,16 @@ func StartRouter() {
 	//apiRouter.HandleFunc("/resume/short/{id}", HandleGetShortResume).Methods("Get")
 	//apiRouter.HandleFunc("/vacancy/short/{id}", HandleGetShortVacancy).Methods("Get")
 	//apiRouter.HandleFunc("/vacancys/{from}/{to}", HandleGetShortVacancy).Methods("Get")
+	log.Println("** Trying to start Service Started on Port 8000 **")
 
+	err := httpscerts.Check("cert.pem", "key.pem")
+	if err != nil {
+		err = httpscerts.Generate("cert.pem", "key.pem", "91.210.170.6:8000")
+		if err != nil {
+			log.Fatal("Ошибка: Не можем сгенерировать https сертификат.")
+		}
+	}
+	log.Println("** Service Started on Port 8000 **")
 	http.Handle("/", router)
-	fmt.Println("Server started")
-	http.ListenAndServe(":8000", router)
+	http.ListenAndServeTLS(":8000", "cert.pem", "key.pem", nil)
 }
