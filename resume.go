@@ -9,7 +9,7 @@ import (
 )
 
 type Summary struct {
-	ID uint `json:"id"`
+	ID uint `json:"id,omitempty"`
 	FirstName string `json:"first-name"`
 	LastName string `json:"last-name"`
 	PhoneNumber string `json:"phone-number"`
@@ -22,22 +22,20 @@ type Summary struct {
 
 type SummaryHandler struct {
 	summaries map[uint]*Summary
+	SummaryId uint
 }
 
-var SummaryId uint
-
-func getNewSummaryId() uint {
-	SummaryId++
-	return SummaryId
+func (api *SummaryHandler) getNewSummaryId() uint {
+	api.SummaryId++
+	return api.SummaryId
 }
 
 func NewSummaryHandler() *SummaryHandler {
-	newId := getNewSummaryId()
-
 	return &SummaryHandler {
 		summaries: map[uint]*Summary {
-			newId: {newId, "first name", "last name", "phone number", "kek@mail.ru", "01/01/1900", "gender", "experience", "bmstu"},
+			1: {1, "first name", "last name", "phone number", "kek@mail.ru", "01/01/1900", "gender", "experience", "bmstu"},
 		},
+		SummaryId:1,
 	}
 }
 
@@ -48,7 +46,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
-	newId := getNewSummaryId()
+	newId := api.getNewSummaryId()
 	api.summaries[newId] = &Summary{
 		newId,
 		data["first-name"],

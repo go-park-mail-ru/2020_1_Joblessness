@@ -286,3 +286,21 @@ func TestSuccessDeleteVacancy(t *testing.T) {
 		t.Error("Vacancy is not deleted")
 	}
 }
+
+func TestDeleteNullVacancy(t *testing.T) {
+	t.Parallel()
+
+	h := NewNotEmptyVacancyHandler()
+
+	body := bytes.NewReader([]byte{})
+
+	r := httptest.NewRequest("DELETE", "/api/vacancies/3", body)
+	r = mux.SetURLVars(r, map[string]string{"vacancy_id": "3"})
+	w := httptest.NewRecorder()
+
+	h.DeleteVacancy(w, r)
+
+	if w.Code != http.StatusNotFound {
+		t.Error("Status code is not 404")
+	}
+}
