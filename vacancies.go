@@ -59,7 +59,13 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 	newId := api.getNewVacancyId()
 	api.vacancies[newId] = &Vacancy{newId, name, description, skills, salary, address, phoneNumber}
 
+	type Response struct {
+		ID uint `json:"id"`
+	}
+
+	jsonData, _ := json.Marshal(Response{newId})
 	w.WriteHeader(http.StatusCreated)
+	w.Write(jsonData)
 }
 
 func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) {
