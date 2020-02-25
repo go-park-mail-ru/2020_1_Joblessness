@@ -22,8 +22,8 @@ func TestLogin(t *testing.T) {
 
 	h.Login(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Error("status is not ok")
+	if w.Code != http.StatusCreated {
+		t.Error("status is not 201")
 	}
 
 	if w.Result().Cookies()[0].Name == "session-id" {
@@ -104,8 +104,8 @@ func TestLogout(t *testing.T) {
 
 	h.Logout(w, r)
 
-	if w.Code != http.StatusOK{
-		t.Error("status is not 200")
+	if w.Code != http.StatusCreated{
+		t.Error("status is not 201")
 	}
 
 	if len(h.sessions) != 0 {
@@ -182,8 +182,8 @@ func TestRegistration(t *testing.T) {
 
 	h.Register(w, r)
 
-	if w.Code != http.StatusOK {
-		t.Error("status is not 200")
+	if w.Code != http.StatusCreated {
+		t.Error("status is not 201")
 	}
 
 	expectedUser := User{
@@ -307,8 +307,8 @@ func TestChangeUserInfo(t *testing.T) {
 
 	h.ChangeUserInfo(w, r)
 
-	if w.Code != http.StatusOK{
-		t.Error("status is not 200")
+	if w.Code != http.StatusNoContent{
+		t.Error("status is not 204")
 	}
 
 	if (*h.users["marat1k"]).FirstName != "maratk" {
@@ -367,8 +367,8 @@ func TestSetAvatar(t *testing.T) {
 
 	h.SetAvatar(w, r)
 
-	if w.Code != http.StatusOK{
-		t.Error("status is not 200")
+	if w.Code != http.StatusCreated{
+		t.Error("status is not 201")
 	}
 
 	if h.userAvatars[1] != "avatar" {
