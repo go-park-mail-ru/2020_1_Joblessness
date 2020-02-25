@@ -54,12 +54,17 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
+	type Response struct {
+		ID uint `json:"id"`
+	}
 	log.Println("Sessions available: ", len(api.sessions))
 	session, err := r.Cookie("session_id")
 	if err == nil {
-		_ , found := api.sessions[session.Value]
+		userId, found := api.sessions[session.Value]
 		if found {
-			w.WriteHeader(http.StatusOK)
+			jsonData, _ := json.Marshal(Response{userId})
+			w.WriteHeader(http.StatusCreated)
+			w.Write(jsonData)
 			return
 		}
 	}
@@ -89,10 +94,6 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteStrictMode,
 	}
 	http.SetCookie(w, cookie)
-
-	type Response struct {
-		ID uint `json:"id"`
-	}
 
 	jsonData, _ := json.Marshal(Response{user.ID})
 	w.WriteHeader(http.StatusCreated)
