@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"time"
@@ -48,13 +48,13 @@ func NewAuthHandler() *AuthHandler {
 }
 
 func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("POST /users/login")
+	log.Println("POST /users/login")
 	Cors.PrivateApi(&w, r)
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
-	fmt.Println("Sessions available: ", len(api.sessions))
+	log.Println("Sessions available: ", len(api.sessions))
 	user, ok := api.users[data["login"]]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
@@ -91,7 +91,7 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("POST /users/logout")
+	log.Println("POST /users/logout")
 	Cors.PrivateApi(&w, r)
 
 	session, err := r.Cookie("session_id")
@@ -114,7 +114,7 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("POST /users")
+	log.Println("POST /users")
 	Cors.PrivateApi(&w, r)
 
 	var data map[string]string

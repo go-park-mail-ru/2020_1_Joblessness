@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -38,7 +38,7 @@ func NewVacancyHandler() *VacancyHandler {
 }
 
 func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("POST /vacancies")
+	log.Println("POST /vacancies")
 	Cors.PrivateApi(&w, r)
 
 	var data map[string]string
@@ -63,7 +63,7 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 }
 
 func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("GET /vacancies")
+	log.Println("GET /vacancies")
 	Cors.PrivateApi(&w, r)
 
 	var vacancies []Vacancy
@@ -82,7 +82,7 @@ func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) 
 }
 
 func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("GET /vacancies/{vacancy_id}")
+	log.Println("GET /vacancies/{vacancy_id}")
 	Cors.PrivateApi(&w, r)
 
 	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
@@ -99,7 +99,7 @@ func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("PUT /vacancies/{vacancy_id}")
+	log.Println("PUT /vacancies/{vacancy_id}")
 	Cors.PrivateApi(&w, r)
 
 	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
@@ -130,7 +130,7 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 }
 
 func (api *VacancyHandler) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("DELETE /vacancies/{vacancy_id}")
+	log.Println("DELETE /vacancies/{vacancy_id}")
 	Cors.PrivateApi(&w, r)
 
 	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])

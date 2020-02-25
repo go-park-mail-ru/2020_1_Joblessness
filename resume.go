@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -42,7 +42,7 @@ func NewSummaryHandler() *SummaryHandler {
 }
 
 func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("POST /summaries")
+	log.Println("POST /summaries")
 	Cors.PrivateApi(&w, r)
 
 	var data map[string]string
@@ -65,7 +65,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 }
 
 func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("GET /summaries")
+	log.Println("GET /summaries")
 	Cors.PrivateApi(&w, r)
 
 	var summaries []Summary
@@ -79,7 +79,7 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 }
 
 func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("GET /summaries/{summary_id}")
+	log.Println("GET /summaries/{summary_id}")
 	Cors.PrivateApi(&w, r)
 
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
@@ -96,7 +96,7 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("PUT /summaries/{summary_id}")
+	log.Println("PUT /summaries/{summary_id}")
 	Cors.PrivateApi(&w, r)
 
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
@@ -125,7 +125,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 }
 
 func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("DELETE /summaries/{summary_id}")
+	log.Println("DELETE /summaries/{summary_id}")
 	Cors.PrivateApi(&w, r)
 
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
