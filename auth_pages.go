@@ -77,6 +77,8 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		MaxAge: 100000,
 		Domain: "http://localhost:8080",
 		Path: "/",
+		SameSite: http.SameSiteNoneMode,
+		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
 
