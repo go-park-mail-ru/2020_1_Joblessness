@@ -55,8 +55,8 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&data)
 
 	log.Println("Sessions available: ", len(api.sessions))
-	session, _ := r.Cookie("session_id")
-	if session != nil {
+	session, err := r.Cookie("session_id")
+	if err == nil {
 		log.Println("Cookie available: ", session.Value)
 		return
 	}
