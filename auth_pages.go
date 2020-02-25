@@ -54,6 +54,7 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
+	fmt.Println("Sessions available: ", len(api.sessions))
 	user, ok := api.users[data["login"]]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
