@@ -55,6 +55,11 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	json.NewDecoder(r.Body).Decode(&data)
 
 	log.Println("Sessions available: ", len(api.sessions))
+	session, _ := r.Cookie("session_id")
+	if session != nil {
+		log.Println("Cookie available: ", session.Value)
+		return
+	}
 	user, ok := api.users[data["login"]]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
@@ -76,6 +81,8 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Expires: time.Now().Add(time.Hour),
 		MaxAge: 100000,
 		Path: "/",
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
 	}
 	http.SetCookie(w, cookie)
 
