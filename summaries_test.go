@@ -74,8 +74,8 @@ func TestGetEmptySummaryList(t *testing.T) {
 
 	h.GetSummaries(w, r)
 
-	if w.Code != http.StatusNoContent {
-		t.Error("Status is not 204")
+	if w.Code != http.StatusOK {
+		t.Error("Status is not 200")
 	}
 }
 

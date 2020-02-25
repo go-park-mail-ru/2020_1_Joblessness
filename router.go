@@ -162,5 +162,5 @@ func StartRouter() {
 
 	http.Handle("/", router)
 	fmt.Println("Server started")
-	http.ListenAndServe(":8000", router)
+	http.ListenAndServe(":8001", router)
 }
