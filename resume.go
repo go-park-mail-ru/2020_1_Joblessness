@@ -59,7 +59,13 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		data["education"],
 	}
 
+	type Response struct {
+		ID uint `json:"id"`
+	}
+
+	jsonData, _ := json.Marshal(Response{newId})
 	w.WriteHeader(http.StatusCreated)
+	w.Write(jsonData)
 }
 
 func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) {
