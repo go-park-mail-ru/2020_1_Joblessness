@@ -76,8 +76,6 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Expires: time.Now().Add(time.Hour),
 		MaxAge: 100000,
 		Path: "/",
-		SameSite: http.SameSiteStrictMode,
-		HttpOnly: true,
 	}
 	http.SetCookie(w, cookie)
 
