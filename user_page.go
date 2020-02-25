@@ -78,8 +78,8 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 	Cors.PrivateApi(&w, r)
 
 	session, err := r.Cookie("session_id")
-	fmt.Println("session cookie: ", session.Name)
-	if err == http.ErrNoCookie {
+	fmt.Println("session cookie: ", session)
+	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -95,6 +95,7 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 
 	var currentUser *User
 
+	fmt.Println("Количество пользователей", len(api.users))
 	for _, user := range api.users {
 		if (*user).ID == uint(userId) {
 			currentUser = user
@@ -134,7 +135,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	if 	reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
+	if reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
