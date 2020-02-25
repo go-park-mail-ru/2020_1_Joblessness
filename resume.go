@@ -48,7 +48,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
-	newId := getNewVacancyId()
+	newId := getNewSummaryId()
 	api.summaries[newId] = &Summary{
 		newId,
 		data["first-name"],

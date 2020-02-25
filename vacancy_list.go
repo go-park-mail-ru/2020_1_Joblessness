@@ -9,7 +9,7 @@ import (
 )
 
 type Vacancy struct {
-	ID uint `json:"id"`
+	ID uint `json:"id,omitempty"`
 	Name string `json:"name"`
 	Description string `json:"description"`
 	Skills string `json:"skills"`
@@ -20,22 +20,20 @@ type Vacancy struct {
 
 type VacancyHandler struct {
 	vacancies map[uint]*Vacancy
+	vacancyId uint
 }
 
-var vacancyId uint
-
-func getNewVacancyId() uint {
-	vacancyId++
-	return vacancyId
+func (api *VacancyHandler) getNewVacancyId() uint {
+	api.vacancyId++
+	return api.vacancyId
 }
 
 func NewVacancyHandler() *VacancyHandler {
-	newId := getNewVacancyId()
-
 	return &VacancyHandler {
 		vacancies: map[uint]*Vacancy {
-			newId: {newId, "name", "description", "skills", "100500", "address", "phone number"},
+			1: {1, "name", "description", "skills", "100500", "address", "phone number"},
 		},
+		vacancyId:1,
 	}
 }
 
@@ -58,7 +56,7 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 	address := data["address"]
 	phoneNumber := data["phone-number"]
 
-	newId := getNewVacancyId()
+	newId := api.getNewVacancyId()
 	api.vacancies[newId] = &Vacancy{newId, name, description, skills, salary, address, phoneNumber}
 
 	w.WriteHeader(http.StatusCreated)
@@ -71,6 +69,11 @@ func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) 
 	var vacancies []Vacancy
 	for _, vacancy := range api.vacancies {
 		vacancies = append(vacancies, *vacancy)
+	}
+
+	if len(vacancies) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
 	}
 
 	jsonData, _ := json.Marshal(vacancies)
