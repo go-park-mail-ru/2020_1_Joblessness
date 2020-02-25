@@ -75,6 +75,7 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Value: SID,
 		Expires: time.Now().Add(time.Hour),
 		MaxAge: 100000,
+		Domain: "http://localhost:8080",
 		Path: "/",
 	}
 	http.SetCookie(w, cookie)

@@ -39,7 +39,7 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 		//(*w).Header().Set("Content-Type", "application/json")
 		(*w).Header().Set("Access-Control-Allow-Credentials", "true")
 		(*w).Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-		(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Origin")
+		(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Origin, Set-Cookie")
 	}
 	return result
 }
