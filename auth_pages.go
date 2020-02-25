@@ -73,6 +73,7 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Name: "session_id",
 		Value: SID,
 		Expires: time.Now().Add(time.Hour),
+		Path: "/",
 	}
 	http.SetCookie(w, cookie)
 
