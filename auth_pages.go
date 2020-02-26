@@ -146,6 +146,7 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	delete(api.sessions, session.Value)
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
+	session.Path = "/"
 	http.SetCookie(w, session)
 
 	w.WriteHeader(http.StatusCreated)
