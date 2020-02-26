@@ -20,6 +20,10 @@ type UserInfo struct {
 	Avatar string `json:"avatar,omitempty"`
 }
 
+type UserSummary struct {
+	Title string `json:"title"`
+}
+
 func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /user/{user_id}")
 	Cors.PrivateApi(&w, r)
@@ -58,12 +62,12 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 
 	type Response struct {
 		User UserInfo `json:"user"`
-		Summaries []Summary `json:"summaries"`
+		Summaries []UserSummary `json:"summaries"`
 	}
 
 	jsonData, _ := json.Marshal(Response{
 		UserInfo{currentUser.FirstName, currentUser.LastName, "", userAvatar},
-		[]Summary{},
+		[]UserSummary{},
 	})
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
