@@ -35,6 +35,7 @@ func StartRouter() {
 	authApi := NewAuthHandler()
 
 	router.HandleFunc("/users/login", authApi.Login).Methods("POST")
+	router.HandleFunc(" /users/check", authApi.Check).Methods("POST")
 	router.HandleFunc("/users/logout", authApi.Logout).Methods("POST")
 	router.HandleFunc("/users", authApi.Register).Methods("POST")
 
