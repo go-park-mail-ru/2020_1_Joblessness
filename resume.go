@@ -9,6 +9,7 @@ import (
 )
 
 type Summary struct {
+	UserID uint `json:"author,omitempty"`
 	ID uint `json:"id,omitempty"`
 	FirstName string `json:"first-name"`
 	LastName string `json:"last-name"`
@@ -33,7 +34,7 @@ func (api *SummaryHandler) getNewSummaryId() uint {
 func NewSummaryHandler() *SummaryHandler {
 	return &SummaryHandler {
 		summaries: map[uint]*Summary {
-			1: {1, "first name", "last name", "phone number", "kek@mail.ru", "01/01/1900", "gender", "experience", "bmstu"},
+			1: {1, 1, "first name", "last name", "phone number", "kek@mail.ru", "01/01/1900", "gender", "experience", "bmstu"},
 		},
 		SummaryId:1,
 	}
@@ -46,8 +47,20 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
+	author, found := data["author"]
+	if !found {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	authorId, err := strconv.Atoi(author)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	newId := api.getNewSummaryId()
 	api.summaries[newId] = &Summary{
+		uint(authorId),
 		newId,
 		data["first-name"],
 		data["last-name"],
@@ -113,7 +126,19 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
+	author, found := data["author"]
+	if !found {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	authorId, err := strconv.Atoi(author)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	api.summaries[uint(summaryId)] = &Summary{
+		uint(authorId),
 		uint(summaryId),
 		data["first-name"],
 		data["last-name"],
