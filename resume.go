@@ -112,6 +112,29 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
+func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Request) {
+	log.Println("GET /users/{user_id}/summaries")
+	Cors.PrivateApi(&w, r)
+
+	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
+
+	var summaries []Summary
+	for _, summary := range api.summaries {
+		if (*summary).UserID == uint(userId) {
+			summaries = append(summaries, *summary)
+		}
+	}
+
+	if len(summaries) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	jsonData, _ := json.Marshal(summaries)
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}
+
 func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("PUT /summaries/{summary_id}")
 	Cors.PrivateApi(&w, r)
