@@ -46,7 +46,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
-
+	log.Println("recieved: ", data)
 	author, found := data["userid"]
 	if !found {
 		w.WriteHeader(http.StatusBadRequest)
