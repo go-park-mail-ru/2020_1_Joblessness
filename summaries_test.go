@@ -10,17 +10,17 @@ import (
 	"testing"
 )
 
-func NewEmptySummaryHandler() *SummaryHandler {
-	return &SummaryHandler{
+func NewEmptySummaryHandler() *AuthHandler {
+	return &AuthHandler{
 		summaries:map[uint]*Summary{},
 	}
 }
 
-func NewNotEmptySummaryHandler() *SummaryHandler {
-	return &SummaryHandler{
+func NewNotEmptySummaryHandler() *AuthHandler {
+	return &AuthHandler{
 		summaries:map[uint]*Summary{
-			1: {1, "first name", "last name", "phone number", "email", "birth date", "male", "experiencz", "education"},
-			2: {2, "first name", "last name", "phone number", "email", "birth date", "female", "experiencz", "education"},
+			1: {1, 1, "first name", "last name", "phone number", "email", "birth date", "male", "experiencz", "education"},
+			2: {1, 2, "first name", "last name", "phone number", "email", "birth date", "female", "experiencz", "education"},
 		},
 		SummaryId:2,
 	}

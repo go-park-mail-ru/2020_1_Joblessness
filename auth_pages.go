@@ -33,7 +33,8 @@ type AuthHandler struct {
 	sessions map[string]uint
 	users map[string]*User
 	userAvatars map[uint]string
-	userSummary map[uint]UserSummary
+	summaries map[uint]*Summary
+	SummaryId uint
 }
 
 func NewAuthHandler() *AuthHandler {
@@ -43,7 +44,10 @@ func NewAuthHandler() *AuthHandler {
 			"marat1k": {1, "marat1k", "ABCDE12345", "Marat", "Ishimbaev", "m@m.m", "89032909821"},
 		},
 		userAvatars: map[uint]string{},
-		userSummary: map[uint]UserSummary{},
+		summaries: map[uint]*Summary {
+			1: {1, 1, "first name", "last name", "phone number", "kek@mail.ru", "01/01/1900", "gender", "experience", "bmstu"},
+		},
+		SummaryId:1,
 	}
 }
 
