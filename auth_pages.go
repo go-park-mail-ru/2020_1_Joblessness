@@ -100,6 +100,29 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
+func (api *AuthHandler) Check(w http.ResponseWriter, r *http.Request) {
+	log.Println("POST /users/check")
+	Cors.PrivateApi(&w, r)
+
+	log.Println("Sessions available: ", len(api.sessions))
+	session, err := r.Cookie("session_id")
+	if err == nil {
+		userId, found := api.sessions[session.Value]
+		if found {
+			type Response struct {
+				ID uint `json:"id"`
+			}
+			jsonData, _ := json.Marshal(Response{userId})
+			w.WriteHeader(http.StatusCreated)
+			w.Write(jsonData)
+			return
+		}
+	} else {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+}
+
 func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users/logout")
 	Cors.PrivateApi(&w, r)
