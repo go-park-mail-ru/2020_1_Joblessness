@@ -53,13 +53,14 @@ func StartRouter() {
 	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.DeleteVacancy).Methods("DELETE")
 
 	// summaries
+	summaryApi := NewSummaryHandler()
 
-	router.HandleFunc("/summaries", authApi.CreateSummary).Methods("POST")
-	router.HandleFunc("/summaries", authApi.GetSummaries).Methods("GET")
-	router.HandleFunc("/summaries/{summary_id}", authApi.GetSummary).Methods("GET")
-	router.HandleFunc("/summaries/{summary_id}", authApi.ChangeSummary).Methods("PUT")
-	router.HandleFunc("/summaries/{summary_id}", authApi.DeleteSummary).Methods("DELETE")
-	router.HandleFunc("/user/{user_id}/summaries", authApi.GetUserSummaries).Methods("GET")
+	router.HandleFunc("/summaries", summaryApi.CreateSummary).Methods("POST")
+	router.HandleFunc("/summaries", summaryApi.GetSummaries).Methods("GET")
+	router.HandleFunc("/summaries/{summary_id}", summaryApi.GetSummary).Methods("GET")
+	router.HandleFunc("/summaries/{summary_id}", summaryApi.ChangeSummary).Methods("PUT")
+	router.HandleFunc("/summaries/{summary_id}", summaryApi.DeleteSummary).Methods("DELETE")
+	router.HandleFunc("/user/{user_id}/summaries", summaryApi.GetUserSummaries).Methods("GET")
 
 	http.Handle("/", router)
 	fmt.Println("Server started")

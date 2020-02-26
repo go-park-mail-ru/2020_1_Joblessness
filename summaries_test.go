@@ -10,14 +10,14 @@ import (
 	"testing"
 )
 
-func NewEmptySummaryHandler() *AuthHandler {
-	return &AuthHandler{
+func NewEmptySummaryHandler() *SummaryHandler {
+	return &SummaryHandler{
 		summaries:map[uint]*Summary{},
 	}
 }
 
-func NewNotEmptySummaryHandler() *AuthHandler {
-	return &AuthHandler{
+func NewNotEmptySummaryHandler() *SummaryHandler {
+	return &SummaryHandler{
 		summaries:map[uint]*Summary{
 			1: {1, 1, "first name", "last name", "phone number", "email", "birth date", "male", "experiencz", "education"},
 			2: {1, 2, "first name", "last name", "phone number", "email", "birth date", "female", "experiencz", "education"},
@@ -32,6 +32,7 @@ func TestSuccessCreateSummary(t *testing.T) {
 	h := NewEmptySummaryHandler()
 
 	summary, _ := json.Marshal(Summary{
+		UserID: uint(1),
 		FirstName:   "first name",
 		LastName:    "last name",
 		PhoneNumber: "phone number",
@@ -55,6 +56,7 @@ func TestSuccessCreateSummary(t *testing.T) {
 
 	if len(h.summaries) != 1 {
 		t.Error("Summary not created")
+		return
 	}
 
 	if h.summaries[1].FirstName != "first name" {
@@ -154,6 +156,7 @@ func TestSuccessChangeSummary(t *testing.T) {
 	h := NewNotEmptySummaryHandler()
 
 	summary, _ := json.Marshal(Summary{
+		UserID: uint(1),
 		FirstName:   "first name",
 		LastName:    "last name",
 		PhoneNumber: "phone number",
@@ -187,6 +190,7 @@ func TestChangeNullSummary(t *testing.T) {
 	h := NewNotEmptySummaryHandler()
 
 	summary, _ := json.Marshal(Summary{
+		UserID: uint(1),
 		FirstName:   "first name",
 		LastName:    "last name",
 		PhoneNumber: "phone number",

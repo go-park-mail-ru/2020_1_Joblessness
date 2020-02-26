@@ -9,7 +9,7 @@ import (
 )
 
 type Summary struct {
-	UserID uint `json:"author,omitempty"`
+	UserID uint `json:"userid,omitempty"`
 	ID uint `json:"id,omitempty"`
 	FirstName string `json:"first-name"`
 	LastName string `json:"last-name"`
@@ -21,13 +21,18 @@ type Summary struct {
 	Education string `json:"education"`
 }
 
-func (api *AuthHandler) getNewSummaryId() uint {
+type SummaryHandler struct {
+	summaries map[uint]*Summary
+	SummaryId uint
+}
+
+func (api *SummaryHandler) getNewSummaryId() uint {
 	api.SummaryId++
 	return api.SummaryId
 }
 
-func NewSummaryHandler() *AuthHandler {
-	return &AuthHandler{
+func NewSummaryHandler() *SummaryHandler {
+	return &SummaryHandler {
 		summaries: map[uint]*Summary {
 			1: {1, 1, "first name", "last name", "phone number", "kek@mail.ru", "01/01/1900", "gender", "experience", "bmstu"},
 		},
@@ -35,14 +40,14 @@ func NewSummaryHandler() *AuthHandler {
 	}
 }
 
-func (api *AuthHandler) CreateSummary(w http.ResponseWriter, r *http.Request) {
+func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /summaries")
 	Cors.PrivateApi(&w, r)
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
-	author, found := data["author"]
+	author, found := data["userid"]
 	if !found {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -76,7 +81,7 @@ func (api *AuthHandler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
-func (api *AuthHandler) GetSummaries(w http.ResponseWriter, r *http.Request) {
+func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /summaries")
 	Cors.PrivateApi(&w, r)
 
@@ -90,7 +95,7 @@ func (api *AuthHandler) GetSummaries(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
-func (api *AuthHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
+func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /summaries/{summary_id}")
 	Cors.PrivateApi(&w, r)
 
@@ -107,7 +112,7 @@ func (api *AuthHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
-func (api *AuthHandler) GetUserSummaries(w http.ResponseWriter, r *http.Request) {
+func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /users/{user_id}/summaries")
 	Cors.PrivateApi(&w, r)
 
@@ -120,12 +125,17 @@ func (api *AuthHandler) GetUserSummaries(w http.ResponseWriter, r *http.Request)
 		}
 	}
 
+	if len(summaries) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
 	jsonData, _ := json.Marshal(summaries)
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
 
-func (api *AuthHandler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
+func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("PUT /summaries/{summary_id}")
 	Cors.PrivateApi(&w, r)
 
@@ -139,7 +149,7 @@ func (api *AuthHandler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
-	author, found := data["author"]
+	author, found := data["userid"]
 	if !found {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -166,7 +176,7 @@ func (api *AuthHandler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func (api *AuthHandler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
+func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("DELETE /summaries/{summary_id}")
 	Cors.PrivateApi(&w, r)
 
