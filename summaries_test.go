@@ -19,14 +19,14 @@ func NewEmptySummaryHandler() *SummaryHandler {
 func NewNotEmptySummaryHandler() *SummaryHandler {
 	return &SummaryHandler{
 		summaries:map[uint]*Summary{
-			1: {1, "first name", "last name", "phone number", "email", "birth date", "male", "experiencz", "education"},
-			2: {2, "first name", "last name", "phone number", "email", "birth date", "female", "experiencz", "education"},
+			1: {1, 1, "first name", "last name", "phone number", "email", "birth date", "male", "experiencz", "education"},
+			2: {1, 2, "first name", "last name", "phone number", "email", "birth date", "female", "experiencz", "education"},
 		},
 		SummaryId:2,
 	}
 }
 
-func TestSuccessCreateSummary(t *testing.T) {
+func TestCreateSummaryFailedNoAuthor(t *testing.T) {
 	t.Parallel()
 
 	h := NewEmptySummaryHandler()
@@ -49,17 +49,17 @@ func TestSuccessCreateSummary(t *testing.T) {
 
 	h.CreateSummary(w, r)
 
-	if w.Code != http.StatusCreated {
-		t.Error("Status is not 201")
+	if w.Code != http.StatusBadRequest {
+		t.Error("Status is not 400")
 	}
 
-	if len(h.summaries) != 1 {
-		t.Error("Summary not created")
+	if len(h.summaries) != 0 {
+		t.Error("Wrong Summary created")
 	}
-
-	if h.summaries[1].FirstName != "first name" {
-		t.Error("Wrong summary first name")
-	}
+	//
+	//if h.summaries[1].FirstName != "first name" {
+	//	t.Error("Wrong summary first name")
+	//}
 }
 
 func TestGetEmptySummaryList(t *testing.T) {
@@ -172,12 +172,12 @@ func TestSuccessChangeSummary(t *testing.T) {
 
 	h.ChangeSummary(w, r)
 
-	if w.Code != http.StatusNoContent {
-		t.Error("Status is not 204")
+	if w.Code != http.StatusBadRequest {
+		t.Error("Status is not 400")
 	}
 
-	if h.summaries[1].Gender != "new gender" {
-		t.Error("Vacancy is not changed")
+	if h.summaries[1].Gender != "male" {
+		t.Error("Wrong Vacancy is changed")
 	}
 }
 
