@@ -60,7 +60,7 @@ func StartRouter() {
 	router.HandleFunc("/summaries/{summary_id}", summaryApi.GetSummary).Methods("GET")
 	router.HandleFunc("/summaries/{summary_id}", summaryApi.ChangeSummary).Methods("PUT")
 	router.HandleFunc("/summaries/{summary_id}", summaryApi.DeleteSummary).Methods("DELETE")
-	router.HandleFunc("/users/{user_id}/summaries", summaryApi.GetUserSummaries).Methods("GET")
+	router.HandleFunc("/user/{user_id}/summaries", summaryApi.GetUserSummaries).Methods("GET")
 
 	http.Handle("/", router)
 	fmt.Println("Server started")
