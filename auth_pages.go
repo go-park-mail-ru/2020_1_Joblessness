@@ -69,7 +69,12 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	user, ok := api.users[data["login"]]
+	login, found := data["login"]
+	if !found {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	user, ok := api.users[login]
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -153,18 +158,18 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
 
-	login := data["login"]
-	if _, ok := api.users[login]; ok {
+	login, found := data["login"]
+	if !found || login == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	if login == "" {
+	if _, ok := api.users[login]; found && ok {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	password := data["password"]
-	if password == "" {
+	password, found := data["password"]
+	if !found || password == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
