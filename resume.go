@@ -49,7 +49,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 
 	var summary Summary
 	json.NewDecoder(r.Body).Decode(&summary)
-	if summary.UserID != 0 {
+	if summary.UserID == 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
