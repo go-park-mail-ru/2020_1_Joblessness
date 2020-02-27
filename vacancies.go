@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
+	"sync/atomic"
 )
 
 type Vacancy struct {
@@ -20,12 +22,12 @@ type Vacancy struct {
 
 type VacancyHandler struct {
 	vacancies map[uint]*Vacancy
-	vacancyId uint
+	mu sync.RWMutex
+	vacancyId uint32
 }
 
-func (api *VacancyHandler) getNewVacancyId() uint {
-	api.vacancyId++
-	return api.vacancyId
+func (api *VacancyHandler) getNewVacancyId() uint32 {
+	return atomic.AddUint32(&api.vacancyId, 1)
 }
 
 func NewVacancyHandler() *VacancyHandler {
@@ -33,6 +35,7 @@ func NewVacancyHandler() *VacancyHandler {
 		vacancies: map[uint]*Vacancy {
 			1: {1, "name", "description", "skills", "100500", "address", "phone number"},
 		},
+		mu: sync.RWMutex{},
 		vacancyId:1,
 	}
 }
@@ -57,10 +60,12 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 	phoneNumber := data["phone-number"]
 
 	newId := api.getNewVacancyId()
-	api.vacancies[newId] = &Vacancy{newId, name, description, skills, salary, address, phoneNumber}
+	api.mu.Lock()
+	api.vacancies[uint(newId)] = &Vacancy{uint(newId), name, description, skills, salary, address, phoneNumber}
+	api.mu.Unlock()
 
 	type Response struct {
-		ID uint `json:"id"`
+		ID uint32 `json:"id"`
 	}
 
 	jsonData, _ := json.Marshal(Response{newId})
@@ -73,9 +78,11 @@ func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) 
 	Cors.PrivateApi(&w, r)
 
 	var vacancies []Vacancy
+	api.mu.RLock()
 	for _, vacancy := range api.vacancies {
 		vacancies = append(vacancies, *vacancy)
 	}
+	api.mu.RUnlock()
 
 	if len(vacancies) == 0 {
 		w.WriteHeader(http.StatusNoContent)
@@ -93,7 +100,9 @@ func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
 
+	api.mu.RLock()
 	vacancy, ok := api.vacancies[uint(vacancyId)]
+	api.mu.RUnlock()
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -130,7 +139,9 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 	address := data["address"]
 	phoneNumber := data["phone-number"]
 
+	api.mu.Lock()
 	api.vacancies[uint(vacancyId)] = &Vacancy{uint(vacancyId), name, description, skills, salary, address, phoneNumber}
+	api.mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -141,12 +152,14 @@ func (api *VacancyHandler) DeleteVacancy(w http.ResponseWriter, r *http.Request)
 
 	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
 
+	api.mu.Lock()
 	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	delete(api.vacancies, uint(vacancyId))
+	api.mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
