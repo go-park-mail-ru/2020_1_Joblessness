@@ -9,7 +9,7 @@ import (
 func echoFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("POST /users/logout")
 
-	//Cors.PrivateApi(&w, r)
+	Cors.PrivateApi(&w, r)
 
 	params := mux.Vars(r)
 	message := params["message"]
@@ -17,7 +17,7 @@ func echoFunc(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func contentTipeMiddleware(next http.Handler) http.Handler {
+func contentTypeMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		next.ServeHTTP(w, r)
@@ -27,7 +27,7 @@ func contentTipeMiddleware(next http.Handler) http.Handler {
 func StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()//.StrictSlash(true)
 
-	router.Use(contentTipeMiddleware)
+	router.Use(contentTypeMiddleware)
 	router.HandleFunc("/echo/{message}", echoFunc)
 	router.Methods("OPTIONS").HandlerFunc(Cors.Preflight)
 
