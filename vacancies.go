@@ -63,7 +63,11 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 		ID uint `json:"id"`
 	}
 
-	jsonData, _ := json.Marshal(Response{newId})
+	jsonData, err := json.Marshal(Response{newId})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }
@@ -82,7 +86,11 @@ func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	jsonData, _ := json.Marshal(vacancies)
+	jsonData, err := json.Marshal(vacancies)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
@@ -91,7 +99,11 @@ func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /vacancies/{vacancy_id}")
 	Cors.PrivateApi(&w, r)
 
-	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+	vacancyId, err := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	vacancy, ok := api.vacancies[uint(vacancyId)]
 	if !ok {
@@ -99,7 +111,11 @@ func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, _ := json.Marshal(vacancy)
+	jsonData, err := json.Marshal(vacancy)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
@@ -108,7 +124,11 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 	log.Println("PUT /vacancies/{vacancy_id}")
 	Cors.PrivateApi(&w, r)
 
-	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+	vacancyId, err := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
@@ -139,7 +159,11 @@ func (api *VacancyHandler) DeleteVacancy(w http.ResponseWriter, r *http.Request)
 	log.Println("DELETE /vacancies/{vacancy_id}")
 	Cors.PrivateApi(&w, r)
 
-	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+	vacancyId, err := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
