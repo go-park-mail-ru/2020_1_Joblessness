@@ -62,6 +62,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	api.mu.Lock()
 	newId := api.getNewSummaryId()
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -75,6 +76,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	api.mu.Unlock()
 
 	api.mu.Lock()
 	api.summaries[uint(newId)] = &summary
