@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"strings"
 )
 
 type CorsHandler struct {
@@ -25,7 +26,7 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 	log.Println("Origin: ", referer, origin)
 	result := false
 	for _, origins := range corsList.allowedOrigins {
-		if origin == origins {
+		if origin == origins || strings.HasPrefix(referer, origins) {
 			result = true
 			log.Println("Allowed")
 			break
