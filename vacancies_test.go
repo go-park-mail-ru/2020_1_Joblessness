@@ -7,12 +7,14 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 )
 
 func NewEmptyVacancyHandler() *VacancyHandler {
 	return &VacancyHandler{
 		vacancies: map[uint]*Vacancy{},
+		mu: sync.RWMutex{},
 	}
 }
 
@@ -22,6 +24,7 @@ func NewNotEmptyVacancyHandler() *VacancyHandler {
 			1: {1, "first name", "description", "skills", "salary", "address", "phone"},
 			2: {2, "second name", "description", "skills", "salary", "address", "phone"},
 		},
+		mu: sync.RWMutex{},
 		vacancyId:2,
 	}
 }
