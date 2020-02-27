@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -45,28 +44,15 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 	log.Println("POST /vacancies")
 	Cors.PrivateApi(&w, r)
 
-	var data map[string]string
-	json.NewDecoder(r.Body).Decode(&data)
+	var vacancy Vacancy
+	json.NewDecoder(r.Body).Decode(&vacancy)
 
-	name := data["name"]
-	if name == "" {
+	if vacancy.Name == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	newId := api.getNewVacancyId()
-
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	var vacancy Vacancy
-	err = json.Unmarshal(body, &vacancy)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 
 	api.mu.Lock()
 	api.vacancies[uint(newId)] = &vacancy
