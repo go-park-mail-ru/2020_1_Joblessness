@@ -7,12 +7,14 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 )
 
 func NewEmptySummaryHandler() *SummaryHandler {
 	return &SummaryHandler{
 		summaries:map[uint]*Summary{},
+		mu: sync.RWMutex{},
 	}
 }
 
@@ -22,6 +24,7 @@ func NewNotEmptySummaryHandler() *SummaryHandler {
 			1: {1, 1, "first name", "last name", "phone number", "email", "birth date", "male", "experiencz", "education"},
 			2: {1, 2, "first name", "last name", "phone number", "email", "birth date", "female", "experiencz", "education"},
 		},
+		mu: sync.RWMutex{},
 		SummaryId:2,
 	}
 }

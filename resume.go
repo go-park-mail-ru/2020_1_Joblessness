@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"sync"
+	"sync/atomic"
 )
 
 type Summary struct {
@@ -23,12 +25,12 @@ type Summary struct {
 
 type SummaryHandler struct {
 	summaries map[uint]*Summary
-	SummaryId uint
+	mu sync.RWMutex
+	SummaryId uint32
 }
 
-func (api *SummaryHandler) getNewSummaryId() uint {
-	api.SummaryId++
-	return api.SummaryId
+func (api *SummaryHandler) getNewSummaryId() uint32 {
+	return atomic.AddUint32(&api.SummaryId, 1)
 }
 
 func NewSummaryHandler() *SummaryHandler {
@@ -36,6 +38,7 @@ func NewSummaryHandler() *SummaryHandler {
 		summaries: map[uint]*Summary {
 			1: {1, 1, "first name", "last name", "phone number", "kek@mail.ru", "01/01/1900", "gender", "experience", "bmstu"},
 		},
+		mu: sync.RWMutex{},
 		SummaryId:1,
 	}
 }
@@ -58,10 +61,11 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	api.mu.Lock()
 	newId := api.getNewSummaryId()
-	api.summaries[newId] = &Summary{
+	api.summaries[uint(newId)] = &Summary{
 		uint(authorId),
-		newId,
+		uint(newId),
 		data["first-name"],
 		data["last-name"],
 		data["phone-number"],
@@ -71,9 +75,10 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		data["experience"],
 		data["education"],
 	}
+	api.mu.Unlock()
 
 	type Response struct {
-		ID uint `json:"id"`
+		ID uint32 `json:"id"`
 	}
 
 	jsonData, _ := json.Marshal(Response{newId})
@@ -86,9 +91,11 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 	Cors.PrivateApi(&w, r)
 
 	var summaries []Summary
+	api.mu.RLock()
 	for _, summary := range api.summaries {
 		summaries = append(summaries, *summary)
 	}
+	api.mu.RUnlock()
 
 	jsonData, _ := json.Marshal(summaries)
 	w.WriteHeader(http.StatusOK)
@@ -101,7 +108,9 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
 
+	api.mu.RLock()
 	summary, ok := api.summaries[uint(summaryId)]
+	api.mu.RUnlock()
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -119,11 +128,13 @@ func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Reque
 	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
 
 	var summaries []Summary
+	api.mu.RLock()
 	for _, summary := range api.summaries {
 		if (*summary).UserID == uint(userId) {
 			summaries = append(summaries, *summary)
 		}
 	}
+	api.mu.RUnlock()
 
 	if len(summaries) == 0 {
 		w.WriteHeader(http.StatusNoContent)
@@ -160,6 +171,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	api.mu.Lock()
 	api.summaries[uint(summaryId)] = &Summary{
 		uint(authorId),
 		uint(summaryId),
@@ -172,6 +184,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 		data["experience"],
 		data["education"],
 	}
+	api.mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -182,12 +195,14 @@ func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request)
 
 	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
 
+	api.mu.Lock()
 	if _, ok := api.summaries[uint(summaryId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
 	delete(api.summaries, uint(summaryId))
+	api.mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
