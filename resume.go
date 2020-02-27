@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -48,35 +47,14 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 	log.Println("POST /summaries")
 	Cors.PrivateApi(&w, r)
 
-	var data map[string]string
-	json.NewDecoder(r.Body).Decode(&data)
-	log.Println(data)
-	author, found := data["author"]
-	if !found {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	_, err := strconv.Atoi(author)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	api.mu.Lock()
-	newId := api.getNewSummaryId()
-
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 	var summary Summary
-	err = json.Unmarshal(body, &summary)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+	json.NewDecoder(r.Body).Decode(&summary)
+	if summary.UserID != 0 {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	api.mu.Unlock()
+
+	newId := api.getNewSummaryId()
 
 	api.mu.Lock()
 	api.summaries[uint(newId)] = &summary
