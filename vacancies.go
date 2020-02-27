@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -53,15 +54,22 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	description := data["description"]
-	skills := data["skills"]
-	salary := data["salary"]
-	address := data["address"]
-	phoneNumber := data["phone-number"]
-
 	newId := api.getNewVacancyId()
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	var vacancy Vacancy
+	err = json.Unmarshal(body, &vacancy)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	api.mu.Lock()
-	api.vacancies[uint(newId)] = &Vacancy{uint(newId), name, description, skills, salary, address, phoneNumber}
+	api.vacancies[uint(newId)] = &vacancy
 	api.mu.Unlock()
 
 	type Response struct {

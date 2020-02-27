@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -55,26 +56,28 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	authorId, err := strconv.Atoi(author)
+	_, err := strconv.Atoi(author)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	api.mu.Lock()
 	newId := api.getNewSummaryId()
-	api.summaries[uint(newId)] = &Summary{
-		uint(authorId),
-		uint(newId),
-		data["first-name"],
-		data["last-name"],
-		data["phone-number"],
-		data["email"],
-		data["birth-date"],
-		data["gender"],
-		data["experience"],
-		data["education"],
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	var summary Summary
+	err = json.Unmarshal(body, &summary)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	api.mu.Lock()
+	api.summaries[uint(newId)] = &summary
 	api.mu.Unlock()
 
 	type Response struct {
