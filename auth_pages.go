@@ -5,6 +5,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -34,6 +35,7 @@ type AuthHandler struct {
 	users map[string]*User
 	userAvatars map[uint]string
 	userSummary map[uint]UserSummary
+	mu sync.RWMutex
 }
 
 func NewAuthHandler() *AuthHandler {
@@ -44,6 +46,7 @@ func NewAuthHandler() *AuthHandler {
 		},
 		userAvatars: map[uint]string{},
 		userSummary: map[uint]UserSummary{},
+		mu: sync.RWMutex{},
 	}
 }
 
@@ -60,7 +63,9 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	log.Println("Sessions available: ", len(api.sessions))
 	session, err := r.Cookie("session_id")
 	if err == nil {
+		api.mu.RLock()
 		userId, found := api.sessions[session.Value]
+		api.mu.RUnlock()
 		if found {
 			jsonData, _ := json.Marshal(Response{userId})
 			w.WriteHeader(http.StatusCreated)
@@ -74,7 +79,9 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	api.mu.RLock()
 	user, ok := api.users[login]
+	api.mu.RUnlock()
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -87,7 +94,9 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	SID := getSID(64)
 
+	api.mu.Lock()
 	api.sessions[SID] = user.ID
+	api.mu.Unlock()
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -112,7 +121,9 @@ func (api *AuthHandler) Check(w http.ResponseWriter, r *http.Request) {
 	log.Println("Sessions available: ", len(api.sessions))
 	session, err := r.Cookie("session_id")
 	if err == nil {
+		api.mu.RLock()
 		userId, found := api.sessions[session.Value]
+		api.mu.RUnlock()
 		if found {
 			type Response struct {
 				ID uint `json:"id"`
@@ -138,12 +149,14 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	api.mu.Lock()
 	if _, ok := api.sessions[session.Value]; !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	delete(api.sessions, session.Value)
+	api.mu.Unlock()
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	session.Path = "/"
@@ -164,10 +177,12 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	api.mu.RLock()
 	if _, ok := api.users[login]; found && ok {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	api.mu.RUnlock()
 
 	password, found := data["password"]
 	if !found || password == "" {
@@ -180,7 +195,9 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	email := data["email"]
 	phoneNumber := data["phone-number"]
 
+	api.mu.Lock()
 	api.users[login] = &User{uint(len(api.users) + 1), login, password, firstName, lastName, email, phoneNumber}
+	api.mu.Unlock()
 
 	w.WriteHeader(http.StatusCreated)
 }

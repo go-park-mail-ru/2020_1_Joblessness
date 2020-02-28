@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -55,33 +56,39 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	authorId, err := strconv.Atoi(author)
+	_, err := strconv.Atoi(author)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	api.mu.Lock()
 	newId := api.getNewSummaryId()
-	api.summaries[uint(newId)] = &Summary{
-		uint(authorId),
-		uint(newId),
-		data["first-name"],
-		data["last-name"],
-		data["phone-number"],
-		data["email"],
-		data["birth-date"],
-		data["gender"],
-		data["experience"],
-		data["education"],
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+	var summary Summary
+	err = json.Unmarshal(body, &summary)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	api.mu.Lock()
+	api.summaries[uint(newId)] = &summary
 	api.mu.Unlock()
 
 	type Response struct {
 		ID uint32 `json:"id"`
 	}
 
-	jsonData, _ := json.Marshal(Response{newId})
+	jsonData, err := json.Marshal(Response{newId})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }
@@ -97,7 +104,11 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 	}
 	api.mu.RUnlock()
 
-	jsonData, _ := json.Marshal(summaries)
+	jsonData, err := json.Marshal(summaries)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
@@ -106,7 +117,11 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /summaries/{summary_id}")
 	Cors.PrivateApi(&w, r)
 
-	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
+	summaryId, err := strconv.Atoi(mux.Vars(r)["summary_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	api.mu.RLock()
 	summary, ok := api.summaries[uint(summaryId)]
@@ -116,7 +131,11 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, _ := json.Marshal(summary)
+	jsonData, err := json.Marshal(summary)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
@@ -125,7 +144,11 @@ func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Reque
 	log.Println("GET /users/{user_id}/summaries")
 	Cors.PrivateApi(&w, r)
 
-	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
+	userId, err := strconv.Atoi(mux.Vars(r)["user_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	var summaries []Summary
 	api.mu.RLock()
@@ -141,7 +164,11 @@ func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	jsonData, _ := json.Marshal(summaries)
+	jsonData, err := json.Marshal(summaries)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
@@ -150,7 +177,11 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 	log.Println("PUT /summaries/{summary_id}")
 	Cors.PrivateApi(&w, r)
 
-	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
+	summaryId, err := strconv.Atoi(mux.Vars(r)["summary_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	if _, ok := api.summaries[uint(summaryId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
@@ -193,7 +224,11 @@ func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request)
 	log.Println("DELETE /summaries/{summary_id}")
 	Cors.PrivateApi(&w, r)
 
-	summaryId, _ := strconv.Atoi(mux.Vars(r)["summary_id"])
+	summaryId, err := strconv.Atoi(mux.Vars(r)["summary_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	api.mu.Lock()
 	if _, ok := api.summaries[uint(summaryId)]; !ok {

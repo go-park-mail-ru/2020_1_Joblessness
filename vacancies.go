@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -53,22 +54,33 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	description := data["description"]
-	skills := data["skills"]
-	salary := data["salary"]
-	address := data["address"]
-	phoneNumber := data["phone-number"]
-
 	newId := api.getNewVacancyId()
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	var vacancy Vacancy
+	err = json.Unmarshal(body, &vacancy)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	api.mu.Lock()
-	api.vacancies[uint(newId)] = &Vacancy{uint(newId), name, description, skills, salary, address, phoneNumber}
+	api.vacancies[uint(newId)] = &vacancy
 	api.mu.Unlock()
 
 	type Response struct {
 		ID uint32 `json:"id"`
 	}
 
-	jsonData, _ := json.Marshal(Response{newId})
+	jsonData, err := json.Marshal(Response{newId})
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }
@@ -89,7 +101,11 @@ func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	jsonData, _ := json.Marshal(vacancies)
+	jsonData, err := json.Marshal(vacancies)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
@@ -98,7 +114,11 @@ func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /vacancies/{vacancy_id}")
 	Cors.PrivateApi(&w, r)
 
-	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+	vacancyId, err := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	api.mu.RLock()
 	vacancy, ok := api.vacancies[uint(vacancyId)]
@@ -108,7 +128,11 @@ func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, _ := json.Marshal(vacancy)
+	jsonData, err := json.Marshal(vacancy)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
@@ -117,7 +141,11 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 	log.Println("PUT /vacancies/{vacancy_id}")
 	Cors.PrivateApi(&w, r)
 
-	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+	vacancyId, err := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
@@ -150,7 +178,11 @@ func (api *VacancyHandler) DeleteVacancy(w http.ResponseWriter, r *http.Request)
 	log.Println("DELETE /vacancies/{vacancy_id}")
 	Cors.PrivateApi(&w, r)
 
-	vacancyId, _ := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+	vacancyId, err := strconv.Atoi(mux.Vars(r)["vacancy_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	api.mu.Lock()
 	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
