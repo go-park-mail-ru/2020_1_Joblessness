@@ -206,3 +206,12 @@ func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request)
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (api *SummaryHandler) PrintSummary(w http.ResponseWriter, r *http.Request) {
+	log.Println("GET /summaries/{summary_id}/print")
+	Cors.PrivateApi(&w, r)
+
+
+
+	w.WriteHeader(http.StatusNoContent)
+}
