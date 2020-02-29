@@ -14,8 +14,8 @@ import (
 )
 
 type SummaryHandler struct {
-	summaries map[uint]*_models.Summary
-	mu sync.RWMutex
+	Summaries map[uint]*_models.Summary
+	Mu        sync.RWMutex
 	SummaryId uint32
 }
 
@@ -25,11 +25,11 @@ func (api *SummaryHandler) getNewSummaryId() uint32 {
 
 func NewSummaryHandler() *SummaryHandler {
 	return &SummaryHandler {
-		summaries: map[uint]*_models.Summary {
+		Summaries: map[uint]*_models.Summary {
 			1: {1, 1, "first name", "last name", "phone number", "kek@mail.ru", "01/01/1900", "gender", "experience", "bmstu"},
 		},
-		mu: sync.RWMutex{},
-		SummaryId:1,
+		Mu:        sync.RWMutex{},
+		SummaryId: 1,
 	}
 }
 
@@ -65,9 +65,9 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	api.mu.Lock()
-	api.summaries[uint(newId)] = &summary
-	api.mu.Unlock()
+	api.Mu.Lock()
+	api.Summaries[uint(newId)] = &summary
+	api.Mu.Unlock()
 
 	type Response struct {
 		ID uint32 `json:"id"`
@@ -87,11 +87,11 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 	_cors.Cors.PrivateApi(&w, r)
 
 	var summaries []_models.Summary
-	api.mu.RLock()
-	for _, summary := range api.summaries {
+	api.Mu.RLock()
+	for _, summary := range api.Summaries {
 		summaries = append(summaries, *summary)
 	}
-	api.mu.RUnlock()
+	api.Mu.RUnlock()
 
 	jsonData, err := json.Marshal(summaries)
 	if err != nil {
@@ -112,9 +112,9 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.mu.RLock()
-	summary, ok := api.summaries[uint(summaryId)]
-	api.mu.RUnlock()
+	api.Mu.RLock()
+	summary, ok := api.Summaries[uint(summaryId)]
+	api.Mu.RUnlock()
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -140,13 +140,13 @@ func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Reque
 	}
 
 	var summaries []_models.Summary
-	api.mu.RLock()
-	for _, summary := range api.summaries {
+	api.Mu.RLock()
+	for _, summary := range api.Summaries {
 		if (*summary).UserID == uint(userId) {
 			summaries = append(summaries, *summary)
 		}
 	}
-	api.mu.RUnlock()
+	api.Mu.RUnlock()
 
 	if len(summaries) == 0 {
 		w.WriteHeader(http.StatusNoContent)
@@ -172,7 +172,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if _, ok := api.summaries[uint(summaryId)]; !ok {
+	if _, ok := api.Summaries[uint(summaryId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -191,8 +191,8 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	api.mu.Lock()
-	api.summaries[uint(summaryId)] = &_models.Summary{
+	api.Mu.Lock()
+	api.Summaries[uint(summaryId)] = &_models.Summary{
 		uint(authorId),
 		uint(summaryId),
 		data["first-name"],
@@ -204,7 +204,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 		data["experience"],
 		data["education"],
 	}
-	api.mu.Unlock()
+	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -219,14 +219,14 @@ func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	api.mu.Lock()
-	if _, ok := api.summaries[uint(summaryId)]; !ok {
+	api.Mu.Lock()
+	if _, ok := api.Summaries[uint(summaryId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	delete(api.summaries, uint(summaryId))
-	api.mu.Unlock()
+	delete(api.Summaries, uint(summaryId))
+	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
