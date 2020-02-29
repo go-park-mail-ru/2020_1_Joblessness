@@ -1,6 +1,7 @@
 package main
 
 import (
+	_models "./models"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
@@ -41,7 +42,7 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	//	return
 	//}
 
-	var currentUser *User
+	var currentUser *_models.User
 	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
 
 	for _, user := range api.users {
@@ -93,7 +94,7 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var currentUser *User
+	var currentUser *_models.User
 
 	log.Println("Users counter", len(api.users))
 	for _, user := range api.users {
@@ -140,7 +141,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var currentUser *User
+	var currentUser *_models.User
 
 	for _, user := range api.users {
 		if (*user).ID == userId {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	_models "./models"
 	"bytes"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -186,7 +187,7 @@ func TestRegistration(t *testing.T) {
 		t.Error("status is not 201")
 	}
 
-	expectedUser := User{
+	expectedUser := _models.User{
 		ID: 2,
 		Login: "huvalk",
 		Password: "ABE12345",

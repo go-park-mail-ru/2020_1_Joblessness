@@ -1,6 +1,7 @@
 package main
 
 import (
+	_models "./models"
 	"encoding/json"
 	"log"
 	"math/rand"
@@ -8,17 +9,6 @@ import (
 	"sync"
 	"time"
 )
-
-type User struct {
-	ID uint
-	Login string
-	Password string
-
-	FirstName string
-	LastName string
-	Email string
-	PhoneNumber string
-}
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
@@ -32,7 +22,7 @@ func getSID(n int) string {
 
 type AuthHandler struct {
 	sessions map[string]uint
-	users map[string]*User
+	users map[string]*_models.User
 	userAvatars map[uint]string
 	userSummary map[uint]UserSummary
 	mu sync.RWMutex
@@ -41,7 +31,7 @@ type AuthHandler struct {
 func NewAuthHandler() *AuthHandler {
 	return &AuthHandler {
 		sessions: make(map[string]uint, 10),
-		users:    map[string]*User {
+		users:    map[string]*_models.User {
 			"marat1k": {1, "marat1k", "ABCDE12345", "Marat", "Ishimbaev", "m@m.m", "89032909821"},
 		},
 		userAvatars: map[uint]string{},
@@ -196,7 +186,7 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	phoneNumber := data["phone-number"]
 
 	api.mu.Lock()
-	api.users[login] = &User{uint(len(api.users) + 1), login, password, firstName, lastName, email, phoneNumber}
+	api.users[login] = &_models.User{uint(len(api.users) + 1), login, password, firstName, lastName, email, phoneNumber}
 	api.mu.Unlock()
 
 	w.WriteHeader(http.StatusCreated)
