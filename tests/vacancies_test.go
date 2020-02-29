@@ -1,7 +1,7 @@
-package main
+package tests
 
 import (
-	_models "./models"
+	_models "../models"
 	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
