@@ -37,20 +37,6 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 	log.Println("POST /summaries")
 	_cors.Cors.PrivateApi(&w, r)
 
-	var data map[string]string
-	json.NewDecoder(r.Body).Decode(&data)
-	log.Println(data)
-	author, found := data["author"]
-	if !found {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	_, err := strconv.Atoi(author)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	newId := api.getNewSummaryId()
 
 	body, err := ioutil.ReadAll(r.Body)
@@ -60,6 +46,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 	}
 	var summary _models.Summary
 	err = json.Unmarshal(body, &summary)
+	log.Println("summary recieved: ", summary)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

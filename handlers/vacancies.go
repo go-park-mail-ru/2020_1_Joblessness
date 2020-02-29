@@ -45,6 +45,7 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 	}
 
 	newId := api.getNewVacancyId()
+	vacancy.ID = uint(newId)
 
 	api.Mu.Lock()
 	api.Vacancies[uint(newId)] = &vacancy
