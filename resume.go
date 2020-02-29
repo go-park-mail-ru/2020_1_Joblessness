@@ -1,6 +1,7 @@
 package main
 
 import (
+	_models "./models"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io/ioutil"
@@ -11,21 +12,8 @@ import (
 	"sync/atomic"
 )
 
-type Summary struct {
-	UserID uint `json:"author,omitempty"`
-	ID uint `json:"id,omitempty"`
-	FirstName string `json:"first-name"`
-	LastName string `json:"last-name"`
-	PhoneNumber string `json:"phone-number"`
-	Email string `json:"email"`
-	BirthDate string `json:"birth-date"`
-	Gender string `json:"gender"`
-	Experience string `json:"experience"`
-	Education string `json:"education"`
-}
-
 type SummaryHandler struct {
-	summaries map[uint]*Summary
+	summaries map[uint]*_models.Summary
 	mu sync.RWMutex
 	SummaryId uint32
 }
@@ -36,7 +24,7 @@ func (api *SummaryHandler) getNewSummaryId() uint32 {
 
 func NewSummaryHandler() *SummaryHandler {
 	return &SummaryHandler {
-		summaries: map[uint]*Summary {
+		summaries: map[uint]*_models.Summary {
 			1: {1, 1, "first name", "last name", "phone number", "kek@mail.ru", "01/01/1900", "gender", "experience", "bmstu"},
 		},
 		mu: sync.RWMutex{},
@@ -69,7 +57,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	var summary Summary
+	var summary _models.Summary
 	err = json.Unmarshal(body, &summary)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -97,7 +85,7 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 	log.Println("GET /summaries")
 	Cors.PrivateApi(&w, r)
 
-	var summaries []Summary
+	var summaries []_models.Summary
 	api.mu.RLock()
 	for _, summary := range api.summaries {
 		summaries = append(summaries, *summary)
@@ -150,7 +138,7 @@ func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var summaries []Summary
+	var summaries []_models.Summary
 	api.mu.RLock()
 	for _, summary := range api.summaries {
 		if (*summary).UserID == uint(userId) {
@@ -203,7 +191,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 	}
 
 	api.mu.Lock()
-	api.summaries[uint(summaryId)] = &Summary{
+	api.summaries[uint(summaryId)] = &_models.Summary{
 		uint(authorId),
 		uint(summaryId),
 		data["first-name"],
