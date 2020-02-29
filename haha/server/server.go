@@ -1,35 +1,53 @@
-package main
+package server
 
 import (
+	"../cors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
-func echoFunc(w http.ResponseWriter, r *http.Request) {
+type Server struct{
+	corsHandler *cors.CorsHandler
+}
+
+func NewServer() *Server {
+	return &Server {
+		corsHandler: cors.NewCorsHandler(),
+	}
+}
+
+func (server *Server) AddOrigin(origin string) {
+	server.corsHandler.AddOrigin(origin)
+}
+
+func (server *Server) echoFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("/users/echo")
 
-	Cors.PrivateApi(&w, r)
+	server.corsHandler.PrivateApi(&w, r)
 
 	params := mux.Vars(r)
 	message := params["message"]
 	fmt.Fprintf(w, "Hello %s!", message)
 }
 
+func (server *Server) Preflight(w http.ResponseWriter, req *http.Request) {
+	server.corsHandler.PrivateApi(&w, req)
+}
 
-func contentTypeMiddleware(next http.Handler) http.Handler {
+func (server *Server) contentTypeMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		next.ServeHTTP(w, r)
 	})
 }
 
-func StartRouter() {
+func (server *Server) StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()//.StrictSlash(true)
 
-	router.Use(contentTypeMiddleware)
-	router.HandleFunc("/echo/{message}", echoFunc)
-	router.Methods("OPTIONS").HandlerFunc(Cors.Preflight)
+	router.Use(server.contentTypeMiddleware)
+	router.HandleFunc("/echo/{message}", server.echoFunc)
+	router.Methods("OPTIONS").HandlerFunc(server.Preflight)
 
 	// users
 	authApi := NewAuthHandler()

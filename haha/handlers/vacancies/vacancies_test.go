@@ -1,4 +1,4 @@
-package main
+package vacancies
 
 import (
 	"bytes"

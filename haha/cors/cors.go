@@ -1,4 +1,4 @@
-package main
+package cors
 
 import (
 	"log"
@@ -10,13 +10,16 @@ type CorsHandler struct {
 	allowedOrigins []string
 }
 
+func NewCorsHandler() *CorsHandler {
+	return &CorsHandler {
+		allowedOrigins: []string{},
+	}
+}
+
 func (corsList *CorsHandler) AddOrigin(originName string) {
 	corsList.allowedOrigins = append(corsList.allowedOrigins, originName)
 }
 
-func (corsList *CorsHandler) Preflight(w http.ResponseWriter, req *http.Request) {
-	Cors.PrivateApi(&w, req)
-}
 
 //TODO разбить
 func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Request) bool {
@@ -38,7 +41,7 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 		(*w).Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
 		(*w).Header().Set("Access-Control-Allow-Origin", origin)
 		(*w).Header().Set("Access-Control-Allow-Credentials", "true")
-		//(*w).Header().Set("Content-Type", "application/json")
+		(*w).Header().Set("Content-Type", "application/json")
 	}
 	return result
 }
