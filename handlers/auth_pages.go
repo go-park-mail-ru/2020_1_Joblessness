@@ -1,7 +1,7 @@
-package main
+package handlers
 
 import (
-	_models "./models"
+	_models "../models"
 	"encoding/json"
 	"log"
 	"math/rand"
