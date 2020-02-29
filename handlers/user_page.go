@@ -2,6 +2,7 @@ package handlers
 
 import (
 	_models "../models"
+	_cors "../utils/cors"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
@@ -27,20 +28,7 @@ type UserSummary struct {
 
 func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /user/{user_id}")
-	Cors.PrivateApi(&w, r)
-
-	//session, err := r.Cookie("session_id")
-	//if err == http.ErrNoCookie {
-	//	jsonData, _ := json.Marshal(Response{Status:401})
-	//	w.Write(jsonData)
-	//	return
-	//}
-	//_ , found := api.sessions[session.Value]
-	//if !found {
-	//	jsonData, _ := json.Marshal(Response{Status:401})
-	//	w.Write(jsonData)
-	//	return
-	//}
+	_cors.Cors.PrivateApi(&w, r)
 
 	var currentUser *_models.User
 	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
@@ -76,7 +64,7 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 	log.Println("PUT /user/{user_id}")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	session, err := r.Cookie("session_id")
 	log.Println("session cookie: ", session)
@@ -121,7 +109,7 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users/{user_id}/avatar")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	defer r.Body.Close()
 

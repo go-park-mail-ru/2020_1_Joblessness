@@ -1,4 +1,4 @@
-package utils
+package cors
 
 import (
 	"log"
@@ -8,6 +8,10 @@ import (
 
 type CorsHandler struct {
 	allowedOrigins []string
+}
+
+var Cors = CorsHandler{
+	allowedOrigins: []string{},
 }
 
 func (corsList *CorsHandler) AddOrigin(originName string) {

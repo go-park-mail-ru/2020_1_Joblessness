@@ -1,6 +1,8 @@
-package utils
+package routers
 
 import (
+	_handlers "../../handlers"
+	_cors "../cors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
@@ -9,7 +11,7 @@ import (
 func echoFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("/users/echo")
 
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	params := mux.Vars(r)
 	message := params["message"]
@@ -29,10 +31,10 @@ func StartRouter() {
 
 	router.Use(contentTypeMiddleware)
 	router.HandleFunc("/echo/{message}", echoFunc)
-	router.Methods("OPTIONS").HandlerFunc(Cors.Preflight)
+	router.Methods("OPTIONS").HandlerFunc(_cors.Cors.Preflight)
 
 	// users
-	authApi := NewAuthHandler()
+	authApi := _handlers.NewAuthHandler()
 
 	router.HandleFunc("/users/login", authApi.Login).Methods("POST")
 	router.HandleFunc("/users/check", authApi.Check).Methods("POST")
@@ -44,7 +46,7 @@ func StartRouter() {
 	router.HandleFunc("/user/{user_id}", authApi.ChangeUserInfo).Methods("POST")
 
 	// vacancies
-	vacancyApi := NewVacancyHandler()
+	vacancyApi := _handlers.NewVacancyHandler()
 
 	router.HandleFunc("/vacancies", vacancyApi.CreateVacancy).Methods("POST")
 	router.HandleFunc("/vacancies", vacancyApi.GetVacancies).Methods("GET")
@@ -53,7 +55,7 @@ func StartRouter() {
 	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.DeleteVacancy).Methods("DELETE")
 
 	// summaries
-	summaryApi := NewSummaryHandler()
+	summaryApi := _handlers.NewSummaryHandler()
 
 	router.HandleFunc("/summaries", summaryApi.CreateSummary).Methods("POST")
 	router.HandleFunc("/summaries", summaryApi.GetSummaries).Methods("GET")

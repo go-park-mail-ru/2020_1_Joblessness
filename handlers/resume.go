@@ -2,6 +2,7 @@ package handlers
 
 import (
 	_models "../models"
+	_cors "../utils/cors"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io/ioutil"
@@ -34,7 +35,7 @@ func NewSummaryHandler() *SummaryHandler {
 
 func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /summaries")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
@@ -83,7 +84,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 
 func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /summaries")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	var summaries []_models.Summary
 	api.mu.RLock()
@@ -103,7 +104,7 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 
 func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /summaries/{summary_id}")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	summaryId, err := strconv.Atoi(mux.Vars(r)["summary_id"])
 	if err != nil {
@@ -130,7 +131,7 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 
 func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /users/{user_id}/summaries")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	userId, err := strconv.Atoi(mux.Vars(r)["user_id"])
 	if err != nil {
@@ -163,7 +164,7 @@ func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Reque
 
 func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("PUT /summaries/{summary_id}")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	summaryId, err := strconv.Atoi(mux.Vars(r)["summary_id"])
 	if err != nil {
@@ -210,7 +211,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 
 func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("DELETE /summaries/{summary_id}")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	summaryId, err := strconv.Atoi(mux.Vars(r)["summary_id"])
 	if err != nil {

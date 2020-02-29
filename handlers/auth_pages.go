@@ -2,6 +2,7 @@ package handlers
 
 import (
 	_models "../models"
+	_cors "../utils/cors"
 	"encoding/json"
 	"log"
 	"math/rand"
@@ -42,7 +43,7 @@ func NewAuthHandler() *AuthHandler {
 
 func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users/login")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
@@ -106,7 +107,7 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) Check(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users/check")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	log.Println("Sessions available: ", len(api.sessions))
 	session, err := r.Cookie("session_id")
@@ -131,7 +132,7 @@ func (api *AuthHandler) Check(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users/logout")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
@@ -157,7 +158,7 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
