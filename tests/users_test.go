@@ -33,12 +33,6 @@ func TestGetUserPage(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Error("status is not 200")
 	}
-
-	//bytes, _ := ioutil.ReadAll(w.Body)
-	//expectedJSON := `{"user":{"first-name":"Marat","last-name":"Ishimbaev","avatar":"default-avatar.jpg"},"summaries":[]}`
-	//if string(bytes) != expectedJSON {
-	//	t.Errorf("expected: [%s],\n got: [%s]", expectedJSON, string(bytes))
-	//}
 }
 
 //TODO можно добавить еще тестов
