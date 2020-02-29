@@ -1,6 +1,8 @@
-package summaries
+package handlers
 
 import (
+	_models "../models"
+	_cors "../utils/cors"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io/ioutil"
@@ -11,22 +13,9 @@ import (
 	"sync/atomic"
 )
 
-type Summary struct {
-	UserID uint `json:"author,omitempty"`
-	ID uint `json:"id,omitempty"`
-	FirstName string `json:"first-name"`
-	LastName string `json:"last-name"`
-	PhoneNumber string `json:"phone-number"`
-	Email string `json:"email"`
-	BirthDate string `json:"birth-date"`
-	Gender string `json:"gender"`
-	Experience string `json:"experience"`
-	Education string `json:"education"`
-}
-
 type SummaryHandler struct {
-	summaries map[uint]*Summary
-	mu sync.RWMutex
+	Summaries map[uint]*_models.Summary
+	Mu        sync.RWMutex
 	SummaryId uint32
 }
 
@@ -36,17 +25,17 @@ func (api *SummaryHandler) getNewSummaryId() uint32 {
 
 func NewSummaryHandler() *SummaryHandler {
 	return &SummaryHandler {
-		summaries: map[uint]*Summary {
+		Summaries: map[uint]*_models.Summary {
 			1: {1, 1, "first name", "last name", "phone number", "kek@mail.ru", "01/01/1900", "gender", "experience", "bmstu"},
 		},
-		mu: sync.RWMutex{},
-		SummaryId:1,
+		Mu:        sync.RWMutex{},
+		SummaryId: 1,
 	}
 }
 
 func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /summaries")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
@@ -69,16 +58,16 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	var summary Summary
+	var summary _models.Summary
 	err = json.Unmarshal(body, &summary)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	api.mu.Lock()
-	api.summaries[uint(newId)] = &summary
-	api.mu.Unlock()
+	api.Mu.Lock()
+	api.Summaries[uint(newId)] = &summary
+	api.Mu.Unlock()
 
 	type Response struct {
 		ID uint32 `json:"id"`
@@ -95,14 +84,14 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 
 func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /summaries")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
-	var summaries []Summary
-	api.mu.RLock()
-	for _, summary := range api.summaries {
+	var summaries []_models.Summary
+	api.Mu.RLock()
+	for _, summary := range api.Summaries {
 		summaries = append(summaries, *summary)
 	}
-	api.mu.RUnlock()
+	api.Mu.RUnlock()
 
 	jsonData, err := json.Marshal(summaries)
 	if err != nil {
@@ -115,7 +104,7 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 
 func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /summaries/{summary_id}")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	summaryId, err := strconv.Atoi(mux.Vars(r)["summary_id"])
 	if err != nil {
@@ -123,9 +112,9 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.mu.RLock()
-	summary, ok := api.summaries[uint(summaryId)]
-	api.mu.RUnlock()
+	api.Mu.RLock()
+	summary, ok := api.Summaries[uint(summaryId)]
+	api.Mu.RUnlock()
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -142,7 +131,7 @@ func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
 
 func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /users/{user_id}/summaries")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	userId, err := strconv.Atoi(mux.Vars(r)["user_id"])
 	if err != nil {
@@ -150,14 +139,14 @@ func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var summaries []Summary
-	api.mu.RLock()
-	for _, summary := range api.summaries {
+	var summaries []_models.Summary
+	api.Mu.RLock()
+	for _, summary := range api.Summaries {
 		if (*summary).UserID == uint(userId) {
 			summaries = append(summaries, *summary)
 		}
 	}
-	api.mu.RUnlock()
+	api.Mu.RUnlock()
 
 	if len(summaries) == 0 {
 		w.WriteHeader(http.StatusNoContent)
@@ -175,7 +164,7 @@ func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Reque
 
 func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("PUT /summaries/{summary_id}")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	summaryId, err := strconv.Atoi(mux.Vars(r)["summary_id"])
 	if err != nil {
@@ -183,7 +172,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if _, ok := api.summaries[uint(summaryId)]; !ok {
+	if _, ok := api.Summaries[uint(summaryId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -202,8 +191,8 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	api.mu.Lock()
-	api.summaries[uint(summaryId)] = &Summary{
+	api.Mu.Lock()
+	api.Summaries[uint(summaryId)] = &_models.Summary{
 		uint(authorId),
 		uint(summaryId),
 		data["first-name"],
@@ -215,14 +204,14 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 		data["experience"],
 		data["education"],
 	}
-	api.mu.Unlock()
+	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("DELETE /summaries/{summary_id}")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	summaryId, err := strconv.Atoi(mux.Vars(r)["summary_id"])
 	if err != nil {
@@ -230,23 +219,14 @@ func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	api.mu.Lock()
-	if _, ok := api.summaries[uint(summaryId)]; !ok {
+	api.Mu.Lock()
+	if _, ok := api.Summaries[uint(summaryId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	delete(api.summaries, uint(summaryId))
-	api.mu.Unlock()
-
-	w.WriteHeader(http.StatusNoContent)
-}
-
-func (api *SummaryHandler) PrintSummary(w http.ResponseWriter, r *http.Request) {
-	log.Println("GET /summaries/{summary_id}/print")
-	Cors.PrivateApi(&w, r)
-
-
+	delete(api.Summaries, uint(summaryId))
+	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }

@@ -1,56 +1,40 @@
-package server
+package routers
 
 import (
-	"../cors"
+	_handlers "../../handlers"
+	_cors "../cors"
 	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
-type Server struct{
-	corsHandler *cors.CorsHandler
-}
-
-func NewServer() *Server {
-	return &Server {
-		corsHandler: cors.NewCorsHandler(),
-	}
-}
-
-func (server *Server) AddOrigin(origin string) {
-	server.corsHandler.AddOrigin(origin)
-}
-
-func (server *Server) echoFunc(w http.ResponseWriter, r *http.Request) {
+func echoFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("/users/echo")
 
-	server.corsHandler.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	params := mux.Vars(r)
 	message := params["message"]
 	fmt.Fprintf(w, "Hello %s!", message)
 }
 
-func (server *Server) Preflight(w http.ResponseWriter, req *http.Request) {
-	server.corsHandler.PrivateApi(&w, req)
-}
 
-func (server *Server) contentTypeMiddleware(next http.Handler) http.Handler {
+func contentTypeMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		next.ServeHTTP(w, r)
 	})
 }
 
-func (server *Server) StartRouter() {
-	router := mux.NewRouter().PathPrefix("/api").Subrouter()//.StrictSlash(true)
+func StartRouter() {
+	router := mux.NewRouter().PathPrefix("/api").Subrouter()
 
-	router.Use(server.contentTypeMiddleware)
-	router.HandleFunc("/echo/{message}", server.echoFunc)
-	router.Methods("OPTIONS").HandlerFunc(server.Preflight)
+	router.Use(contentTypeMiddleware)
+	router.HandleFunc("/echo/{message}", echoFunc)
+	router.Methods("OPTIONS").HandlerFunc(_cors.Cors.Preflight)
 
 	// users
-	authApi := NewAuthHandler()
+	authApi := _handlers.NewAuthHandler()
 
 	router.HandleFunc("/users/login", authApi.Login).Methods("POST")
 	router.HandleFunc("/users/check", authApi.Check).Methods("POST")
@@ -62,7 +46,7 @@ func (server *Server) StartRouter() {
 	router.HandleFunc("/user/{user_id}", authApi.ChangeUserInfo).Methods("POST")
 
 	// vacancies
-	vacancyApi := NewVacancyHandler()
+	vacancyApi := _handlers.NewVacancyHandler()
 
 	router.HandleFunc("/vacancies", vacancyApi.CreateVacancy).Methods("POST")
 	router.HandleFunc("/vacancies", vacancyApi.GetVacancies).Methods("GET")
@@ -71,14 +55,13 @@ func (server *Server) StartRouter() {
 	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.DeleteVacancy).Methods("DELETE")
 
 	// summaries
-	summaryApi := NewSummaryHandler()
+	summaryApi := _handlers.NewSummaryHandler()
 
 	router.HandleFunc("/summaries", summaryApi.CreateSummary).Methods("POST")
 	router.HandleFunc("/summaries", summaryApi.GetSummaries).Methods("GET")
 	router.HandleFunc("/summaries/{summary_id}", summaryApi.GetSummary).Methods("GET")
 	router.HandleFunc("/summaries/{summary_id}", summaryApi.ChangeSummary).Methods("PUT")
 	router.HandleFunc("/summaries/{summary_id}", summaryApi.DeleteSummary).Methods("DELETE")
-	router.HandleFunc("/summaries/{summary_id}/print", summaryApi.PrintSummary).Methods("GET")
 	router.HandleFunc("/user/{user_id}/summaries", summaryApi.GetUserSummaries).Methods("GET")
 
 	http.Handle("/", router)

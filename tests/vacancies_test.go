@@ -1,6 +1,8 @@
-package vacancies
+package tests
 
 import (
+	_h "../handlers"
+	_models "../models"
 	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -11,21 +13,21 @@ import (
 	"testing"
 )
 
-func NewEmptyVacancyHandler() *VacancyHandler {
-	return &VacancyHandler{
-		vacancies: map[uint]*Vacancy{},
-		mu: sync.RWMutex{},
+func NewEmptyVacancyHandler() *_h.VacancyHandler {
+	return &_h.VacancyHandler{
+		Vacancies: map[uint]*_models.Vacancy{},
+		Mu:        sync.RWMutex{},
 	}
 }
 
-func NewNotEmptyVacancyHandler() *VacancyHandler {
-	return &VacancyHandler{
-		vacancies:map[uint]*Vacancy{
+func NewNotEmptyVacancyHandler() *_h.VacancyHandler {
+	return &_h.VacancyHandler{
+		Vacancies:map[uint]*_models.Vacancy{
 			1: {1, "first name", "description", "skills", "salary", "address", "phone"},
 			2: {2, "second name", "description", "skills", "salary", "address", "phone"},
 		},
-		mu: sync.RWMutex{},
-		vacancyId:2,
+		Mu:        sync.RWMutex{},
+		VacancyId: 2,
 	}
 }
 
@@ -34,7 +36,7 @@ func TestSuccessCreateVacancy(t *testing.T) {
 
 	h := NewEmptyVacancyHandler()
 
-	vacancy, _ := json.Marshal(Vacancy{
+	vacancy, _ := json.Marshal(_models.Vacancy{
 		Name:        "name",
 		Description: "description",
 		Skills:      "skills",
@@ -54,11 +56,11 @@ func TestSuccessCreateVacancy(t *testing.T) {
 		t.Error("Status is not 201")
 	}
 
-	if len(h.vacancies) != 1 {
+	if len(h.Vacancies) != 1 {
 		t.Error("Vacancy not created")
 	}
 
-	if h.vacancies[1].Name != "name" {
+	if h.Vacancies[1].Name != "name" {
 		t.Error("Wrong vacancy name")
 	}
 }
@@ -68,7 +70,7 @@ func TestCreateVacancyWithEmptyName(t *testing.T) {
 
 	h := NewEmptyVacancyHandler()
 
-	vacancy, _ := json.Marshal(Vacancy{
+	vacancy, _ := json.Marshal(_models.Vacancy{
 		Name:        "",
 		Description: "description",
 		Skills:      "skills",
@@ -88,7 +90,7 @@ func TestCreateVacancyWithEmptyName(t *testing.T) {
 		t.Error("Status is not 400")
 	}
 
-	if len(h.vacancies) != 0 {
+	if len(h.Vacancies) != 0 {
 		t.Error("Vacancy created")
 	}
 }
@@ -184,7 +186,7 @@ func TestSuccessChangeVacancy(t *testing.T) {
 
 	h := NewNotEmptyVacancyHandler()
 
-	vacancy, _ := json.Marshal(Vacancy{
+	vacancy, _ := json.Marshal(_models.Vacancy{
 		Name:        "new name",
 		Description: "description",
 		Skills:      "skills",
@@ -205,7 +207,7 @@ func TestSuccessChangeVacancy(t *testing.T) {
 		t.Error("Status is not 204")
 	}
 
-	if h.vacancies[1].Name != "new name" {
+	if h.Vacancies[1].Name != "new name" {
 		t.Error("Vacancy is not changed")
 	}
 }
@@ -215,7 +217,7 @@ func TestChangeVacancyWithEmptyName(t *testing.T) {
 
 	h := NewNotEmptyVacancyHandler()
 
-	vacancy, _ := json.Marshal(Vacancy{
+	vacancy, _ := json.Marshal(_models.Vacancy{
 		Name:        "",
 		Description: "description",
 		Skills:      "skills",
@@ -236,7 +238,7 @@ func TestChangeVacancyWithEmptyName(t *testing.T) {
 		t.Error("Status is not 400")
 	}
 
-	if h.vacancies[1].Name != "first name" {
+	if h.Vacancies[1].Name != "first name" {
 		t.Error("Vacancy is changed")
 	}
 }
@@ -246,7 +248,7 @@ func TestChangeNullVacancy(t *testing.T) {
 
 	h := NewNotEmptyVacancyHandler()
 
-	vacancy, _ := json.Marshal(Vacancy{
+	vacancy, _ := json.Marshal(_models.Vacancy{
 		Name:        "new name",
 		Description: "description",
 		Skills:      "skills",
@@ -285,7 +287,7 @@ func TestSuccessDeleteVacancy(t *testing.T) {
 		t.Error("Status code is not 204")
 	}
 
-	if len(h.vacancies) != 1 {
+	if len(h.Vacancies) != 1 {
 		t.Error("Vacancy is not deleted")
 	}
 }

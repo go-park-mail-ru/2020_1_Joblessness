@@ -1,6 +1,8 @@
-package user_page
+package handlers
 
 import (
+	_models "../models"
+	_cors "../utils/cors"
 	"encoding/json"
 	"log"
 	"math/rand"
@@ -8,17 +10,6 @@ import (
 	"sync"
 	"time"
 )
-
-type User struct {
-	ID uint
-	Login string
-	Password string
-
-	FirstName string
-	LastName string
-	Email string
-	PhoneNumber string
-}
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
@@ -31,28 +22,28 @@ func getSID(n int) string {
 }
 
 type AuthHandler struct {
-	sessions map[string]uint
-	users map[string]*User
-	userAvatars map[uint]string
-	userSummary map[uint]UserSummary
-	mu sync.RWMutex
+	Sessions    map[string]uint
+	Users       map[string]*_models.User
+	UserAvatars map[uint]string
+	UserSummary map[uint]_models.UserSummary
+	Mu          sync.RWMutex
 }
 
 func NewAuthHandler() *AuthHandler {
 	return &AuthHandler {
-		sessions: make(map[string]uint, 10),
-		users:    map[string]*User {
+		Sessions: make(map[string]uint, 10),
+		Users:    map[string]*_models.User {
 			"marat1k": {1, "marat1k", "ABCDE12345", "Marat", "Ishimbaev", "m@m.m", "89032909821"},
 		},
-		userAvatars: map[uint]string{},
-		userSummary: map[uint]UserSummary{},
-		mu: sync.RWMutex{},
+		UserAvatars: map[uint]string{},
+		UserSummary: map[uint]_models.UserSummary{},
+		Mu:          sync.RWMutex{},
 	}
 }
 
 func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users/login")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
@@ -60,12 +51,12 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	type Response struct {
 		ID uint `json:"id"`
 	}
-	log.Println("Sessions available: ", len(api.sessions))
+	log.Println("Sessions available: ", len(api.Sessions))
 	session, err := r.Cookie("session_id")
 	if err == nil {
-		api.mu.RLock()
-		userId, found := api.sessions[session.Value]
-		api.mu.RUnlock()
+		api.Mu.RLock()
+		userId, found := api.Sessions[session.Value]
+		api.Mu.RUnlock()
 		if found {
 			jsonData, _ := json.Marshal(Response{userId})
 			w.WriteHeader(http.StatusCreated)
@@ -79,9 +70,9 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	api.mu.RLock()
-	user, ok := api.users[login]
-	api.mu.RUnlock()
+	api.Mu.RLock()
+	user, ok := api.Users[login]
+	api.Mu.RUnlock()
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -94,9 +85,9 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	SID := getSID(64)
 
-	api.mu.Lock()
-	api.sessions[SID] = user.ID
-	api.mu.Unlock()
+	api.Mu.Lock()
+	api.Sessions[SID] = user.ID
+	api.Mu.Unlock()
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -116,14 +107,14 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) Check(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users/check")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
-	log.Println("Sessions available: ", len(api.sessions))
+	log.Println("Sessions available: ", len(api.Sessions))
 	session, err := r.Cookie("session_id")
 	if err == nil {
-		api.mu.RLock()
-		userId, found := api.sessions[session.Value]
-		api.mu.RUnlock()
+		api.Mu.RLock()
+		userId, found := api.Sessions[session.Value]
+		api.Mu.RUnlock()
 		if found {
 			type Response struct {
 				ID uint `json:"id"`
@@ -141,7 +132,7 @@ func (api *AuthHandler) Check(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users/logout")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
@@ -149,14 +140,14 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.mu.Lock()
-	if _, ok := api.sessions[session.Value]; !ok {
+	api.Mu.Lock()
+	if _, ok := api.Sessions[session.Value]; !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	delete(api.sessions, session.Value)
-	api.mu.Unlock()
+	delete(api.Sessions, session.Value)
+	api.Mu.Unlock()
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	session.Path = "/"
@@ -167,7 +158,7 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	var data map[string]string
 	json.NewDecoder(r.Body).Decode(&data)
@@ -177,12 +168,12 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	api.mu.RLock()
-	if _, ok := api.users[login]; found && ok {
+	api.Mu.RLock()
+	if _, ok := api.Users[login]; found && ok {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	api.mu.RUnlock()
+	api.Mu.RUnlock()
 
 	password, found := data["password"]
 	if !found || password == "" {
@@ -195,9 +186,9 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	email := data["email"]
 	phoneNumber := data["phone-number"]
 
-	api.mu.Lock()
-	api.users[login] = &User{uint(len(api.users) + 1), login, password, firstName, lastName, email, phoneNumber}
-	api.mu.Unlock()
+	api.Mu.Lock()
+	api.Users[login] = &_models.User{uint(len(api.Users) + 1), login, password, firstName, lastName, email, phoneNumber}
+	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusCreated)
 }

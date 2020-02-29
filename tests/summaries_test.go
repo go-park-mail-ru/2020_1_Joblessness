@@ -1,6 +1,8 @@
-package summaries
+package tests
 
 import (
+	_h "../handlers"
+	_models "../models"
 	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -11,21 +13,21 @@ import (
 	"testing"
 )
 
-func NewEmptySummaryHandler() *SummaryHandler {
-	return &SummaryHandler{
-		summaries:map[uint]*Summary{},
-		mu: sync.RWMutex{},
+func NewEmptySummaryHandler() *_h.SummaryHandler {
+	return &_h.SummaryHandler{
+		Summaries: map[uint]*_models.Summary{},
+		Mu:        sync.RWMutex{},
 	}
 }
 
-func NewNotEmptySummaryHandler() *SummaryHandler {
-	return &SummaryHandler{
-		summaries:map[uint]*Summary{
+func NewNotEmptySummaryHandler() *_h.SummaryHandler {
+	return &_h.SummaryHandler{
+		Summaries:map[uint]*_models.Summary{
 			1: {1, 1, "first name", "last name", "phone number", "email", "birth date", "male", "experiencz", "education"},
 			2: {1, 2, "first name", "last name", "phone number", "email", "birth date", "female", "experiencz", "education"},
 		},
-		mu: sync.RWMutex{},
-		SummaryId:2,
+		Mu:        sync.RWMutex{},
+		SummaryId: 2,
 	}
 }
 
@@ -34,7 +36,7 @@ func TestCreateSummaryFailedNoAuthor(t *testing.T) {
 
 	h := NewEmptySummaryHandler()
 
-	summary, _ := json.Marshal(Summary{
+	summary, _ := json.Marshal(_models.Summary{
 		FirstName:   "first name",
 		LastName:    "last name",
 		PhoneNumber: "phone number",
@@ -56,7 +58,7 @@ func TestCreateSummaryFailedNoAuthor(t *testing.T) {
 		t.Error("Status is not 400")
 	}
 
-	if len(h.summaries) != 0 {
+	if len(h.Summaries) != 0 {
 		t.Error("Wrong Summary created")
 	}
 	//
@@ -156,7 +158,7 @@ func TestSuccessChangeSummary(t *testing.T) {
 
 	h := NewNotEmptySummaryHandler()
 
-	summary, _ := json.Marshal(Summary{
+	summary, _ := json.Marshal(_models.Summary{
 		FirstName:   "first name",
 		LastName:    "last name",
 		PhoneNumber: "phone number",
@@ -179,7 +181,7 @@ func TestSuccessChangeSummary(t *testing.T) {
 		t.Error("Status is not 400")
 	}
 
-	if h.summaries[1].Gender != "male" {
+	if h.Summaries[1].Gender != "male" {
 		t.Error("Wrong Vacancy is changed")
 	}
 }
@@ -189,7 +191,7 @@ func TestChangeNullSummary(t *testing.T) {
 
 	h := NewNotEmptySummaryHandler()
 
-	summary, _ := json.Marshal(Summary{
+	summary, _ := json.Marshal(_models.Summary{
 		FirstName:   "first name",
 		LastName:    "last name",
 		PhoneNumber: "phone number",
@@ -230,7 +232,7 @@ func TestSuccessDeleteSummary(t *testing.T) {
 		t.Error("Status code is not 204")
 	}
 
-	if len(h.summaries) != 1 {
+	if len(h.Summaries) != 1 {
 		t.Error("Summary is not deleted")
 	}
 }

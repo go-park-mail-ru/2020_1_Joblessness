@@ -1,9 +1,10 @@
-package vacancies
+package handlers
 
 import (
+	_models "../models"
+	_cors "../utils/cors"
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strconv"
@@ -11,66 +12,43 @@ import (
 	"sync/atomic"
 )
 
-type Vacancy struct {
-	ID uint `json:"id,omitempty"`
-	Name string `json:"name"`
-	Description string `json:"description"`
-	Skills string `json:"skills"`
-	Salary string `json:"salary"`
-	Address string `json:"address"`
-	PhoneNumber string `json:"phone-number"`
-}
-
 type VacancyHandler struct {
-	vacancies map[uint]*Vacancy
-	mu sync.RWMutex
-	vacancyId uint32
+	Vacancies map[uint]*_models.Vacancy
+	Mu        sync.RWMutex
+	VacancyId uint32
 }
 
 func (api *VacancyHandler) getNewVacancyId() uint32 {
-	return atomic.AddUint32(&api.vacancyId, 1)
+	return atomic.AddUint32(&api.VacancyId, 1)
 }
 
 func NewVacancyHandler() *VacancyHandler {
 	return &VacancyHandler {
-		vacancies: map[uint]*Vacancy {
+		Vacancies: map[uint]*_models.Vacancy {
 			1: {1, "name", "description", "skills", "100500", "address", "phone number"},
 		},
-		mu: sync.RWMutex{},
-		vacancyId:1,
+		Mu:        sync.RWMutex{},
+		VacancyId: 1,
 	}
 }
 
 func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /vacancies")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
-	var data map[string]string
-	json.NewDecoder(r.Body).Decode(&data)
+	var vacancy _models.Vacancy
+	json.NewDecoder(r.Body).Decode(&vacancy)
 
-	name := data["name"]
-	if name == "" {
+	if vacancy.Name == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	newId := api.getNewVacancyId()
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	var vacancy Vacancy
-	err = json.Unmarshal(body, &vacancy)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	api.mu.Lock()
-	api.vacancies[uint(newId)] = &vacancy
-	api.mu.Unlock()
+	api.Mu.Lock()
+	api.Vacancies[uint(newId)] = &vacancy
+	api.Mu.Unlock()
 
 	type Response struct {
 		ID uint32 `json:"id"`
@@ -87,14 +65,14 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 
 func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /vacancies")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
-	var vacancies []Vacancy
-	api.mu.RLock()
-	for _, vacancy := range api.vacancies {
+	var vacancies []_models.Vacancy
+	api.Mu.RLock()
+	for _, vacancy := range api.Vacancies {
 		vacancies = append(vacancies, *vacancy)
 	}
-	api.mu.RUnlock()
+	api.Mu.RUnlock()
 
 	if len(vacancies) == 0 {
 		w.WriteHeader(http.StatusNoContent)
@@ -112,7 +90,7 @@ func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) 
 
 func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /vacancies/{vacancy_id}")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	vacancyId, err := strconv.Atoi(mux.Vars(r)["vacancy_id"])
 	if err != nil {
@@ -120,9 +98,9 @@ func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.mu.RLock()
-	vacancy, ok := api.vacancies[uint(vacancyId)]
-	api.mu.RUnlock()
+	api.Mu.RLock()
+	vacancy, ok := api.Vacancies[uint(vacancyId)]
+	api.Mu.RUnlock()
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -139,7 +117,7 @@ func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 	log.Println("PUT /vacancies/{vacancy_id}")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	vacancyId, err := strconv.Atoi(mux.Vars(r)["vacancy_id"])
 	if err != nil {
@@ -147,7 +125,7 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
+	if _, ok := api.Vacancies[uint(vacancyId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -167,16 +145,16 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 	address := data["address"]
 	phoneNumber := data["phone-number"]
 
-	api.mu.Lock()
-	api.vacancies[uint(vacancyId)] = &Vacancy{uint(vacancyId), name, description, skills, salary, address, phoneNumber}
-	api.mu.Unlock()
+	api.Mu.Lock()
+	api.Vacancies[uint(vacancyId)] = &_models.Vacancy{uint(vacancyId), name, description, skills, salary, address, phoneNumber}
+	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func (api *VacancyHandler) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
 	log.Println("DELETE /vacancies/{vacancy_id}")
-	Cors.PrivateApi(&w, r)
+	_cors.Cors.PrivateApi(&w, r)
 
 	vacancyId, err := strconv.Atoi(mux.Vars(r)["vacancy_id"])
 	if err != nil {
@@ -184,14 +162,14 @@ func (api *VacancyHandler) DeleteVacancy(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	api.mu.Lock()
-	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
+	api.Mu.Lock()
+	if _, ok := api.Vacancies[uint(vacancyId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	delete(api.vacancies, uint(vacancyId))
-	api.mu.Unlock()
+	delete(api.Vacancies, uint(vacancyId))
+	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
