@@ -116,7 +116,6 @@ func TestChangeUserInfo(t *testing.T) {
 	}
 }
 
-//TODO можно добавить еще тестов
 func TestFailedChangeUserInfoNoRights(t *testing.T) {
 	t.Parallel()
 
