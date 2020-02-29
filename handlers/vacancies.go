@@ -13,22 +13,22 @@ import (
 )
 
 type VacancyHandler struct {
-	vacancies map[uint]*_models.Vacancy
-	mu sync.RWMutex
-	vacancyId uint32
+	Vacancies map[uint]*_models.Vacancy
+	Mu        sync.RWMutex
+	VacancyId uint32
 }
 
 func (api *VacancyHandler) getNewVacancyId() uint32 {
-	return atomic.AddUint32(&api.vacancyId, 1)
+	return atomic.AddUint32(&api.VacancyId, 1)
 }
 
 func NewVacancyHandler() *VacancyHandler {
 	return &VacancyHandler {
-		vacancies: map[uint]*_models.Vacancy {
+		Vacancies: map[uint]*_models.Vacancy {
 			1: {1, "name", "description", "skills", "100500", "address", "phone number"},
 		},
-		mu: sync.RWMutex{},
-		vacancyId:1,
+		Mu:        sync.RWMutex{},
+		VacancyId: 1,
 	}
 }
 
@@ -46,9 +46,9 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 
 	newId := api.getNewVacancyId()
 
-	api.mu.Lock()
-	api.vacancies[uint(newId)] = &vacancy
-	api.mu.Unlock()
+	api.Mu.Lock()
+	api.Vacancies[uint(newId)] = &vacancy
+	api.Mu.Unlock()
 
 	type Response struct {
 		ID uint32 `json:"id"`
@@ -68,11 +68,11 @@ func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) 
 	_cors.Cors.PrivateApi(&w, r)
 
 	var vacancies []_models.Vacancy
-	api.mu.RLock()
-	for _, vacancy := range api.vacancies {
+	api.Mu.RLock()
+	for _, vacancy := range api.Vacancies {
 		vacancies = append(vacancies, *vacancy)
 	}
-	api.mu.RUnlock()
+	api.Mu.RUnlock()
 
 	if len(vacancies) == 0 {
 		w.WriteHeader(http.StatusNoContent)
@@ -98,9 +98,9 @@ func (api *VacancyHandler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.mu.RLock()
-	vacancy, ok := api.vacancies[uint(vacancyId)]
-	api.mu.RUnlock()
+	api.Mu.RLock()
+	vacancy, ok := api.Vacancies[uint(vacancyId)]
+	api.Mu.RUnlock()
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -125,7 +125,7 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
+	if _, ok := api.Vacancies[uint(vacancyId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -145,9 +145,9 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 	address := data["address"]
 	phoneNumber := data["phone-number"]
 
-	api.mu.Lock()
-	api.vacancies[uint(vacancyId)] = &_models.Vacancy{uint(vacancyId), name, description, skills, salary, address, phoneNumber}
-	api.mu.Unlock()
+	api.Mu.Lock()
+	api.Vacancies[uint(vacancyId)] = &_models.Vacancy{uint(vacancyId), name, description, skills, salary, address, phoneNumber}
+	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
@@ -162,14 +162,14 @@ func (api *VacancyHandler) DeleteVacancy(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	api.mu.Lock()
-	if _, ok := api.vacancies[uint(vacancyId)]; !ok {
+	api.Mu.Lock()
+	if _, ok := api.Vacancies[uint(vacancyId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	delete(api.vacancies, uint(vacancyId))
-	api.mu.Unlock()
+	delete(api.Vacancies, uint(vacancyId))
+	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
 }
