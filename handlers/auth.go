@@ -25,8 +25,8 @@ type AuthHandler struct {
 	Sessions    map[string]uint
 	Users       map[string]*_models.User
 	UserAvatars map[uint]string
-	userSummary map[uint]UserSummary
-	mu          sync.RWMutex
+	UserSummary map[uint]_models.UserSummary
+	Mu          sync.RWMutex
 }
 
 func NewAuthHandler() *AuthHandler {
@@ -36,8 +36,8 @@ func NewAuthHandler() *AuthHandler {
 			"marat1k": {1, "marat1k", "ABCDE12345", "Marat", "Ishimbaev", "m@m.m", "89032909821"},
 		},
 		UserAvatars: map[uint]string{},
-		userSummary: map[uint]UserSummary{},
-		mu:          sync.RWMutex{},
+		UserSummary: map[uint]_models.UserSummary{},
+		Mu:          sync.RWMutex{},
 	}
 }
 
@@ -54,9 +54,9 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	log.Println("Sessions available: ", len(api.Sessions))
 	session, err := r.Cookie("session_id")
 	if err == nil {
-		api.mu.RLock()
+		api.Mu.RLock()
 		userId, found := api.Sessions[session.Value]
-		api.mu.RUnlock()
+		api.Mu.RUnlock()
 		if found {
 			jsonData, _ := json.Marshal(Response{userId})
 			w.WriteHeader(http.StatusCreated)
@@ -70,9 +70,9 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	api.mu.RLock()
+	api.Mu.RLock()
 	user, ok := api.Users[login]
-	api.mu.RUnlock()
+	api.Mu.RUnlock()
 	if !ok {
 		w.WriteHeader(http.StatusNotFound)
 		return
@@ -85,9 +85,9 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	SID := getSID(64)
 
-	api.mu.Lock()
+	api.Mu.Lock()
 	api.Sessions[SID] = user.ID
-	api.mu.Unlock()
+	api.Mu.Unlock()
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -112,9 +112,9 @@ func (api *AuthHandler) Check(w http.ResponseWriter, r *http.Request) {
 	log.Println("Sessions available: ", len(api.Sessions))
 	session, err := r.Cookie("session_id")
 	if err == nil {
-		api.mu.RLock()
+		api.Mu.RLock()
 		userId, found := api.Sessions[session.Value]
-		api.mu.RUnlock()
+		api.Mu.RUnlock()
 		if found {
 			type Response struct {
 				ID uint `json:"id"`
@@ -140,14 +140,14 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.mu.Lock()
+	api.Mu.Lock()
 	if _, ok := api.Sessions[session.Value]; !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	delete(api.Sessions, session.Value)
-	api.mu.Unlock()
+	api.Mu.Unlock()
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	session.Path = "/"
@@ -168,12 +168,12 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	api.mu.RLock()
+	api.Mu.RLock()
 	if _, ok := api.Users[login]; found && ok {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	api.mu.RUnlock()
+	api.Mu.RUnlock()
 
 	password, found := data["password"]
 	if !found || password == "" {
@@ -186,9 +186,9 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	email := data["email"]
 	phoneNumber := data["phone-number"]
 
-	api.mu.Lock()
+	api.Mu.Lock()
 	api.Users[login] = &_models.User{uint(len(api.Users) + 1), login, password, firstName, lastName, email, phoneNumber}
-	api.mu.Unlock()
+	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusCreated)
 }

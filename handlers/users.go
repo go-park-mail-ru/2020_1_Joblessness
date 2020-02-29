@@ -10,22 +10,6 @@ import (
 	"strconv"
 )
 
-type UserPage struct {
-	User interface{} `json:"user,omitempty"`
-	Summaries interface{} `json:"summaries"`
-}
-
-type UserInfo struct {
-	Firstname string `json:"first-name,omitempty"`
-	Lastname string `json:"last-name,omitempty"`
-	Tag string `json:"tag,omitempty"`
-	Avatar string `json:"avatar,omitempty"`
-}
-
-type UserSummary struct {
-	Title string `json:"title"`
-}
-
 func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /user/{user_id}")
 	_cors.Cors.PrivateApi(&w, r)
@@ -50,13 +34,13 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Response struct {
-		User UserInfo `json:"user"`
-		Summaries []UserSummary `json:"summaries"`
+		User _models.UserInfo `json:"user"`
+		Summaries []_models.UserSummary `json:"summaries"`
 	}
 
 	jsonData, _ := json.Marshal(Response{
-		UserInfo{currentUser.FirstName, currentUser.LastName, "", userAvatar},
-		[]UserSummary{},
+		_models.UserInfo{currentUser.FirstName, currentUser.LastName, "", userAvatar},
+		[]_models.UserSummary{},
 	})
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)

@@ -4,19 +4,38 @@ import (
 	_h "../handlers"
 	_models "../models"
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"sync"
 	"testing"
 	"time"
 )
 
+func NewNotEmptyAuthHandler() *_h.AuthHandler {
+	return &_h.AuthHandler {
+		Sessions: make(map[string]uint, 10),
+		Users:    map[string]*_models.User {
+			"username": {1, "username", "Password123", "first name", "last name", "email", "phone number"},
+		},
+		UserAvatars: map[uint]string{},
+		UserSummary: map[uint]_models.UserSummary{},
+		Mu:          sync.RWMutex{},
+	}
+}
+
 func TestLogin(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
+	h := NewNotEmptyAuthHandler()
 
-	body := bytes.NewReader([]byte(`{"login": "marat1k", "password": "ABCDE12345"}`))
+	userLogin, _ := json.Marshal(_models.UserLogin{
+		Login:    "username",
+		Password: "Password123",
+	})
+
+	body := bytes.NewReader(userLogin)
 
 	r := httptest.NewRequest("POST", "/api/users/login", body)
 	w := httptest.NewRecorder()
@@ -24,24 +43,29 @@ func TestLogin(t *testing.T) {
 	h.Login(w, r)
 
 	if w.Code != http.StatusCreated {
-		t.Error("status is not 201")
+		t.Error("Status is not 201")
 	}
 
 	if w.Result().Cookies()[0].Name == "session-id" {
-		t.Error("Cookie wasnt received")
+		t.Error("Cookie wasn't received")
 	}
 
 	if len(h.Sessions) != 1 {
-		t.Error("Cookie wasnt saved")
+		t.Error("Cookie wasn't saved")
 	}
 }
 
 func TestFailedLoginNotFound(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
+	h := NewNotEmptyAuthHandler()
 
-	body := bytes.NewReader([]byte(`{"login": "maratk", "password": "ABE12345"}`))
+	userLogin, _ := json.Marshal(_models.UserLogin{
+		Login:    "wrong username",
+		Password: "Password123",
+	})
+
+	body := bytes.NewReader(userLogin)
 
 	r := httptest.NewRequest("POST", "/api/users/login", body)
 	w := httptest.NewRecorder()
@@ -49,24 +73,29 @@ func TestFailedLoginNotFound(t *testing.T) {
 	h.Login(w, r)
 
 	if w.Code != http.StatusNotFound {
-		t.Error("status is not 404")
+		t.Error("Status is not 404")
 	}
 
 	if len(w.Result().Cookies()) != 0 {
-		t.Error("Wrong Cookie was received")
+		t.Error("Wrong cookie was received")
 	}
 
 	if len(h.Sessions) == 1 {
-		t.Error("Wrong Cookie wasnt saved")
+		t.Error("Wrong cookie wasn't saved")
 	}
 }
 
 func TestFailedLoginWrongPassword(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
+	h := NewNotEmptyAuthHandler()
 
-	body := bytes.NewReader([]byte(`{"login": "marat1k", "password": "ABE12345"}`))
+	userLogin, _ := json.Marshal(_models.UserLogin{
+		Login:    "username",
+		Password: "WrongPassword123",
+	})
+
+	body := bytes.NewReader(userLogin)
 
 	r := httptest.NewRequest("POST", "/api/users/login", body)
 	w := httptest.NewRecorder()
@@ -74,30 +103,30 @@ func TestFailedLoginWrongPassword(t *testing.T) {
 	h.Login(w, r)
 
 	if w.Code != http.StatusBadRequest {
-		t.Error("status is not 400")
+		t.Error("Status is not 400")
 	}
 
 	if len(w.Result().Cookies()) != 0 {
-		t.Error("Wrong Cookie was received")
+		t.Error("Wrong cookie was received")
 	}
 
 	if len(h.Sessions) == 1 {
-		t.Error("Wrong Cookie wasnt saved")
+		t.Error("Wrong cookie wasn't saved")
 	}
 }
 
 func TestLogout(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
-	h.Sessions["marat1k"] = 1
+	h := NewNotEmptyAuthHandler()
+	h.Sessions["username"] = 1
 
 	body := bytes.NewReader([]byte{})
 
 	r := httptest.NewRequest("POST", "/api/users/logout", body)
 	cookie := &http.Cookie {
 		Name: "session_id",
-		Value: "marat1k",
+		Value: "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 	r.AddCookie(cookie)
@@ -106,26 +135,26 @@ func TestLogout(t *testing.T) {
 	h.Logout(w, r)
 
 	if w.Code != http.StatusCreated{
-		t.Error("status is not 201")
+		t.Error("Status is not 201")
 	}
 
 	if len(h.Sessions) != 0 {
-		t.Error("Session wasnt closed")
+		t.Error("Session wasn't closed")
 	}
 }
 
 func TestLogoutWrongCookie(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
-	h.Sessions["marat1k"] = 1
+	h := NewNotEmptyAuthHandler()
+	h.Sessions["username"] = 1
 
 	body := bytes.NewReader([]byte{})
 
 	r := httptest.NewRequest("POST", "/api/users/logout", body)
 	cookie := &http.Cookie {
 		Name: "session_id",
-		Value: "mart1k",
+		Value: "wrong username",
 		Expires: time.Now().Add(time.Hour),
 	}
 	r.AddCookie(cookie)
@@ -134,7 +163,7 @@ func TestLogoutWrongCookie(t *testing.T) {
 	h.Logout(w, r)
 
 	if w.Code != http.StatusUnauthorized{
-		t.Error("status is not 401")
+		t.Error("Status is not 401")
 	}
 
 	if len(h.Sessions) == 0 {
@@ -145,8 +174,8 @@ func TestLogoutWrongCookie(t *testing.T) {
 func TestLogoutNoCookie(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
-	h.Sessions["marat1k"] = 1
+	h := NewNotEmptyAuthHandler()
+	h.Sessions["username"] = 1
 
 	body := bytes.NewReader([]byte{})
 
@@ -156,7 +185,7 @@ func TestLogoutNoCookie(t *testing.T) {
 	h.Logout(w, r)
 
 	if w.Code != http.StatusUnauthorized {
-		t.Error("status is not 401")
+		t.Error("Status is not 401")
 	}
 
 	if len(h.Sessions) == 0 {
@@ -167,16 +196,18 @@ func TestLogoutNoCookie(t *testing.T) {
 func TestRegistration(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
+	h := NewNotEmptyAuthHandler()
 
-	//TODO Не забывать пробелы!!!
-	body := bytes.NewReader([]byte(`{"login": "huvalk", 
-"password": "ABE12345", 
-"first-name": "first", 
-"last-name": "last", 
-"email": "m@m.m", 
-"phone-number": "89032909812"
-}`))
+	newUser, _ := json.Marshal(_models.User{
+		Login:       "new username",
+		Password:    "NewPassword123",
+		FirstName:   "new first name",
+		LastName:    "new last name",
+		Email:       "new email",
+		PhoneNumber: "new phone number",
+	})
+
+	body := bytes.NewReader(newUser)
 
 	r := httptest.NewRequest("POST", "/api/users", body)
 	w := httptest.NewRecorder()
@@ -184,35 +215,37 @@ func TestRegistration(t *testing.T) {
 	h.Register(w, r)
 
 	if w.Code != http.StatusCreated {
-		t.Error("status is not 201")
+		t.Error("Status is not 201")
 	}
 
 	expectedUser := _models.User{
 		ID: 2,
-		Login: "huvalk",
-		Password: "ABE12345",
-		FirstName: "first",
-		LastName: "last",
-		Email: "m@m.m",
-		PhoneNumber: "89032909812",
+		Login: "new username",
+		Password: "NewPassword123",
+		FirstName: "new first name",
+		LastName: "new last name",
+		Email: "new email",
+		PhoneNumber: "new phone number",
 	}
 
-	reflect.DeepEqual(h.Users["huvalk"], expectedUser)
+	reflect.DeepEqual(h.Users["new username"], expectedUser)
 }
 
 func TestFailedRegistration(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
+	h := NewNotEmptyAuthHandler()
 
-	//TODO Не забывать пробелы!!!
-	body := bytes.NewReader([]byte(`{"login": "marat1k", 
-"password": "ABE12345", 
-"first-name": "first", 
-"last-name": "last", 
-"email": "m@m.m", 
-"phone-number": "89032909812"
-}`))
+	newUser, _ := json.Marshal(_models.User{
+		Login:       "username",
+		Password:    "Password123",
+		FirstName:   "first name",
+		LastName:    "last name",
+		Email:       "email",
+		PhoneNumber: "phone number",
+	})
+
+	body := bytes.NewReader(newUser)
 
 	r := httptest.NewRequest("POST", "/api/users", body)
 	w := httptest.NewRecorder()
@@ -220,7 +253,7 @@ func TestFailedRegistration(t *testing.T) {
 	h.Register(w, r)
 
 	if w.Code != http.StatusBadRequest {
-		t.Error("status is not 400")
+		t.Error("Status is not 400")
 	}
 
 	if len(h.Users) != 1 {
