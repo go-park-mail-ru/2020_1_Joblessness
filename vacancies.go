@@ -1,6 +1,7 @@
 package main
 
 import (
+	_models "./models"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
@@ -10,18 +11,8 @@ import (
 	"sync/atomic"
 )
 
-type Vacancy struct {
-	ID uint `json:"id,omitempty"`
-	Name string `json:"name"`
-	Description string `json:"description"`
-	Skills string `json:"skills"`
-	Salary string `json:"salary"`
-	Address string `json:"address"`
-	PhoneNumber string `json:"phone-number"`
-}
-
 type VacancyHandler struct {
-	vacancies map[uint]*Vacancy
+	vacancies map[uint]*_models.Vacancy
 	mu sync.RWMutex
 	vacancyId uint32
 }
@@ -32,7 +23,7 @@ func (api *VacancyHandler) getNewVacancyId() uint32 {
 
 func NewVacancyHandler() *VacancyHandler {
 	return &VacancyHandler {
-		vacancies: map[uint]*Vacancy {
+		vacancies: map[uint]*_models.Vacancy {
 			1: {1, "name", "description", "skills", "100500", "address", "phone number"},
 		},
 		mu: sync.RWMutex{},
@@ -44,7 +35,7 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 	log.Println("POST /vacancies")
 	Cors.PrivateApi(&w, r)
 
-	var vacancy Vacancy
+	var vacancy _models.Vacancy
 	json.NewDecoder(r.Body).Decode(&vacancy)
 
 	if vacancy.Name == "" {
@@ -75,7 +66,7 @@ func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) 
 	log.Println("GET /vacancies")
 	Cors.PrivateApi(&w, r)
 
-	var vacancies []Vacancy
+	var vacancies []_models.Vacancy
 	api.mu.RLock()
 	for _, vacancy := range api.vacancies {
 		vacancies = append(vacancies, *vacancy)
@@ -154,7 +145,7 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 	phoneNumber := data["phone-number"]
 
 	api.mu.Lock()
-	api.vacancies[uint(vacancyId)] = &Vacancy{uint(vacancyId), name, description, skills, salary, address, phoneNumber}
+	api.vacancies[uint(vacancyId)] = &_models.Vacancy{uint(vacancyId), name, description, skills, salary, address, phoneNumber}
 	api.mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
