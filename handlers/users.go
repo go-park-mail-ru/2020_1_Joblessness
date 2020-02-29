@@ -70,7 +70,7 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("Users counter", len(api.Users))
 	for _, user := range api.Users {
-		if (*user).ID == uint(userId) {
+		if (*user).ID == userId {
 			currentUser = user
 		}
 	}
@@ -86,7 +86,6 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 //TODO Проверять есть ли все поля
 	(*currentUser).LastName = data["last-name"]
 	(*currentUser).FirstName = data["first-name"]
-	//(*currentUser).Password = data["password"]
 
 	w.WriteHeader(http.StatusNoContent)
 }

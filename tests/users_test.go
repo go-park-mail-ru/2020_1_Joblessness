@@ -2,26 +2,45 @@ package tests
 
 import (
 	_h "../handlers"
+	_models "../models"
 	"bytes"
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 	"time"
 )
 
+type Avatar struct {
+	Avatar string
+}
+
+func NewNotEmptyUsersHandler() *_h.AuthHandler {
+	return &_h.AuthHandler {
+		Sessions: make(map[string]uint, 10),
+		Users:    map[string]*_models.User {
+			"username": {1, "username", "Password123", "first name", "last name", "email", "phone number"},
+		},
+		UserAvatars: map[uint]string{},
+		UserSummary: map[uint]_models.UserSummary{},
+		Mu:          sync.RWMutex{},
+	}
+}
+
 func TestGetUserPage(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
-	h.Sessions["marat1k"] = 1
+	h := NewNotEmptyUsersHandler()
+	h.Sessions["username"] = 1
 
 	body := bytes.NewReader([]byte{})
 
 	r := httptest.NewRequest("POST", "/api/user", body)
 	cookie := &http.Cookie {
 		Name: "session_id",
-		Value: "marat1k",
+		Value: "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 	r.AddCookie(cookie)
@@ -31,7 +50,7 @@ func TestGetUserPage(t *testing.T) {
 	h.GetUserPage(w, r)
 
 	if w.Code != http.StatusOK {
-		t.Error("status is not 200")
+		t.Error("Status is not 200")
 	}
 }
 
@@ -39,15 +58,15 @@ func TestGetUserPage(t *testing.T) {
 func TestFailedGetUserPageNoUserFound(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
-	h.Sessions["marat1k"] = 1
+	h := NewNotEmptyUsersHandler()
+	h.Sessions["username"] = 1
 
 	body := bytes.NewReader([]byte{})
 
 	r := httptest.NewRequest("POST", "/api/user", body)
 	cookie := &http.Cookie {
 		Name: "session_id",
-		Value: "marat1k",
+		Value: "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 	r.AddCookie(cookie)
@@ -57,24 +76,28 @@ func TestFailedGetUserPageNoUserFound(t *testing.T) {
 	h.GetUserPage(w, r)
 
 	if w.Code != http.StatusNotFound {
-		t.Error("status is not 404")
+		t.Error("Status is not 404")
 	}
 }
 
 func TestChangeUserInfo(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
-	h.Sessions["marat1k"] = 1
+	h := NewNotEmptyUsersHandler()
+	h.Sessions["username"] = 1
 
-	body := bytes.NewReader([]byte(`{"first-name": "maratk", 
-"last-name": "last", 
-"password": "ABCDE2345"}`))
+	user, _ := json.Marshal(_models.User{
+		Password:    "NewPassword123",
+		FirstName:   "new first name",
+		LastName:    "new last name",
+	})
+
+	body := bytes.NewReader(user)
 
 	r := httptest.NewRequest("PUT", "/api/user", body)
 	cookie := &http.Cookie {
 		Name: "session_id",
-		Value: "marat1k",
+		Value: "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 	r.AddCookie(cookie)
@@ -85,11 +108,11 @@ func TestChangeUserInfo(t *testing.T) {
 	h.ChangeUserInfo(w, r)
 
 	if w.Code != http.StatusNoContent{
-		t.Error("status is not 204")
+		t.Error("Status is not 204")
 	}
 
-	if (*h.Users["marat1k"]).FirstName != "maratk" {
-		t.Error("Changes werent saved")
+	if (*h.Users["username"]).FirstName != "new first name" {
+		t.Error("Changes weren't saved")
 	}
 }
 
@@ -97,18 +120,22 @@ func TestChangeUserInfo(t *testing.T) {
 func TestFailedChangeUserInfoNoRights(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
-	h.Sessions["maratk"] = 1
-	h.Sessions["marat1k"] = 2
+	h := NewNotEmptyUsersHandler()
+	h.Sessions["other username"] = 1
+	h.Sessions["username"] = 2
 
-	body := bytes.NewReader([]byte(`{"first-name": "maratk", 
-"last-name": "last", 
-"password": "ABCDE2345"}`))
+	user, _ := json.Marshal(_models.User{
+		Password:    "NewPassword123",
+		FirstName:   "new first name",
+		LastName:    "new last name",
+	})
+
+	body := bytes.NewReader(user)
 
 	r := httptest.NewRequest("PUT", "/api/user", body)
 	cookie := &http.Cookie {
 		Name: "session_id",
-		Value: "marat1k",
+		Value: "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 	r.AddCookie(cookie)
@@ -119,22 +146,24 @@ func TestFailedChangeUserInfoNoRights(t *testing.T) {
 	h.ChangeUserInfo(w, r)
 
 	if w.Code != http.StatusForbidden {
-		t.Error("status is not 403")
+		t.Error("Status is not 403")
 	}
 }
 
 func TestSetAvatar(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
-	h.Sessions["marat1k"] = 1
+	h := NewNotEmptyUsersHandler()
+	h.Sessions["username"] = 1
 
-	body := bytes.NewReader([]byte(`{"avatar": "avatar"}`))
+	avatar, _ := json.Marshal(Avatar{"avatar"})
+
+	body := bytes.NewReader(avatar)
 
 	r := httptest.NewRequest("POST", "/api/users/1/avatar", body)
 	cookie := &http.Cookie {
 		Name: "session_id",
-		Value: "marat1k",
+		Value: "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 	r.AddCookie(cookie)
@@ -144,29 +173,27 @@ func TestSetAvatar(t *testing.T) {
 
 	h.SetAvatar(w, r)
 
-	if w.Code != http.StatusCreated{
-		t.Error("status is not 201")
-	}
-
-	if h.UserAvatars[1] != "avatar" {
-		t.Error("Changes werent saved")
+	if w.Code != http.StatusCreated {
+		t.Error("Status is not 201")
 	}
 }
 
 func TestFaildSetAvatarNoRights(t *testing.T) {
 	t.Parallel()
 
-	h := _h.NewAuthHandler()
-	h.Sessions["marat1k"] = 1
-	h.Sessions["maratk"] = 2
-	h.UserAvatars[1] = "before"
+	h := NewNotEmptyUsersHandler()
+	h.Sessions["username"] = 1
+	h.Sessions["other username"] = 2
+	h.UserAvatars[1] = "avatar"
 
-	body := bytes.NewReader([]byte(`{"avatar": "avatar"}`))
+	avatar, _ := json.Marshal(Avatar{"new avatar"})
+
+	body := bytes.NewReader([]byte(avatar))
 
 	r := httptest.NewRequest("POST", "/api/users/1/avatar", body)
 	cookie := &http.Cookie {
 		Name: "session_id",
-		Value: "maratk",
+		Value: "other username",
 		Expires: time.Now().Add(time.Hour),
 	}
 	r.AddCookie(cookie)
@@ -177,10 +204,10 @@ func TestFaildSetAvatarNoRights(t *testing.T) {
 	h.SetAvatar(w, r)
 
 	if w.Code != http.StatusForbidden{
-		t.Error("status is not 403")
+		t.Error("Status is not 403")
 	}
 
-	if h.UserAvatars[1] != "before" {
-		t.Error("Wrong Changes were saved")
+	if h.UserAvatars[1] != "avatar" {
+		t.Error("Wrong changes were saved")
 	}
 }
