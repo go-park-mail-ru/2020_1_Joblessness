@@ -1,6 +1,7 @@
 package tests
 
 import (
+	_h "../handlers"
 	_models "../models"
 	"bytes"
 	"github.com/gorilla/mux"
@@ -14,7 +15,7 @@ import (
 func TestLogin(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
+	h := _h.NewAuthHandler()
 
 	body := bytes.NewReader([]byte(`{"login": "marat1k", "password": "ABCDE12345"}`))
 
@@ -31,7 +32,7 @@ func TestLogin(t *testing.T) {
 		t.Error("Cookie wasnt received")
 	}
 
-	if len(h.sessions) != 1 {
+	if len(h.Sessions) != 1 {
 		t.Error("Cookie wasnt saved")
 	}
 }
@@ -39,7 +40,7 @@ func TestLogin(t *testing.T) {
 func TestFailedLoginNotFound(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
+	h := _h.NewAuthHandler()
 
 	body := bytes.NewReader([]byte(`{"login": "maratk", "password": "ABE12345"}`))
 
@@ -56,7 +57,7 @@ func TestFailedLoginNotFound(t *testing.T) {
 		t.Error("Wrong Cookie was received")
 	}
 
-	if len(h.sessions) == 1 {
+	if len(h.Sessions) == 1 {
 		t.Error("Wrong Cookie wasnt saved")
 	}
 }
@@ -64,7 +65,7 @@ func TestFailedLoginNotFound(t *testing.T) {
 func TestFailedLoginWrongPassword(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
+	h := _h.NewAuthHandler()
 
 	body := bytes.NewReader([]byte(`{"login": "marat1k", "password": "ABE12345"}`))
 
@@ -81,7 +82,7 @@ func TestFailedLoginWrongPassword(t *testing.T) {
 		t.Error("Wrong Cookie was received")
 	}
 
-	if len(h.sessions) == 1 {
+	if len(h.Sessions) == 1 {
 		t.Error("Wrong Cookie wasnt saved")
 	}
 }
@@ -89,8 +90,8 @@ func TestFailedLoginWrongPassword(t *testing.T) {
 func TestLogout(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
-	h.sessions["marat1k"] = 1
+	h := _h.NewAuthHandler()
+	h.Sessions["marat1k"] = 1
 
 	body := bytes.NewReader([]byte{})
 
@@ -109,7 +110,7 @@ func TestLogout(t *testing.T) {
 		t.Error("status is not 201")
 	}
 
-	if len(h.sessions) != 0 {
+	if len(h.Sessions) != 0 {
 		t.Error("Session wasnt closed")
 	}
 }
@@ -117,8 +118,8 @@ func TestLogout(t *testing.T) {
 func TestLogoutWrongCookie(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
-	h.sessions["marat1k"] = 1
+	h := _h.NewAuthHandler()
+	h.Sessions["marat1k"] = 1
 
 	body := bytes.NewReader([]byte{})
 
@@ -137,7 +138,7 @@ func TestLogoutWrongCookie(t *testing.T) {
 		t.Error("status is not 401")
 	}
 
-	if len(h.sessions) == 0 {
+	if len(h.Sessions) == 0 {
 		t.Error("Wrong session was closed")
 	}
 }
@@ -145,8 +146,8 @@ func TestLogoutWrongCookie(t *testing.T) {
 func TestLogoutNoCookie(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
-	h.sessions["marat1k"] = 1
+	h := _h.NewAuthHandler()
+	h.Sessions["marat1k"] = 1
 
 	body := bytes.NewReader([]byte{})
 
@@ -159,7 +160,7 @@ func TestLogoutNoCookie(t *testing.T) {
 		t.Error("status is not 401")
 	}
 
-	if len(h.sessions) == 0 {
+	if len(h.Sessions) == 0 {
 		t.Error("Wrong session was closed")
 	}
 }
@@ -167,7 +168,7 @@ func TestLogoutNoCookie(t *testing.T) {
 func TestRegistration(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
+	h := _h.NewAuthHandler()
 
 	//TODO Не забывать пробелы!!!
 	body := bytes.NewReader([]byte(`{"login": "huvalk", 
@@ -197,13 +198,13 @@ func TestRegistration(t *testing.T) {
 		PhoneNumber: "89032909812",
 	}
 
-	reflect.DeepEqual(h.users["huvalk"], expectedUser)
+	reflect.DeepEqual(h.Users["huvalk"], expectedUser)
 }
 
 func TestFailedRegistration(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
+	h := _h.NewAuthHandler()
 
 	//TODO Не забывать пробелы!!!
 	body := bytes.NewReader([]byte(`{"login": "marat1k", 
@@ -223,7 +224,7 @@ func TestFailedRegistration(t *testing.T) {
 		t.Error("status is not 400")
 	}
 
-	if len(h.users) != 1 {
+	if len(h.Users) != 1 {
 		t.Error("Wrong user was created")
 	}
 }
@@ -231,8 +232,8 @@ func TestFailedRegistration(t *testing.T) {
 func TestGetUserPage(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
-	h.sessions["marat1k"] = 1
+	h := _h.NewAuthHandler()
+	h.Sessions["marat1k"] = 1
 
 	body := bytes.NewReader([]byte{})
 
@@ -263,8 +264,8 @@ func TestGetUserPage(t *testing.T) {
 func TestFailedGetUserPageNoUserFound(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
-	h.sessions["marat1k"] = 1
+	h := _h.NewAuthHandler()
+	h.Sessions["marat1k"] = 1
 
 	body := bytes.NewReader([]byte{})
 
@@ -288,8 +289,8 @@ func TestFailedGetUserPageNoUserFound(t *testing.T) {
 func TestChangeUserInfo(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
-	h.sessions["marat1k"] = 1
+	h := _h.NewAuthHandler()
+	h.Sessions["marat1k"] = 1
 
 	body := bytes.NewReader([]byte(`{"first-name": "maratk", 
 "last-name": "last", 
@@ -312,7 +313,7 @@ func TestChangeUserInfo(t *testing.T) {
 		t.Error("status is not 204")
 	}
 
-	if (*h.users["marat1k"]).FirstName != "maratk" {
+	if (*h.Users["marat1k"]).FirstName != "maratk" {
 		t.Error("Changes werent saved")
 	}
 }
@@ -321,9 +322,9 @@ func TestChangeUserInfo(t *testing.T) {
 func TestFailedChangeUserInfoNoRights(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
-	h.sessions["maratk"] = 1
-	h.sessions["marat1k"] = 2
+	h := _h.NewAuthHandler()
+	h.Sessions["maratk"] = 1
+	h.Sessions["marat1k"] = 2
 
 	body := bytes.NewReader([]byte(`{"first-name": "maratk", 
 "last-name": "last", 
@@ -350,8 +351,8 @@ func TestFailedChangeUserInfoNoRights(t *testing.T) {
 func TestSetAvatar(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
-	h.sessions["marat1k"] = 1
+	h := _h.NewAuthHandler()
+	h.Sessions["marat1k"] = 1
 
 	body := bytes.NewReader([]byte(`{"avatar": "avatar"}`))
 
@@ -372,7 +373,7 @@ func TestSetAvatar(t *testing.T) {
 		t.Error("status is not 201")
 	}
 
-	if h.userAvatars[1] != "avatar" {
+	if h.UserAvatars[1] != "avatar" {
 		t.Error("Changes werent saved")
 	}
 }
@@ -380,10 +381,10 @@ func TestSetAvatar(t *testing.T) {
 func TestFaildSetAvatarNoRights(t *testing.T) {
 	t.Parallel()
 
-	h := NewAuthHandler()
-	h.sessions["marat1k"] = 1
-	h.sessions["maratk"] = 2
-	h.userAvatars[1] = "before"
+	h := _h.NewAuthHandler()
+	h.Sessions["marat1k"] = 1
+	h.Sessions["maratk"] = 2
+	h.UserAvatars[1] = "before"
 
 	body := bytes.NewReader([]byte(`{"avatar": "avatar"}`))
 
@@ -404,7 +405,7 @@ func TestFaildSetAvatarNoRights(t *testing.T) {
 		t.Error("status is not 403")
 	}
 
-	if h.userAvatars[1] != "before" {
+	if h.UserAvatars[1] != "before" {
 		t.Error("Wrong Changes were saved")
 	}
 }
