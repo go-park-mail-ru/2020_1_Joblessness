@@ -45,3 +45,15 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 	}
 	return result
 }
+
+func (corsList *CorsHandler) CorsMiddleware(h http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		if corsList.PrivateApi(&w, r) {
+			h.ServeHTTP(w, r)
+		} else {
+			log.Println("Not allowed origin")
+		}
+
+	})
+}

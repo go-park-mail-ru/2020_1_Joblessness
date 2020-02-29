@@ -2,7 +2,6 @@ package handlers
 
 import (
 	_models "../models"
-	_cors "../utils/cors"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"log"
@@ -12,7 +11,6 @@ import (
 
 func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /user/{user_id}")
-	_cors.Cors.PrivateApi(&w, r)
 
 	var currentUser *_models.User
 	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
@@ -48,7 +46,6 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 	log.Println("PUT /user/{user_id}")
-	_cors.Cors.PrivateApi(&w, r)
 
 	session, err := r.Cookie("session_id")
 	log.Println("session cookie: ", session)
@@ -92,7 +89,6 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 
 func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users/{user_id}/avatar")
-	_cors.Cors.PrivateApi(&w, r)
 
 	defer r.Body.Close()
 
