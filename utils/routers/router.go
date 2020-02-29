@@ -27,7 +27,7 @@ func contentTypeMiddleware(next http.Handler) http.Handler {
 }
 
 func StartRouter() {
-	router := mux.NewRouter().PathPrefix("/api").Subrouter()//.StrictSlash(true)
+	router := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	router.Use(contentTypeMiddleware)
 	router.HandleFunc("/echo/{message}", echoFunc)
