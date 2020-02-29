@@ -46,6 +46,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 	}
 	var summary _models.Summary
 	err = json.Unmarshal(body, &summary)
+	summary.ID = uint(newId)
 	log.Println("summary recieved: ", summary)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
