@@ -47,7 +47,7 @@ func StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	router.Use(RecoveryMiddleware)
-	router.Use(_cors.Cors.CorsMiddleware)
+	//router.Use(_cors.Cors.CorsMiddleware)
 	router.HandleFunc("/echo/{message}", echoFunc)
 	router.Methods("OPTIONS").HandlerFunc(_cors.Cors.Preflight)
 
@@ -81,6 +81,7 @@ func StartRouter() {
 	router.HandleFunc("/summaries/{summary_id}", summaryApi.ChangeSummary).Methods("PUT")
 	router.HandleFunc("/summaries/{summary_id}", summaryApi.DeleteSummary).Methods("DELETE")
 	router.HandleFunc("/user/{user_id}/summaries", summaryApi.GetUserSummaries).Methods("GET")
+	router.HandleFunc("/summaries/{summary_id}/mail", summaryApi.SendSummary).Methods("POST")
 
 	http.Handle("/", router)
 	fmt.Println("Server started")

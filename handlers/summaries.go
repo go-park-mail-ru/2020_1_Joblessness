@@ -2,6 +2,7 @@ package handlers
 
 import (
 	_models "../models"
+	_mails "../utils/mails"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io/ioutil"
@@ -210,4 +211,43 @@ func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request)
 	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (api *SummaryHandler) SendSummary(w http.ResponseWriter, r *http.Request) {
+	log.Println("POST /summaries/{summary_id}/mail")
+
+	summaryId, err := strconv.Atoi(mux.Vars(r)["summary_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	api.Mu.RLock()
+	summary, ok := api.Summaries[uint(summaryId)]
+	api.Mu.RUnlock()
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	var data map[string]string
+	err = json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	message, err := _mails.SummaryToMessage(*summary)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = _mails.SendMessage(message, data["to"])
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
