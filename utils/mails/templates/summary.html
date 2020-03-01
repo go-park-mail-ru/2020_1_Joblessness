@@ -1,0 +1,13 @@
+<h1>Резюме</h1>
+<ul>
+    {{with .Summary}}
+        <li>Имя: {{.FirstName}}</li>
+        <li>Фамилия: {{.LastName}}</li>
+        <li>Телефонный номер: {{.PhoneNumber}}</li>
+        <li>Электронная почта: {{.Email}}</li>
+        <li>Дата рождения: {{.BirthDate}}</li>
+        <li>Пол: {{.Gender}}</li>
+        <li>Опыт работы: {{.Experience}}</li>
+        <li>Образование: {{.Education}}</li>
+    {{end}}
+</ul>
