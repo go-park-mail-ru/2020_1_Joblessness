@@ -6,7 +6,7 @@ import (
 	"html/template"
 )
 
-const templatePath = "../utils/mails/summary.html"
+const templatePath = "../utils/mails/templates/summary.html"
 
 func SummaryToMessage(summary _models.Summary) (string, error) {
 	t := template.New("summary.html")
