@@ -49,11 +49,21 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 func (corsList *CorsHandler) CorsMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if corsList.PrivateApi(&w, r) {
-			h.ServeHTTP(w, r)
-		} else {
-			log.Println("Not allowed origin")
-		}
+		//if corsList.PrivateApi(&w, r) {
+		//	h.ServeHTTP(w, r)
+		//} else {
+		//	log.Println("Not allowed origin")
+		//}
+
+		w.Header().Set("Content-Type", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, csrf-token, Authorization")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Set-Cookie", "*")
+		w.Header().Set("Vary", "Accept, Cookie")
+
+		h.ServeHTTP(w, r)
 
 	})
 }
