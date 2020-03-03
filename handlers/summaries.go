@@ -92,7 +92,7 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 func (api *SummaryHandler) PrintSummary(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /summaries/{summary_id}/print")
 
-	summaryId, err := strconv.Atoi(mux.Vars(r)["summary_id"])
+	summaryId, err := strconv.ParseUint(mux.Vars(r)["summary_id"], 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -111,18 +111,29 @@ func (api *SummaryHandler) PrintSummary(w http.ResponseWriter, r *http.Request) 
 	pdf.SetFont("Arial", "B", 16)
 
 	name := fmt.Sprintf("Name: %s %s\n", summary.FirstName, summary.LastName)
-	//personal := fmt.Sprintf("Birthday: %s Gender: %s\n", summary.BirthDate, summary.Gender)
+	personal := fmt.Sprintf("Birthday: %s Gender: %s\n", summary.BirthDate, summary.Gender)
 	contacts := fmt.Sprintf("Email: %s, Phone: %s\n", summary.Email, summary.PhoneNumber)
 	general := fmt.Sprintf("Education:\n %s\n, Expirience:\n %s\n", summary.Education, summary.Experience)
-	pdf.CellFormat(190, 7, "SUMMARY", "0", 0, "CM", false, 0, "")
-	pdf.CellFormat(190, 7, name, "0", 0, "RM", false, 0, "")
-	pdf.CellFormat(190, 7, "CONTACTS", "0", 0, "CM", false, 0, "")
-	pdf.CellFormat(190, 7, contacts, "0", 0, "RM", false, 0, "")
-	pdf.CellFormat(190, 7, "GENERAL INFORMATION", "0", 0, "CM", false, 0, "")
-	pdf.CellFormat(190, 7, general, "0", 0, "RM", false, 0, "")
-	pdf.Output(w)
-	w.Header().Set("Content-type", "application/pdf")
 
+	pdf.CellFormat(190, 7, "SUMMARY\n", "0", 0, "CM", false, 0, "")
+	pdf.Ln(-1)
+	pdf.CellFormat(100, 7, name, "0", 0, "LM", false, 0, "")
+	pdf.Ln(20)
+	pdf.CellFormat(190, 7, "PERSONAL INFORMATION\n", "0", 0, "CM", false, 0, "")
+	pdf.Ln(-1)
+	pdf.CellFormat(100, 7, personal, "0", 0, "LM", false, 0, "")
+	pdf.Ln(20)
+	pdf.CellFormat(190, 7, "CONTACTS", "0", 0, "CM", false, 0, "")
+	pdf.Ln(-1)
+	pdf.CellFormat(190, 7, contacts, "0", 0, "LM", false, 0, "")
+	pdf.Ln(20)
+	pdf.CellFormat(190, 7, "GENERAL INFORMATION", "0", 0, "CM", false, 0, "")
+	pdf.Ln(-1)
+	pdf.CellFormat(190, 7, general, "0", 0, "LM", false, 0, "")
+
+	pdf.Output(w)
+
+	w.Header().Set("Content-type", "application/pdf")
 }
 
 func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
