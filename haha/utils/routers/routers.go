@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"joblessness/haha/handlers"
+	"joblessness/haha/utils/cors"
 	"log"
 	"net/http"
-	"server/server/handlers"
-	"server/server/utils/cors"
 )
 
 func echoFunc(w http.ResponseWriter, r *http.Request) {
@@ -30,7 +30,7 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 				log.Println(err)
 
 				jsonBody, _ := json.Marshal(map[string]string{
-					"error": "There was an internal server error",
+					"error": "There was an internal haha error",
 				})
 
 				w.WriteHeader(http.StatusInternalServerError)

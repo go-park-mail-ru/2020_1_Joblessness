@@ -3,11 +3,11 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
+	"joblessness/haha/handlers"
+	"joblessness/haha/models"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
-	"server/server/handlers"
-	"server/server/models"
 	"sync"
 	"testing"
 	"time"

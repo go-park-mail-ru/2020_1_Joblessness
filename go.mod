@@ -1,4 +1,4 @@
-module server
+module joblessness
 
 go 1.13
 

@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"joblessness/haha/models"
 	"log"
 	"math/rand"
 	"net/http"
-	"server/server/models"
 	"sync"
 	"time"
 )

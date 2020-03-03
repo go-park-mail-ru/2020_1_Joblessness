@@ -3,9 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"joblessness/haha/models"
 	"log"
 	"net/http"
-	"server/server/models"
 	"strconv"
 	"sync"
 	"sync/atomic"

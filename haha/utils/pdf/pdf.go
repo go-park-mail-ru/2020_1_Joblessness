@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/jung-kurt/gofpdf"
 	"io"
-	"server/server/models"
+	"joblessness/haha/models"
 )
 
 func SummaryToPdf(w io.Writer, summary models.Summary) error {

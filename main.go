@@ -1,8 +1,8 @@
 package main
 
 import (
-	"server/server/utils/cors"
-	"server/server/utils/routers"
+	"joblessness/haha/utils/cors"
+	"joblessness/haha/utils/routers"
 )
 
 func main() {
