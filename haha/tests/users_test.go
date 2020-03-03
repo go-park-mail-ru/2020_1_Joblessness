@@ -1,11 +1,11 @@
 package tests
 
 import (
-	_h "../handlers"
-	_models "../models"
 	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"joblessness/haha/handlers"
+	"joblessness/haha/models"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -17,14 +17,14 @@ type Avatar struct {
 	Avatar string
 }
 
-func NewNotEmptyUsersHandler() *_h.AuthHandler {
-	return &_h.AuthHandler {
+func NewNotEmptyUsersHandler() *handlers.AuthHandler {
+	return &handlers.AuthHandler {
 		Sessions: make(map[string]uint, 10),
-		Users:    map[string]*_models.User {
+		Users:    map[string]*models.User {
 			"username": {1, "username", "Password123", "first name", "last name", "email", "phone number"},
 		},
 		UserAvatars: map[uint]string{},
-		UserSummary: map[uint]_models.UserSummary{},
+		UserSummary: map[uint]models.UserSummary{},
 		Mu:          sync.RWMutex{},
 	}
 }
@@ -86,7 +86,7 @@ func TestChangeUserInfo(t *testing.T) {
 	h := NewNotEmptyUsersHandler()
 	h.Sessions["username"] = 1
 
-	user, _ := json.Marshal(_models.User{
+	user, _ := json.Marshal(models.User{
 		Password:    "NewPassword123",
 		FirstName:   "new first name",
 		LastName:    "new last name",
@@ -123,7 +123,7 @@ func TestFailedChangeUserInfoNoRights(t *testing.T) {
 	h.Sessions["other username"] = 1
 	h.Sessions["username"] = 2
 
-	user, _ := json.Marshal(_models.User{
+	user, _ := json.Marshal(models.User{
 		Password:    "NewPassword123",
 		FirstName:   "new first name",
 		LastName:    "new last name",
