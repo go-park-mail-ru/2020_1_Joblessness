@@ -3,7 +3,9 @@ package handlers
 import (
 	_models "../models"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jung-kurt/gofpdf"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -85,6 +87,42 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
+}
+
+func (api *SummaryHandler) PrintSummary(w http.ResponseWriter, r *http.Request) {
+	log.Println("GET /summaries/{summary_id}/print")
+
+	summaryId, err := strconv.Atoi(mux.Vars(r)["summary_id"])
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	api.Mu.RLock()
+	summary, ok := api.Summaries[uint(summaryId)]
+	api.Mu.RUnlock()
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.AddPage()
+	pdf.SetFont("Arial", "B", 16)
+
+	name := fmt.Sprintf("Name: %s %s\n", summary.FirstName, summary.LastName)
+	//personal := fmt.Sprintf("Birthday: %s Gender: %s\n", summary.BirthDate, summary.Gender)
+	contacts := fmt.Sprintf("Email: %s, Phone: %s\n", summary.Email, summary.PhoneNumber)
+	general := fmt.Sprintf("Education:\n %s\n, Expirience:\n %s\n", summary.Education, summary.Experience)
+	pdf.CellFormat(190, 7, "SUMMARY", "0", 0, "CM", false, 0, "")
+	pdf.CellFormat(190, 7, name, "0", 0, "RM", false, 0, "")
+	pdf.CellFormat(190, 7, "CONTACTS", "0", 0, "CM", false, 0, "")
+	pdf.CellFormat(190, 7, contacts, "0", 0, "RM", false, 0, "")
+	pdf.CellFormat(190, 7, "GENERAL INFORMATION", "0", 0, "CM", false, 0, "")
+	pdf.CellFormat(190, 7, general, "0", 0, "RM", false, 0, "")
+	pdf.Output(w)
+	w.Header().Set("Content-type", "application/pdf")
+
 }
 
 func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
