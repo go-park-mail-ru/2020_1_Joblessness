@@ -1,28 +1,28 @@
 package tests
 
 import (
-	_h "../handlers"
-	_models "../models"
 	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
+	"server/server/handlers"
+	"server/server/models"
 	"strings"
 	"sync"
 	"testing"
 )
 
-func NewEmptyVacancyHandler() *_h.VacancyHandler {
-	return &_h.VacancyHandler{
-		Vacancies: map[uint]*_models.Vacancy{},
+func NewEmptyVacancyHandler() *handlers.VacancyHandler {
+	return &handlers.VacancyHandler{
+		Vacancies: map[uint]*models.Vacancy{},
 		Mu:        sync.RWMutex{},
 	}
 }
 
-func NewNotEmptyVacancyHandler() *_h.VacancyHandler {
-	return &_h.VacancyHandler{
-		Vacancies:map[uint]*_models.Vacancy{
+func NewNotEmptyVacancyHandler() *handlers.VacancyHandler {
+	return &handlers.VacancyHandler{
+		Vacancies:map[uint]*models.Vacancy{
 			1: {1, "first name", "description", "skills", "salary", "address", "phone"},
 			2: {2, "second name", "description", "skills", "salary", "address", "phone"},
 		},
@@ -36,7 +36,7 @@ func TestSuccessCreateVacancy(t *testing.T) {
 
 	h := NewEmptyVacancyHandler()
 
-	vacancy, _ := json.Marshal(_models.Vacancy{
+	vacancy, _ := json.Marshal(models.Vacancy{
 		Name:        "name",
 		Description: "description",
 		Skills:      "skills",
@@ -70,7 +70,7 @@ func TestCreateVacancyWithEmptyName(t *testing.T) {
 
 	h := NewEmptyVacancyHandler()
 
-	vacancy, _ := json.Marshal(_models.Vacancy{
+	vacancy, _ := json.Marshal(models.Vacancy{
 		Name:        "",
 		Description: "description",
 		Skills:      "skills",
@@ -186,7 +186,7 @@ func TestSuccessChangeVacancy(t *testing.T) {
 
 	h := NewNotEmptyVacancyHandler()
 
-	vacancy, _ := json.Marshal(_models.Vacancy{
+	vacancy, _ := json.Marshal(models.Vacancy{
 		Name:        "new name",
 		Description: "description",
 		Skills:      "skills",
@@ -217,7 +217,7 @@ func TestChangeVacancyWithEmptyName(t *testing.T) {
 
 	h := NewNotEmptyVacancyHandler()
 
-	vacancy, _ := json.Marshal(_models.Vacancy{
+	vacancy, _ := json.Marshal(models.Vacancy{
 		Name:        "",
 		Description: "description",
 		Skills:      "skills",
@@ -248,7 +248,7 @@ func TestChangeNullVacancy(t *testing.T) {
 
 	h := NewNotEmptyVacancyHandler()
 
-	vacancy, _ := json.Marshal(_models.Vacancy{
+	vacancy, _ := json.Marshal(models.Vacancy{
 		Name:        "new name",
 		Description: "description",
 		Skills:      "skills",

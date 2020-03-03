@@ -1,26 +1,26 @@
 package tests
 
 import (
-	_h "../handlers"
-	_models "../models"
 	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"server/server/handlers"
+	"server/server/models"
 	"sync"
 	"testing"
 	"time"
 )
 
-func NewNotEmptyAuthHandler() *_h.AuthHandler {
-	return &_h.AuthHandler {
+func NewNotEmptyAuthHandler() *handlers.AuthHandler {
+	return &handlers.AuthHandler {
 		Sessions: make(map[string]uint, 10),
-		Users:    map[string]*_models.User {
+		Users:    map[string]*models.User {
 			"username": {1, "username", "Password123", "first name", "last name", "email", "phone number"},
 		},
 		UserAvatars: map[uint]string{},
-		UserSummary: map[uint]_models.UserSummary{},
+		UserSummary: map[uint]models.UserSummary{},
 		Mu:          sync.RWMutex{},
 	}
 }
@@ -30,7 +30,7 @@ func TestLogin(t *testing.T) {
 
 	h := NewNotEmptyAuthHandler()
 
-	userLogin, _ := json.Marshal(_models.UserLogin{
+	userLogin, _ := json.Marshal(models.UserLogin{
 		Login:    "username",
 		Password: "Password123",
 	})
@@ -60,7 +60,7 @@ func TestFailedLoginNotFound(t *testing.T) {
 
 	h := NewNotEmptyAuthHandler()
 
-	userLogin, _ := json.Marshal(_models.UserLogin{
+	userLogin, _ := json.Marshal(models.UserLogin{
 		Login:    "wrong username",
 		Password: "Password123",
 	})
@@ -90,7 +90,7 @@ func TestFailedLoginWrongPassword(t *testing.T) {
 
 	h := NewNotEmptyAuthHandler()
 
-	userLogin, _ := json.Marshal(_models.UserLogin{
+	userLogin, _ := json.Marshal(models.UserLogin{
 		Login:    "username",
 		Password: "WrongPassword123",
 	})
@@ -198,7 +198,7 @@ func TestRegistration(t *testing.T) {
 
 	h := NewNotEmptyAuthHandler()
 
-	newUser, _ := json.Marshal(_models.User{
+	newUser, _ := json.Marshal(models.User{
 		Login:       "new username",
 		Password:    "NewPassword123",
 		FirstName:   "new first name",
@@ -218,7 +218,7 @@ func TestRegistration(t *testing.T) {
 		t.Error("Status is not 201")
 	}
 
-	expectedUser := _models.User{
+	expectedUser := models.User{
 		ID: 2,
 		Login: "new username",
 		Password: "NewPassword123",
@@ -236,7 +236,7 @@ func TestFailedRegistration(t *testing.T) {
 
 	h := NewNotEmptyAuthHandler()
 
-	newUser, _ := json.Marshal(_models.User{
+	newUser, _ := json.Marshal(models.User{
 		Login:       "username",
 		Password:    "Password123",
 		FirstName:   "first name",

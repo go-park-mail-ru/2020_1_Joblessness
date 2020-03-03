@@ -1,13 +1,13 @@
 package pdf
 
 import (
-	_models "../../models"
 	"fmt"
 	"github.com/jung-kurt/gofpdf"
 	"io"
+	"server/server/models"
 )
 
-func SummaryToPdf(w io.Writer, summary _models.Summary) error {
+func SummaryToPdf(w io.Writer, summary models.Summary) error {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddPage()
 	pdf.SetFont("Helvetica", "", 16)

@@ -1,28 +1,28 @@
 package tests
 
 import (
-	_h "../handlers"
-	_models "../models"
 	"bytes"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
 	"net/http/httptest"
+	"server/server/handlers"
+	"server/server/models"
 	"strings"
 	"sync"
 	"testing"
 )
 
-func NewEmptySummaryHandler() *_h.SummaryHandler {
-	return &_h.SummaryHandler{
-		Summaries: map[uint]*_models.Summary{},
+func NewEmptySummaryHandler() *handlers.SummaryHandler {
+	return &handlers.SummaryHandler{
+		Summaries: map[uint]*models.Summary{},
 		Mu:        sync.RWMutex{},
 	}
 }
 
-func NewNotEmptySummaryHandler() *_h.SummaryHandler {
-	return &_h.SummaryHandler{
-		Summaries:map[uint]*_models.Summary{
+func NewNotEmptySummaryHandler() *handlers.SummaryHandler {
+	return &handlers.SummaryHandler{
+		Summaries:map[uint]*models.Summary{
 			1: {1, 1, "first name", "last name", "phone number", "email", "birth date", "male", "experiencz", "education"},
 			2: {1, 2, "first name", "last name", "phone number", "email", "birth date", "female", "experiencz", "education"},
 		},
@@ -36,7 +36,7 @@ func TestCreateSummaryFailedNoAuthor(t *testing.T) {
 
 	h := NewEmptySummaryHandler()
 
-	summary, _ := json.Marshal(_models.Summary{
+	summary, _ := json.Marshal(models.Summary{
 		FirstName:   "first name",
 		LastName:    "last name",
 		PhoneNumber: "phone number",
@@ -158,7 +158,7 @@ func TestSuccessChangeSummary(t *testing.T) {
 
 	h := NewNotEmptySummaryHandler()
 
-	summary, _ := json.Marshal(_models.Summary{
+	summary, _ := json.Marshal(models.Summary{
 		FirstName:   "first name",
 		LastName:    "last name",
 		PhoneNumber: "phone number",
@@ -191,7 +191,7 @@ func TestChangeNullSummary(t *testing.T) {
 
 	h := NewNotEmptySummaryHandler()
 
-	summary, _ := json.Marshal(_models.Summary{
+	summary, _ := json.Marshal(models.Summary{
 		FirstName:   "first name",
 		LastName:    "last name",
 		PhoneNumber: "phone number",

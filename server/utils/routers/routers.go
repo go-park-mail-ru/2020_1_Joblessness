@@ -1,19 +1,19 @@
 package routers
 
 import (
-	_handlers "../../handlers"
-	_cors "../cors"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"server/server/handlers"
+	"server/server/utils/cors"
 )
 
 func echoFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("/users/echo")
 
-	_cors.Cors.PrivateApi(&w, r)
+	cors.Cors.PrivateApi(&w, r)
 
 	params := mux.Vars(r)
 	message := params["message"]
@@ -33,7 +33,6 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 					"error": "There was an internal server error",
 				})
 
-				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Write(jsonBody)
 			}
@@ -47,12 +46,12 @@ func StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	router.Use(RecoveryMiddleware)
-	router.Use(_cors.Cors.CorsMiddleware)
+	router.Use(cors.Cors.CorsMiddleware)
 	router.HandleFunc("/echo/{message}", echoFunc)
-	router.Methods("OPTIONS").HandlerFunc(_cors.Cors.Preflight)
+	router.Methods("OPTIONS").HandlerFunc(cors.Cors.Preflight)
 
 	// users
-	authApi := _handlers.NewAuthHandler()
+	authApi := handlers.NewAuthHandler()
 
 	router.HandleFunc("/users/login", authApi.Login).Methods("POST")
 	router.HandleFunc("/users/check", authApi.Check).Methods("POST")
@@ -64,7 +63,7 @@ func StartRouter() {
 	router.HandleFunc("/user/{user_id}", authApi.ChangeUserInfo).Methods("POST")
 
 	// vacancies
-	vacancyApi := _handlers.NewVacancyHandler()
+	vacancyApi := handlers.NewVacancyHandler()
 
 	router.HandleFunc("/vacancies", vacancyApi.CreateVacancy).Methods("POST")
 	router.HandleFunc("/vacancies", vacancyApi.GetVacancies).Methods("GET")
@@ -73,7 +72,7 @@ func StartRouter() {
 	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.DeleteVacancy).Methods("DELETE")
 
 	// summaries
-	summaryApi := _handlers.NewSummaryHandler()
+	summaryApi := handlers.NewSummaryHandler()
 
 	router.HandleFunc("/summaries", summaryApi.CreateSummary).Methods("POST")
 	router.HandleFunc("/summaries", summaryApi.GetSummaries).Methods("GET")
