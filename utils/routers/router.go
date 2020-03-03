@@ -27,7 +27,7 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 		defer func() {
 			err := recover()
 			if err != nil {
-				log.Println(err) // May be log this error? Send to sentry?
+				log.Println(err)
 
 				jsonBody, _ := json.Marshal(map[string]string{
 					"error": "There was an internal server error",

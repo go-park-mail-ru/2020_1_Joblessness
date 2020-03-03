@@ -160,6 +160,7 @@ func (api *VacancyHandler) DeleteVacancy(w http.ResponseWriter, r *http.Request)
 	api.Mu.Lock()
 	if _, ok := api.Vacancies[uint(vacancyId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
+		api.Mu.Unlock()
 		return
 	}
 

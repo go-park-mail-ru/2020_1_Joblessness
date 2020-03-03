@@ -139,6 +139,7 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	api.Mu.Lock()
 	if _, ok := api.Sessions[session.Value]; !ok {
 		w.WriteHeader(http.StatusUnauthorized)
+		api.Mu.Unlock()
 		return
 	}
 
@@ -166,6 +167,7 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	api.Mu.RLock()
 	if _, ok := api.Users[login]; found && ok {
 		w.WriteHeader(http.StatusBadRequest)
+		api.Mu.RUnlock()
 		return
 	}
 	api.Mu.RUnlock()

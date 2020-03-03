@@ -203,6 +203,7 @@ func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request)
 	api.Mu.Lock()
 	if _, ok := api.Summaries[uint(summaryId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
+		api.Mu.Unlock()
 		return
 	}
 

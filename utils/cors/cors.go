@@ -37,6 +37,8 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 		}
 	}
 
+	result = true
+
 	if result {
 		(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Origin, Set-Cookie, Access-Control-Allow-Methods, Access-Control-Allow-Credentials")
 		(*w).Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
@@ -46,11 +48,11 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 	return result
 }
 
-func (corsList *CorsHandler) CorsMiddleware(h http.Handler) http.Handler {
+func (corsList *CorsHandler) CorsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		if corsList.PrivateApi(&w, r) {
-			h.ServeHTTP(w, r)
+			next.ServeHTTP(w, r)
 		} else {
 			log.Println("Not allowed origin")
 		}
