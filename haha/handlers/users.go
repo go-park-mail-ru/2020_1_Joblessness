@@ -1,13 +1,28 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/gorilla/mux"
+	"io"
 	"joblessness/haha/models"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
+
+var sess = session.Must(session.NewSession(&aws.Config{
+	Region: aws.String("ru-msk"),
+	Credentials: credentials.NewStaticCredentials("orFNtcQG9pi8NvqcFhLAj4",
+		"33CiuS769M4u1wHAk42HhdtCrCb795MGuez3biaE3CeK", ""),
+	Endpoint: aws.String("https://hb.bizmrg.com"),
+}))
+var svc = s3.New(sess)
 
 func (api *AuthHandler) AuthRequiredMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -43,10 +58,7 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userAvatar, found := api.UserAvatars[currentUser.ID]
-	if !found {
-		userAvatar = `data:image/jpeg;base64,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`
-	}
+	userAvatar := "" //deprecated
 
 	type Response struct {
 		User models.UserInfo `json:"user"`
@@ -107,27 +119,32 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users/{user_id}/avatar")
 
-	defer r.Body.Close()
-
 	session, err := r.Cookie("session_id")
 	log.Println("session cookie: ", session)
+	//get sessionn id from cookie
 	if err == http.ErrNoCookie {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
+	// get cookie by session id
 	userId, found := api.Sessions[session.Value]
+
 	if !found {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
+	// compare id from request and cookie
 	if reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
 
 	var currentUser *models.User
-
+	// get user data
 	for _, user := range api.Users {
+		// binary search could work a lot quicker
+		// but there's no need to implement it
+		// since DB is responsible for this
 		if (*user).ID == userId {
 			currentUser = user
 		}
@@ -138,16 +155,79 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var data map[string]string
-	decoder := json.NewDecoder(r.Body)
-	decoder.Decode(&data)
-
-	avatar, found := data["avatar"]
-	if !found {
-		avatar = `data:image/jpeg;base64,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`
+	err = r.ParseMultipartForm(1024 * 1024 * 5) //5mb
+	if err != nil {
+		w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
+		return
 	}
 
-	api.UserAvatars[userId] = avatar
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	defer file.Close()
+
+	var buf bytes.Buffer
+	io.Copy(&buf, file)
+
+	_, err = svc.PutObject(&s3.PutObjectInput{
+		Bucket: aws.String("imgs-hh"),
+		Key:    aws.String(currentUser.Login + "-avatar-" + header.Filename),
+		Body:   strings.NewReader(buf.String()),
+	})
+
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusFailedDependency)
+		return
+	}
+
+	api.UserAvatars[1] = currentUser.Login + "-avatar-" + header.Filename
 
 	w.WriteHeader(http.StatusCreated)
 }
+
+func (api *AuthHandler) GetAvatar(w http.ResponseWriter, r *http.Request) {
+	log.Println("GET /users/{user_id}/avatar")
+
+	var currentUser *models.User
+	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
+
+	for _, user := range api.Users {
+		if (*user).ID == uint(userId) {
+			currentUser = user
+		}
+	}
+	// Check if user exists
+	if currentUser == nil {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	// try to load user's avatar
+	body, err := svc.GetObject(&s3.GetObjectInput{
+		Bucket: aws.String("imgs-hh"),
+		Key:    aws.String(api.UserAvatars[uint(userId)]),
+	})
+	// Not found or no response
+	if err != nil {
+		body, err = svc.GetObject(&s3.GetObjectInput{
+			Bucket: aws.String("imgs-hh"),
+			Key:    aws.String("default-avatar.png"),
+		})
+		if err != nil {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+	}
+	defer body.Body.Close()
+
+	var buf bytes.Buffer
+	io.Copy(&buf, body.Body)
+	content := strings.NewReader(buf.String())
+
+	http.ServeContent(w, r, api.UserAvatars[1], *body.LastModified, content)
+	buf.Reset()
+}
+
