@@ -58,10 +58,13 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userAvatar := "" //deprecated
+	userAvatar, found := api.UserAvatars[currentUser.ID]
+	if !found {
+		userAvatar = "https://hb.bizmrg.com/imgs-hh/default-avatar.png"
+	}
 
 	type Response struct {
-		User models.UserInfo `json:"user"`
+		User      models.UserInfo      `json:"user"`
 		Summaries []models.UserSummary `json:"summaries"`
 	}
 
@@ -109,7 +112,7 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 	var data map[string]string
 	decoder := json.NewDecoder(r.Body)
 	decoder.Decode(&data)
-//TODO Проверять есть ли все поля
+	//TODO Проверять есть ли все поля
 	(*currentUser).LastName = data["last-name"]
 	(*currentUser).FirstName = data["first-name"]
 
@@ -171,11 +174,15 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 
 	var buf bytes.Buffer
 	io.Copy(&buf, file)
-
+	// Retrieve file ext
+	splitName := strings.Split(header.Filename, ".")
+	ext := splitName[len(splitName)-1]
+	//store (upload or rewrite image)
 	_, err = svc.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String("imgs-hh"),
-		Key:    aws.String(currentUser.Login + "-avatar-" + header.Filename),
+		Key:    aws.String(currentUser.Login + "-avatar." + ext),
 		Body:   strings.NewReader(buf.String()),
+		ACL:    aws.String("public-read"), // make public
 	})
 
 	if err != nil {
@@ -183,51 +190,8 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusFailedDependency)
 		return
 	}
-
-	api.UserAvatars[1] = currentUser.Login + "-avatar-" + header.Filename
+	// save image link
+	api.UserAvatars[userId] = "https://hb.bizmrg.com/imgs-hh/" + currentUser.Login + "-avatar." + ext
 
 	w.WriteHeader(http.StatusCreated)
 }
-
-func (api *AuthHandler) GetAvatar(w http.ResponseWriter, r *http.Request) {
-	log.Println("GET /users/{user_id}/avatar")
-
-	var currentUser *models.User
-	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
-
-	for _, user := range api.Users {
-		if (*user).ID == uint(userId) {
-			currentUser = user
-		}
-	}
-	// Check if user exists
-	if currentUser == nil {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-	// try to load user's avatar
-	body, err := svc.GetObject(&s3.GetObjectInput{
-		Bucket: aws.String("imgs-hh"),
-		Key:    aws.String(api.UserAvatars[uint(userId)]),
-	})
-	// Not found or no response
-	if err != nil {
-		body, err = svc.GetObject(&s3.GetObjectInput{
-			Bucket: aws.String("imgs-hh"),
-			Key:    aws.String("default-avatar.png"),
-		})
-		if err != nil {
-			w.WriteHeader(http.StatusForbidden)
-			return
-		}
-	}
-	defer body.Body.Close()
-
-	var buf bytes.Buffer
-	io.Copy(&buf, body.Body)
-	content := strings.NewReader(buf.String())
-
-	http.ServeContent(w, r, api.UserAvatars[1], *body.LastModified, content)
-	buf.Reset()
-}
-
