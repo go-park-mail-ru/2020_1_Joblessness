@@ -44,7 +44,7 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 }
 
 func StartRouter() {
-	database.InitDatabase("username", "9730", "huvalk")
+	database.InitDatabase("username", "9730", "username")
 	if err := database.OpenDatabase(); err != nil {
 		log.Println(err.Error())
 		return
