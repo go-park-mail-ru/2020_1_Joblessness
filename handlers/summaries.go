@@ -2,7 +2,7 @@ package handlers
 
 import (
 	_models "../models"
-	_mails "../utils/mails"
+	_mails "../utils/mail"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io/ioutil"

@@ -1,4 +1,4 @@
-package mails
+package mail
 
 import (
 	"github.com/sendgrid/sendgrid-go"
