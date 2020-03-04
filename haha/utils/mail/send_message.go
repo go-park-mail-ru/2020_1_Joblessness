@@ -3,9 +3,8 @@ package mail
 import (
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
+	"os"
 )
-
-const key = "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"
 
 func SendMessage(htmlContent, toMail string) error {
 	from := mail.NewEmail("hh.ru", "maratishimbaev8@gmail.com")
@@ -14,7 +13,7 @@ func SendMessage(htmlContent, toMail string) error {
 	subject := "Резюме"
 	message := mail.NewSingleEmail(from, subject, to, "", htmlContent)
 
-	client := sendgrid.NewSendClient(key)
+	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_KEY"))
 
 	_, err := client.Send(message)
 	if err != nil {

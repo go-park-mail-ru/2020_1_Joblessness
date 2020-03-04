@@ -6,7 +6,7 @@ import (
 	"joblessness/haha/models"
 )
 
-const templatePath = "../utils/mail/templates/summary.html"
+const templatePath = "haha/utils/mail/templates/summary.html"
 
 func SummaryToHTML(summary models.Summary) (string, error) {
 	t := template.New("summary.html")
