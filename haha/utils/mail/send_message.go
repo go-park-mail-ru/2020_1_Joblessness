@@ -17,16 +17,10 @@ func SendMessage(htmlContent, toMail string) error {
 
 	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_KEY"))
 
-	fmt.Println(os.Getenv("SENDGRID_KEY"))
-
 	response, err := client.Send(message)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(response.StatusCode)
-	fmt.Println(response.Body)
-	fmt.Println(response.Headers)
 
 	return nil
 }
