@@ -1,14 +1,14 @@
 package mail
 
 import (
-	_models "../../models"
 	"bytes"
 	"html/template"
+	"joblessness/haha/models"
 )
 
 const templatePath = "../utils/mail/templates/summary.html"
 
-func SummaryToHTML(summary _models.Summary) (string, error) {
+func SummaryToHTML(summary models.Summary) (string, error) {
 	t := template.New("summary.html")
 
 	t, err := t.ParseFiles(templatePath)
@@ -17,7 +17,7 @@ func SummaryToHTML(summary _models.Summary) (string, error) {
 	}
 
 	data := struct {
-		Summary _models.Summary
+		Summary models.Summary
 	}{
 		summary,
 	}

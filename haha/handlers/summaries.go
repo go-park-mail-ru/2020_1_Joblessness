@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"joblessness/haha/models"
+	"joblessness/haha/utils/mail"
 	"joblessness/haha/utils/pdf"
 	"log"
 	"net/http"
@@ -264,13 +265,13 @@ func (api *SummaryHandler) SendSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	htmlContent, err := _mails.SummaryToHTML(*summary)
+	htmlContent, err := mail.SummaryToHTML(*summary)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	err = _mails.SendMessage(htmlContent, data["to"])
+	err = mail.SendMessage(htmlContent, data["to"])
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
