@@ -237,13 +237,13 @@ func (api *SummaryHandler) SendSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	message, err := _mails.SummaryToMessage(*summary)
+	htmlContent, err := _mails.SummaryToHTML(*summary)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	err = _mails.SendMessage(message, data["to"])
+	err = _mails.SendMessage(htmlContent, data["to"])
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

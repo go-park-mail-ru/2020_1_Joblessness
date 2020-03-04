@@ -1,27 +1,22 @@
 package mails
 
-import "net/smtp"
+import (
+	"github.com/sendgrid/sendgrid-go"
+	"github.com/sendgrid/sendgrid-go/helpers/mail"
+)
 
-const mailUsername = "mail.haha.ru@gmail.com"
-const mailPassword = "qwerty152342007"
+const key = "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"
 
-func SendMessage(message, to string) error {
-	auth := smtp.PlainAuth(
-		"",
-		mailUsername,
-		mailPassword,
-		"smtp.gmail.com",
-	)
+func SendMessage(htmlContent, toMail string) error {
+	from := mail.NewEmail("hh.ru", "maratishimbaev8@gmail.com")
+	to := mail.NewEmail("User", toMail)
 
-	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	subject := "Резюме"
+	message := mail.NewSingleEmail(from, subject, to, "", htmlContent)
 
-	err := smtp.SendMail(
-		"smtp.gmail.com:587",
-		auth,
-		mailUsername,
-		[]string{to},
-		[]byte(mime + message),
-	)
+	client := sendgrid.NewSendClient(key)
+
+	_, err := client.Send(message)
 	if err != nil {
 		return err
 	}

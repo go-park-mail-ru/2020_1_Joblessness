@@ -8,7 +8,7 @@ import (
 
 const templatePath = "../utils/mails/templates/summary.html"
 
-func SummaryToMessage(summary _models.Summary) (string, error) {
+func SummaryToHTML(summary _models.Summary) (string, error) {
 	t := template.New("summary.html")
 
 	t, err := t.ParseFiles(templatePath)
