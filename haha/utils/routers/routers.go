@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"joblessness/haha/handlers"
 	"joblessness/haha/utils/cors"
+	"joblessness/haha/utils/database"
 	"log"
 	"net/http"
 )
@@ -43,6 +44,13 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 }
 
 func StartRouter() {
+	database.InitDatabase("huvalk", "9730", "huvalk")
+	if err := database.OpenDatabase(); err != nil {
+		log.Println(err.Error())
+		return
+	}
+	defer database.CloseDatabase()
+
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	router.Use(RecoveryMiddleware)

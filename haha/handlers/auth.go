@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"joblessness/haha/models"
 	"log"
 	"math/rand"
@@ -156,36 +157,30 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users")
 
-	var data map[string]string
-	json.NewDecoder(r.Body).Decode(&data)
-
-	login, found := data["login"]
-	if !found || login == "" {
-		w.WriteHeader(http.StatusBadRequest)
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	api.Mu.RLock()
-	if _, ok := api.Users[login]; found && ok {
-		w.WriteHeader(http.StatusBadRequest)
-		api.Mu.RUnlock()
+	var user models.User
+	err = json.Unmarshal(body, &user)
+	log.Println("user recieved: ", user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	api.Mu.RUnlock()
 
-	password, found := data["password"]
-	if !found || password == "" {
+	if user.Login == "" || user.Password == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	firstName := data["first-name"]
-	lastName := data["last-name"]
-	email := data["email"]
-	phoneNumber := data["phone-number"]
-
-	api.Mu.Lock()
-	api.Users[login] = &models.User{uint(len(api.Users) + 1), login, password, firstName, lastName, email, phoneNumber}
-	api.Mu.Unlock()
+	err = models.CreatePerson(user.Login, user.Password, user.FirstName, user.LastName, user.Email, user.PhoneNumber)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusCreated)
 }
