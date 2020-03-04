@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	_models "../models"
-	_mails "../utils/mail"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io/ioutil"
+	"joblessness/haha/models"
+	"joblessness/haha/utils/pdf"
 	"log"
 	"net/http"
 	"strconv"
@@ -14,7 +14,7 @@ import (
 )
 
 type SummaryHandler struct {
-	Summaries map[uint]*_models.Summary
+	Summaries map[uint]*models.Summary
 	Mu        sync.RWMutex
 	SummaryId uint32
 }
@@ -25,7 +25,7 @@ func (api *SummaryHandler) getNewSummaryId() uint32 {
 
 func NewSummaryHandler() *SummaryHandler {
 	return &SummaryHandler {
-		Summaries: map[uint]*_models.Summary {
+		Summaries: map[uint]*models.Summary {
 			1: {1, 1, "first name", "last name", "phone number", "kek@mail.ru", "01/01/1900", "gender", "experience", "bmstu"},
 		},
 		Mu:        sync.RWMutex{},
@@ -43,7 +43,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	var summary _models.Summary
+	var summary models.Summary
 	err = json.Unmarshal(body, &summary)
 	summary.ID = uint(newId)
 	log.Println("summary recieved: ", summary)
@@ -72,7 +72,7 @@ func (api *SummaryHandler) CreateSummary(w http.ResponseWriter, r *http.Request)
 func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /summaries")
 
-	var summaries []_models.Summary
+	var summaries []models.Summary
 	api.Mu.RLock()
 	for _, summary := range api.Summaries {
 		summaries = append(summaries, *summary)
@@ -86,6 +86,32 @@ func (api *SummaryHandler) GetSummaries(w http.ResponseWriter, r *http.Request) 
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
+}
+
+func (api *SummaryHandler) PrintSummary(w http.ResponseWriter, r *http.Request) {
+	log.Println("GET /summaries/{summary_id}/print")
+
+	summaryId, err := strconv.ParseUint(mux.Vars(r)["summary_id"], 10, 64)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	api.Mu.RLock()
+	summary, ok := api.Summaries[uint(summaryId)]
+	api.Mu.RUnlock()
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	errOut := pdf.SummaryToPdf(w, *summary)
+	if errOut != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-type", "application/pdf")
 }
 
 func (api *SummaryHandler) GetSummary(w http.ResponseWriter, r *http.Request) {
@@ -123,7 +149,7 @@ func (api *SummaryHandler) GetUserSummaries(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	var summaries []_models.Summary
+	var summaries []models.Summary
 	api.Mu.RLock()
 	for _, summary := range api.Summaries {
 		if (*summary).UserID == uint(userId) {
@@ -175,7 +201,7 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 	}
 
 	api.Mu.Lock()
-	api.Summaries[uint(summaryId)] = &_models.Summary{
+	api.Summaries[uint(summaryId)] = &models.Summary{
 		uint(authorId),
 		uint(summaryId),
 		data["first-name"],
@@ -204,6 +230,7 @@ func (api *SummaryHandler) DeleteSummary(w http.ResponseWriter, r *http.Request)
 	api.Mu.Lock()
 	if _, ok := api.Summaries[uint(summaryId)]; !ok {
 		w.WriteHeader(http.StatusNotFound)
+		api.Mu.Unlock()
 		return
 	}
 

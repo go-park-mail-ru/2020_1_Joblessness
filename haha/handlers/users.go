@@ -1,18 +1,35 @@
 package handlers
 
 import (
-	_models "../models"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"joblessness/haha/models"
 	"log"
 	"net/http"
 	"strconv"
 )
 
+func (api *AuthHandler) AuthRequiredMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, err := r.Cookie("session_id")
+		if err == http.ErrNoCookie {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		_, found := api.Sessions[session.Value]
+		if !found {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /user/{user_id}")
 
-	var currentUser *_models.User
+	var currentUser *models.User
 	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
 
 	for _, user := range api.Users {
@@ -32,13 +49,13 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Response struct {
-		User _models.UserInfo `json:"user"`
-		Summaries []_models.UserSummary `json:"summaries"`
+		User models.UserInfo `json:"user"`
+		Summaries []models.UserSummary `json:"summaries"`
 	}
 
 	jsonData, _ := json.Marshal(Response{
-		_models.UserInfo{currentUser.FirstName, currentUser.LastName, "", userAvatar},
-		[]_models.UserSummary{},
+		models.UserInfo{currentUser.FirstName, currentUser.LastName, "", userAvatar},
+		[]models.UserSummary{},
 	})
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
@@ -63,7 +80,7 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var currentUser *_models.User
+	var currentUser *models.User
 
 	log.Println("Users counter", len(api.Users))
 	for _, user := range api.Users {
@@ -108,7 +125,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var currentUser *_models.User
+	var currentUser *models.User
 
 	for _, user := range api.Users {
 		if (*user).ID == userId {

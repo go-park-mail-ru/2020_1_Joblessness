@@ -1,11 +1,11 @@
 package routers
 
 import (
-	_handlers "../../handlers"
-	_cors "../cors"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"joblessness/haha/handlers"
+	"joblessness/haha/utils/cors"
 	"log"
 	"net/http"
 )
@@ -13,7 +13,7 @@ import (
 func echoFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("/users/echo")
 
-	_cors.Cors.PrivateApi(&w, r)
+	cors.Cors.PrivateApi(&w, r)
 
 	params := mux.Vars(r)
 	message := params["message"]
@@ -27,13 +27,12 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 		defer func() {
 			err := recover()
 			if err != nil {
-				log.Println(err) // May be log this error? Send to sentry?
+				log.Println(err)
 
 				jsonBody, _ := json.Marshal(map[string]string{
-					"error": "There was an internal server error",
+					"error": "There was an internal haha error",
 				})
 
-				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusInternalServerError)
 				w.Write(jsonBody)
 			}
@@ -47,12 +46,12 @@ func StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	router.Use(RecoveryMiddleware)
-	//router.Use(_cors.Cors.CorsMiddleware)
+	router.Use(cors.Cors.CorsMiddleware)
 	router.HandleFunc("/echo/{message}", echoFunc)
-	router.Methods("OPTIONS").HandlerFunc(_cors.Cors.Preflight)
+	router.Methods("OPTIONS").HandlerFunc(cors.Cors.Preflight)
 
 	// users
-	authApi := _handlers.NewAuthHandler()
+	authApi := handlers.NewAuthHandler()
 
 	router.HandleFunc("/users/login", authApi.Login).Methods("POST")
 	router.HandleFunc("/users/check", authApi.Check).Methods("POST")
@@ -64,7 +63,7 @@ func StartRouter() {
 	router.HandleFunc("/user/{user_id}", authApi.ChangeUserInfo).Methods("POST")
 
 	// vacancies
-	vacancyApi := _handlers.NewVacancyHandler()
+	vacancyApi := handlers.NewVacancyHandler()
 
 	router.HandleFunc("/vacancies", vacancyApi.CreateVacancy).Methods("POST")
 	router.HandleFunc("/vacancies", vacancyApi.GetVacancies).Methods("GET")
@@ -73,13 +72,14 @@ func StartRouter() {
 	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.DeleteVacancy).Methods("DELETE")
 
 	// summaries
-	summaryApi := _handlers.NewSummaryHandler()
+	summaryApi := handlers.NewSummaryHandler()
 
 	router.HandleFunc("/summaries", summaryApi.CreateSummary).Methods("POST")
 	router.HandleFunc("/summaries", summaryApi.GetSummaries).Methods("GET")
 	router.HandleFunc("/summaries/{summary_id}", summaryApi.GetSummary).Methods("GET")
 	router.HandleFunc("/summaries/{summary_id}", summaryApi.ChangeSummary).Methods("PUT")
 	router.HandleFunc("/summaries/{summary_id}", summaryApi.DeleteSummary).Methods("DELETE")
+	router.HandleFunc("/summaries/{summary_id}/print", summaryApi.PrintSummary).Methods("GET")
 	router.HandleFunc("/user/{user_id}/summaries", summaryApi.GetUserSummaries).Methods("GET")
 	router.HandleFunc("/summaries/{summary_id}/mail", summaryApi.SendSummary).Methods("POST")
 
