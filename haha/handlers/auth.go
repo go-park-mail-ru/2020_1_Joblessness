@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	_models "../models"
 	"encoding/json"
+	"joblessness/haha/models"
 	"log"
 	"math/rand"
 	"net/http"
@@ -22,20 +22,20 @@ func getSID(n int) string {
 
 type AuthHandler struct {
 	Sessions    map[string]uint
-	Users       map[string]*_models.User
+	Users       map[string]*models.User
 	UserAvatars map[uint]string
-	UserSummary map[uint]_models.UserSummary
+	UserSummary map[uint]models.UserSummary
 	Mu          sync.RWMutex
 }
 
 func NewAuthHandler() *AuthHandler {
 	return &AuthHandler {
 		Sessions: make(map[string]uint, 10),
-		Users:    map[string]*_models.User {
+		Users:    map[string]*models.User {
 			"marat1k": {1, "marat1k", "ABCDE12345", "Marat", "Ishimbaev", "m@m.m", "89032909821"},
 		},
 		UserAvatars: map[uint]string{},
-		UserSummary: map[uint]_models.UserSummary{},
+		UserSummary: map[uint]models.UserSummary{},
 		Mu:          sync.RWMutex{},
 	}
 }
@@ -184,7 +184,7 @@ func (api *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	phoneNumber := data["phone-number"]
 
 	api.Mu.Lock()
-	api.Users[login] = &_models.User{uint(len(api.Users) + 1), login, password, firstName, lastName, email, phoneNumber}
+	api.Users[login] = &models.User{uint(len(api.Users) + 1), login, password, firstName, lastName, email, phoneNumber}
 	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusCreated)

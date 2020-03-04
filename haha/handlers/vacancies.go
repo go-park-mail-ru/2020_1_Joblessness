@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	_models "../models"
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"joblessness/haha/models"
 	"log"
 	"net/http"
 	"strconv"
@@ -12,7 +12,7 @@ import (
 )
 
 type VacancyHandler struct {
-	Vacancies map[uint]*_models.Vacancy
+	Vacancies map[uint]*models.Vacancy
 	Mu        sync.RWMutex
 	VacancyId uint32
 }
@@ -23,7 +23,7 @@ func (api *VacancyHandler) getNewVacancyId() uint32 {
 
 func NewVacancyHandler() *VacancyHandler {
 	return &VacancyHandler {
-		Vacancies: map[uint]*_models.Vacancy {
+		Vacancies: map[uint]*models.Vacancy {
 			1: {1, "name", "description", "skills", "100500", "address", "phone number"},
 		},
 		Mu:        sync.RWMutex{},
@@ -34,7 +34,7 @@ func NewVacancyHandler() *VacancyHandler {
 func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /vacancies")
 
-	var vacancy _models.Vacancy
+	var vacancy models.Vacancy
 	json.NewDecoder(r.Body).Decode(&vacancy)
 
 	if vacancy.Name == "" {
@@ -65,7 +65,7 @@ func (api *VacancyHandler) CreateVacancy(w http.ResponseWriter, r *http.Request)
 func (api *VacancyHandler) GetVacancies(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /vacancies")
 
-	var vacancies []_models.Vacancy
+	var vacancies []models.Vacancy
 	api.Mu.RLock()
 	for _, vacancy := range api.Vacancies {
 		vacancies = append(vacancies, *vacancy)
@@ -142,7 +142,7 @@ func (api *VacancyHandler) ChangeVacancy(w http.ResponseWriter, r *http.Request)
 	phoneNumber := data["phone-number"]
 
 	api.Mu.Lock()
-	api.Vacancies[uint(vacancyId)] = &_models.Vacancy{uint(vacancyId), name, description, skills, salary, address, phoneNumber}
+	api.Vacancies[uint(vacancyId)] = &models.Vacancy{uint(vacancyId), name, description, skills, salary, address, phoneNumber}
 	api.Mu.Unlock()
 
 	w.WriteHeader(http.StatusNoContent)
