@@ -1,6 +1,7 @@
 package mail
 
 import (
+	"fmt"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"os"
@@ -11,14 +12,21 @@ func SendMessage(htmlContent, toMail string) error {
 	to := mail.NewEmail("User", toMail)
 
 	subject := "Резюме"
-	message := mail.NewSingleEmail(from, subject, to, "", htmlContent)
+	plainTextContent := "Резюме"
+	message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
 
 	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_KEY"))
 
-	_, err := client.Send(message)
+	fmt.Println(os.Getenv("SENDGRID_KEY"))
+
+	response, err := client.Send(message)
 	if err != nil {
 		return err
 	}
+
+	fmt.Println(response.StatusCode)
+	fmt.Println(response.Body)
+	fmt.Println(response.Headers)
 
 	return nil
 }
