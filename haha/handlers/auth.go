@@ -58,6 +58,12 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println("db broken ", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if userId == 0 {
+		log.Println("User not found")
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	cookie := &http.Cookie {
@@ -77,21 +83,21 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *AuthHandler) Check(w http.ResponseWriter, r *http.Request) {
+	//TODO переписать if`ы
 	log.Println("POST /users/check")
 
 	log.Println("Sessions available: ", len(api.Sessions))
-	_, err := r.Cookie("session_id")
+	session, err := r.Cookie("session_id")
 	if err == nil {
-		userId := 1
-		if true {
+		if userId, err := models.SessionExists(session.Value); err == nil && userId != 0 {
 			jsonData, _ := json.Marshal(models.Response{userId})
 			w.WriteHeader(http.StatusCreated)
 			w.Write(jsonData)
-			return
+		} else {
+			w.WriteHeader(http.StatusUnauthorized)
 		}
 	} else {
 		w.WriteHeader(http.StatusUnauthorized)
-		return
 	}
 }
 

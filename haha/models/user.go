@@ -67,6 +67,7 @@ func CreatePerson(login, password, firstName, lastName, email, phone string) (er
 }
 
 func Login(login, password, SID string) (userId int, err error) {
+	//TODO user_id, session_id уникальные
 	db := database.GetDatabase()
 	if db == nil {
 		return 0, errors.New("No connection to DB")
@@ -84,6 +85,32 @@ func Login(login, password, SID string) (userId int, err error) {
 	insertSession := `INSERT INTO session (user_id, session_id, expires) 
 					VALUES($1, $2, $3)`
 	_, err = db.Exec(insertSession, userId, SID, time.Now().Add(time.Hour))
+
+	return userId, err
+}
+
+func SessionExists(sessionId string) (userId int, err error) {
+	//TODO session_id - pk
+	db := database.GetDatabase()
+	if db == nil {
+		return 0, errors.New("No connection to DB")
+	}
+
+	checkUser := "SELECT user_id, expires FROM session WHERE session_id = $1;"
+	var expires time.Time
+	err = db.QueryRow(checkUser, sessionId).Scan(&userId,  &expires)
+	if err != nil {
+		return 0, err
+	}
+	if userId == 0 {
+		return 0, nil
+	}
+
+	if expires.Before(time.Now()) {
+		deleteRow := "DELETE FROM session WHERE session_id = $1;"
+		_, err = db.Exec(deleteRow, sessionId)
+		userId = 0
+	}
 
 	return userId, err
 }
