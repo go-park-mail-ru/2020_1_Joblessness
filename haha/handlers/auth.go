@@ -86,7 +86,6 @@ func (api *AuthHandler) Check(w http.ResponseWriter, r *http.Request) {
 	//TODO переписать if`ы
 	log.Println("POST /users/check")
 
-	log.Println("Sessions available: ", len(api.Sessions))
 	session, err := r.Cookie("session_id")
 	if err == nil {
 		if userId, err := models.SessionExists(session.Value); err == nil && userId != 0 {
@@ -110,15 +109,11 @@ func (api *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.Mu.Lock()
-	if _, ok := api.Sessions[session.Value]; !ok {
-		w.WriteHeader(http.StatusUnauthorized)
-		api.Mu.Unlock()
+	err = models.Logout(session.Value)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
-	delete(api.Sessions, session.Value)
-	api.Mu.Unlock()
 
 	session.Expires = time.Now().AddDate(0, 0, -1)
 	session.Path = "/"

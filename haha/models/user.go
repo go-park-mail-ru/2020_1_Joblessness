@@ -89,6 +89,19 @@ func Login(login, password, SID string) (userId int, err error) {
 	return userId, err
 }
 
+func Logout(sessionId string) (err error) {
+	//TODO user_id, session_id уникальные
+	db := database.GetDatabase()
+	if db == nil {
+		return errors.New("No connection to DB")
+	}
+
+	deleteRow := "DELETE FROM session WHERE session_id = $1;"
+	_, err = db.Exec(deleteRow, sessionId)
+
+	return err
+}
+
 func SessionExists(sessionId string) (userId int, err error) {
 	//TODO session_id - pk
 	db := database.GetDatabase()
