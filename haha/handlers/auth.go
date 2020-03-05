@@ -42,17 +42,23 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &user)
 	log.Println("user recieved: ", user)
 	if err != nil {
+		log.Println("Unmarshal went wrong")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if user.Login == "" || user.Password == "" {
+		log.Println("login or password empty")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	SID := models.GetSID(64)
 	userId, err := models.Login(user.Login, user.Password, SID)
+	if err != nil {
+		log.Println("db broken ", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	cookie := &http.Cookie {
 		Name: "session_id",
