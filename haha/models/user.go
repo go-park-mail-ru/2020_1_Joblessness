@@ -72,7 +72,7 @@ func Login(login, password, SID string) (userId int, err error) {
 		return 0, errors.New("No connection to DB")
 	}
 
-	checkUser := "SELECT id FROM users WHERE login = $1, password = $2;"
+	checkUser := "SELECT id FROM users WHERE login = $1 AND password = $2;"
 	err = db.QueryRow(checkUser, login, password).Scan(&userId)
 	if err != nil {
 		return 0, err
