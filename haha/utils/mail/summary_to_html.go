@@ -6,16 +6,7 @@ import (
 	"joblessness/haha/models"
 )
 
-const templatePath = "haha/utils/mail/templates/summary.html"
-
-func SummaryToHTML(summary models.Summary) (string, error) {
-	t := template.New("summary.html")
-
-	t, err := t.ParseFiles(templatePath)
-	if err != nil {
-		return "", err
-	}
-
+func SummaryToHTML(t *template.Template, summary models.Summary) (string, error) {
 	data := struct {
 		Summary models.Summary
 	}{
@@ -23,7 +14,7 @@ func SummaryToHTML(summary models.Summary) (string, error) {
 	}
 
 	var html bytes.Buffer
-	err = t.Execute(&html, data)
+	err := t.Execute(&html, data)
 	if err != nil {
 		return "", err
 	}

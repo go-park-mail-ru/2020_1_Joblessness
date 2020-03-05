@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"html/template"
 	"io/ioutil"
 	"joblessness/haha/models"
 	"joblessness/haha/utils/mail"
@@ -18,10 +19,22 @@ type SummaryHandler struct {
 	Summaries map[uint]*models.Summary
 	Mu        sync.RWMutex
 	SummaryId uint32
+	SummaryTemplate *template.Template
 }
 
 func (api *SummaryHandler) getNewSummaryId() uint32 {
 	return atomic.AddUint32(&api.SummaryId, 1)
+}
+
+func getSummaryTemplate() *template.Template {
+	t := template.New("summary.html")
+
+	t, err := t.ParseFiles("haha/utils/mail/templates/summary.html")
+	if err != nil {
+		t = nil
+	}
+
+	return t
 }
 
 func NewSummaryHandler() *SummaryHandler {
@@ -31,6 +44,7 @@ func NewSummaryHandler() *SummaryHandler {
 		},
 		Mu:        sync.RWMutex{},
 		SummaryId: 1,
+		SummaryTemplate: getSummaryTemplate(),
 	}
 }
 
@@ -265,7 +279,7 @@ func (api *SummaryHandler) SendSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	htmlContent, err := mail.SummaryToHTML(*summary)
+	htmlContent, err := mail.SummaryToHTML(api.SummaryTemplate, *summary)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

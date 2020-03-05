@@ -3,6 +3,7 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"joblessness/haha/handlers"
 	"joblessness/haha/models"
@@ -23,48 +24,12 @@ func NewEmptySummaryHandler() *handlers.SummaryHandler {
 func NewNotEmptySummaryHandler() *handlers.SummaryHandler {
 	return &handlers.SummaryHandler{
 		Summaries:map[uint]*models.Summary{
-			1: {1, 1, "first name", "last name", "phone number", "email", "birth date", "male", "experiencz", "education"},
-			2: {1, 2, "first name", "last name", "phone number", "email", "birth date", "female", "experiencz", "education"},
+			1: {1, 1, "first name", "last name", "phone number", "email", "birth date", "male", "experience", "education"},
+			2: {1, 2, "first name", "last name", "phone number", "email", "birth date", "female", "experience", "education"},
 		},
 		Mu:        sync.RWMutex{},
 		SummaryId: 2,
 	}
-}
-
-func TestCreateSummaryFailedNoAuthor(t *testing.T) {
-	t.Parallel()
-
-	h := NewEmptySummaryHandler()
-
-	summary, _ := json.Marshal(models.Summary{
-		FirstName:   "first name",
-		LastName:    "last name",
-		PhoneNumber: "phone number",
-		Email:       "email",
-		BirthDate:   "birth date",
-		Gender:      "gender",
-		Experience:  "experience",
-		Education:   "education",
-	})
-
-	body := bytes.NewReader([]byte(summary))
-
-	r := httptest.NewRequest("POST", "/api/summaries", body)
-	w := httptest.NewRecorder()
-
-	h.CreateSummary(w, r)
-
-	if w.Code != http.StatusBadRequest {
-		t.Error("Status is not 400")
-	}
-
-	if len(h.Summaries) != 0 {
-		t.Error("Wrong Summary created")
-	}
-	//
-	//if h.summaries[1].FirstName != "first name" {
-	//	t.Error("Wrong summary first name")
-	//}
 }
 
 func TestGetEmptySummaryList(t *testing.T) {
@@ -202,7 +167,7 @@ func TestChangeNullSummary(t *testing.T) {
 		Education:   "education",
 	})
 
-	body := bytes.NewReader([]byte(summary))
+	body := bytes.NewReader(summary)
 
 	r := httptest.NewRequest("PUT", "/api/summaries/3", body)
 	r = mux.SetURLVars(r, map[string]string{"summary_id": "3"})
@@ -252,5 +217,31 @@ func TestDeleteNullSummary(t *testing.T) {
 
 	if w.Code != http.StatusNotFound {
 		t.Error("Status code is not 404")
+	}
+}
+
+func TestSuccessSendSummary(t *testing.T) {
+	t.Parallel()
+
+	h := NewNotEmptySummaryHandler()
+
+	type Request struct {
+		To string `json:"to"`
+	}
+
+	request, _ := json.Marshal(Request{"username@mail.ru"})
+
+	body := bytes.NewReader(request)
+
+	r := httptest.NewRequest("POST", "/api/summaries/1/mail", body)
+	r = mux.SetURLVars(r, map[string]string{"summary_id": "1"})
+	w := httptest.NewRecorder()
+
+	h.SendSummary(w, r)
+
+	fmt.Println("CODE: ", w.Code)
+
+	if w.Code != http.StatusCreated {
+		t.Error("Status code is not 201")
 	}
 }
