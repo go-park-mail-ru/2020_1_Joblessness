@@ -5,21 +5,10 @@ import (
 	"io/ioutil"
 	"joblessness/haha/models"
 	"log"
-	"math/rand"
 	"net/http"
 	"sync"
 	"time"
 )
-
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func getSID(n int) string {
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
-}
 
 type AuthHandler struct {
 	Sessions    map[string]uint
@@ -44,49 +33,26 @@ func NewAuthHandler() *AuthHandler {
 func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users/login")
 
-	var data map[string]string
-	json.NewDecoder(r.Body).Decode(&data)
-
-	type Response struct {
-		ID uint `json:"id"`
-	}
-	log.Println("Sessions available: ", len(api.Sessions))
-	session, err := r.Cookie("session_id")
-	if err == nil {
-		api.Mu.RLock()
-		userId, found := api.Sessions[session.Value]
-		api.Mu.RUnlock()
-		if found {
-			jsonData, _ := json.Marshal(Response{userId})
-			w.WriteHeader(http.StatusCreated)
-			w.Write(jsonData)
-			return
-		}
-	}
-
-	login, found := data["login"]
-	if !found {
-		w.WriteHeader(http.StatusBadRequest)
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	api.Mu.RLock()
-	user, ok := api.Users[login]
-	api.Mu.RUnlock()
-	if !ok {
-		w.WriteHeader(http.StatusNotFound)
+	var user models.UserLogin
+	err = json.Unmarshal(body, &user)
+	log.Println("user recieved: ", user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if user.Password != data["password"] {
+	if user.Login == "" || user.Password == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	SID := getSID(64)
-
-	api.Mu.Lock()
-	api.Sessions[SID] = user.ID
-	api.Mu.Unlock()
+	SID := models.GetSID(64)
+	userId, err := models.Login(user.Login, user.Password, SID)
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -99,7 +65,7 @@ func (api *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, cookie)
 
-	jsonData, _ := json.Marshal(Response{user.ID})
+	jsonData, _ := json.Marshal(models.Response{userId})
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }
@@ -108,16 +74,11 @@ func (api *AuthHandler) Check(w http.ResponseWriter, r *http.Request) {
 	log.Println("POST /users/check")
 
 	log.Println("Sessions available: ", len(api.Sessions))
-	session, err := r.Cookie("session_id")
+	_, err := r.Cookie("session_id")
 	if err == nil {
-		api.Mu.RLock()
-		userId, found := api.Sessions[session.Value]
-		api.Mu.RUnlock()
-		if found {
-			type Response struct {
-				ID uint `json:"id"`
-			}
-			jsonData, _ := json.Marshal(Response{userId})
+		userId := 1
+		if true {
+			jsonData, _ := json.Marshal(models.Response{userId})
 			w.WriteHeader(http.StatusCreated)
 			w.Write(jsonData)
 			return

@@ -3,6 +3,8 @@ package models
 import (
 	"errors"
 	"joblessness/haha/utils/database"
+	"math/rand"
+	"time"
 )
 
 type User struct {
@@ -19,6 +21,20 @@ type User struct {
 type UserLogin struct {
 	Login string `json:"login"`
 	Password string `json:"password"`
+}
+
+type Response struct {
+	ID int `json:"id"`
+}
+
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func GetSID(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }
 
 func CreatePerson(login, password, firstName, lastName, email, phone string) (err error) {
@@ -38,7 +54,7 @@ func CreatePerson(login, password, firstName, lastName, email, phone string) (er
 	}
 
 	var personId uint64
-	err = db.QueryRow("INSERT INTO person (name) VALUES($1) RETURNING id", firstName + lastName).Scan(&personId)
+	err = db.QueryRow("INSERT INTO person (name) VALUES($1) RETURNING id", firstName + " " + lastName).Scan(&personId)
 	if err != nil {
 		return err
 	}
@@ -48,4 +64,26 @@ func CreatePerson(login, password, firstName, lastName, email, phone string) (er
 	_, err = db.Exec(insertUser, login, password, personId, email, phone)
 
 	return err
+}
+
+func Login(login, password, SID string) (userId int, err error) {
+	db := database.GetDatabase()
+	if db == nil {
+		return 0, errors.New("No connection to DB")
+	}
+
+	checkUser := "SELECT id FROM users WHERE login = $1, password = $2;"
+	err = db.QueryRow(checkUser, login, password).Scan(&userId)
+	if err != nil {
+		return 0, err
+	}
+	if userId == 0 {
+		return 0, nil
+	}
+
+	insertSession := `INSERT INTO session (user_id, session_id, expires) 
+					VALUES($1, $2, $3)`
+	_, err = db.Exec(insertSession, userId, SID, time.Now().Add(time.Hour))
+
+	return userId, err
 }

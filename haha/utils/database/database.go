@@ -7,14 +7,14 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type databaseSetttings struct {
+type databaseSettings struct {
 	user string
 	password string
 	name string
 	db *sql.DB
 }
 
-var dbSettings = databaseSetttings{
+var dbSettings = databaseSettings{
 	user:     "",
 	password: "",
 	name:     "",
@@ -22,7 +22,7 @@ var dbSettings = databaseSetttings{
 }
 
 func InitDatabase(user, password, name string) {
-	dbSettings = databaseSetttings{
+	dbSettings = databaseSettings{
 		user: user,
 		password: password,
 		name: name,

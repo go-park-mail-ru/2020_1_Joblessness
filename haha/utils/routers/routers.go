@@ -52,6 +52,9 @@ func StartRouter() {
 	defer database.CloseDatabase()
 
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	authApi := handlers.NewAuthHandler()
+	vacancyApi := handlers.NewVacancyHandler()
+	summaryApi := handlers.NewSummaryHandler()
 
 	router.Use(RecoveryMiddleware)
 	router.Use(cors.Cors.CorsMiddleware)
@@ -59,7 +62,6 @@ func StartRouter() {
 	router.Methods("OPTIONS").HandlerFunc(cors.Cors.Preflight)
 
 	// users
-	authApi := handlers.NewAuthHandler()
 
 	router.HandleFunc("/users/login", authApi.Login).Methods("POST")
 	router.HandleFunc("/users/check", authApi.Check).Methods("POST")
@@ -71,7 +73,6 @@ func StartRouter() {
 	router.HandleFunc("/user/{user_id}", authApi.ChangeUserInfo).Methods("POST")
 
 	// vacancies
-	vacancyApi := handlers.NewVacancyHandler()
 
 	router.HandleFunc("/vacancies", vacancyApi.CreateVacancy).Methods("POST")
 	router.HandleFunc("/vacancies", vacancyApi.GetVacancies).Methods("GET")
@@ -80,7 +81,6 @@ func StartRouter() {
 	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.DeleteVacancy).Methods("DELETE")
 
 	// summaries
-	summaryApi := handlers.NewSummaryHandler()
 
 	router.HandleFunc("/summaries", summaryApi.CreateSummary).Methods("POST")
 	router.HandleFunc("/summaries", summaryApi.GetSummaries).Methods("GET")
