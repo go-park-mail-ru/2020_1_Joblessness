@@ -9,6 +9,7 @@ import (
 	"joblessness/haha/utils/database"
 	"log"
 	"net/http"
+	"os"
 )
 
 func echoFunc(w http.ResponseWriter, r *http.Request) {
@@ -44,7 +45,11 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 }
 
 func StartRouter() {
-	database.InitDatabase("username", "9730", "username")
+	database.InitDatabase(
+		os.Getenv("HAHA_DB_USER"),
+		os.Getenv("HAHA_DB_PASSWORD"),
+		os.Getenv("HAHA_DB_NAME"),
+	)
 	if err := database.OpenDatabase(); err != nil {
 		log.Println(err.Error())
 		return
