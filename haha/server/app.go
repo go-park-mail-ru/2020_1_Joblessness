@@ -1,15 +1,39 @@
-package routers
+package server
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"joblessness/haha/auth"
+	"joblessness/haha/auth/repository/postgres"
+	"joblessness/haha/auth/usecase"
 	"joblessness/haha/handlers"
 	"joblessness/haha/utils/cors"
 	"joblessness/haha/utils/database"
 	"log"
 	"net/http"
 )
+
+type App struct {
+	httpServer *http.Server
+	authUse auth.UseCase
+}
+
+func NewApp() *App {
+	database.InitDatabase("username", "9730", "username")
+	if err := database.OpenDatabase(); err != nil {
+		log.Println(err.Error())
+		return nil
+	}
+	db := database.GetDatabase()
+
+
+	userRepo := postgres.NewUserRepository(db)
+
+	return &App{
+		authUse: usecase.NewAuthUseCase(userRepo),
+	}
+}
 
 func echoFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("/users/echo")
@@ -43,14 +67,7 @@ func RecoveryMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func StartRouter() {
-	database.InitDatabase("username", "9730", "username")
-	if err := database.OpenDatabase(); err != nil {
-		log.Println(err.Error())
-		return
-	}
-	defer database.CloseDatabase()
-
+func (app *App) StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
 	authApi := handlers.NewAuthHandler()
 	vacancyApi := handlers.NewVacancyHandler()
@@ -63,7 +80,7 @@ func StartRouter() {
 
 	// users
 
-	router.HandleFunc("/users/login", authApi.Login).Methods("POST")
+	router.HandleFunc("/users/login", app.authUse.Login).Methods("POST")
 	router.HandleFunc("/users/check", authApi.Check).Methods("POST")
 	router.HandleFunc("/users/logout", authApi.Logout).Methods("POST")
 	router.HandleFunc("/users", authApi.Register).Methods("POST")

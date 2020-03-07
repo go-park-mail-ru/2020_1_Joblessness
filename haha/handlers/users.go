@@ -29,7 +29,7 @@ func (api *AuthHandler) AuthRequiredMiddleware(next http.HandlerFunc) http.Handl
 func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /user/{user_id}")
 
-	var currentUser *models.User
+	var currentUser *models.Person
 	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
 
 	for _, user := range api.Users {
@@ -80,7 +80,7 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var currentUser *models.User
+	var currentUser *models.Person
 
 	log.Println("Users counter", len(api.Users))
 	for _, user := range api.Users {
@@ -125,7 +125,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var currentUser *models.User
+	var currentUser *models.Person
 
 	for _, user := range api.Users {
 		if (*user).ID == userId {

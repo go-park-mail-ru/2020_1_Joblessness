@@ -16,7 +16,7 @@ import (
 func NewNotEmptyAuthHandler() *handlers.AuthHandler {
 	return &handlers.AuthHandler {
 		Sessions: make(map[string]uint, 10),
-		Users:    map[string]*models.User {
+		Users:    map[string]*models.Person{
 			"username": {1, "username", "Password123", "first name", "last name", "email", "phone number"},
 		},
 		UserAvatars: map[uint]string{},
@@ -198,7 +198,7 @@ func TestRegistration(t *testing.T) {
 
 	h := NewNotEmptyAuthHandler()
 
-	newUser, _ := json.Marshal(models.User{
+	newUser, _ := json.Marshal(models.Person{
 		Login:       "new username",
 		Password:    "NewPassword123",
 		FirstName:   "new first name",
@@ -218,7 +218,7 @@ func TestRegistration(t *testing.T) {
 		t.Error("Status is not 201")
 	}
 
-	expectedUser := models.User{
+	expectedUser := models.Person{
 		ID: 2,
 		Login: "new username",
 		Password: "NewPassword123",
@@ -236,7 +236,7 @@ func TestFailedRegistration(t *testing.T) {
 
 	h := NewNotEmptyAuthHandler()
 
-	newUser, _ := json.Marshal(models.User{
+	newUser, _ := json.Marshal(models.Person{
 		Login:       "username",
 		Password:    "Password123",
 		FirstName:   "first name",

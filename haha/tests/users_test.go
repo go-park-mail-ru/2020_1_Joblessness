@@ -20,7 +20,7 @@ type Avatar struct {
 func NewNotEmptyUsersHandler() *handlers.AuthHandler {
 	return &handlers.AuthHandler {
 		Sessions: make(map[string]uint, 10),
-		Users:    map[string]*models.User {
+		Users:    map[string]*models.Person{
 			"username": {1, "username", "Password123", "first name", "last name", "email", "phone number"},
 		},
 		UserAvatars: map[uint]string{},
@@ -86,7 +86,7 @@ func TestChangeUserInfo(t *testing.T) {
 	h := NewNotEmptyUsersHandler()
 	h.Sessions["username"] = 1
 
-	user, _ := json.Marshal(models.User{
+	user, _ := json.Marshal(models.Person{
 		Password:    "NewPassword123",
 		FirstName:   "new first name",
 		LastName:    "new last name",
@@ -123,7 +123,7 @@ func TestFailedChangeUserInfoNoRights(t *testing.T) {
 	h.Sessions["other username"] = 1
 	h.Sessions["username"] = 2
 
-	user, _ := json.Marshal(models.User{
+	user, _ := json.Marshal(models.Person{
 		Password:    "NewPassword123",
 		FirstName:   "new first name",
 		LastName:    "new last name",

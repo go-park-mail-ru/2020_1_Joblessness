@@ -1,8 +1,8 @@
 package main
 
 import (
+	"joblessness/haha/server"
 	"joblessness/haha/utils/cors"
-	"joblessness/haha/utils/routers"
 )
 
 func main() {
@@ -12,5 +12,5 @@ func main() {
 	cors.Cors.AddOrigin("http://localhost:8080")
 	cors.Cors.AddOrigin("https://compassionate-wescoff-a0cb89.netlify.com")
 
-	routers.StartRouter()
+	server.StartRouter()
 }
