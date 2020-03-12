@@ -12,5 +12,6 @@ func main() {
 	cors.Cors.AddOrigin("http://localhost:8080")
 	cors.Cors.AddOrigin("https://compassionate-wescoff-a0cb89.netlify.com")
 
-	server.StartRouter()
+	app := server.NewApp()
+	app.StartRouter()
 }

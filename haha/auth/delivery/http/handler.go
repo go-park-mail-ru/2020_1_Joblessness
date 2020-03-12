@@ -1,4 +1,4 @@
-package http
+package httpAuth
 
 import (
 	"encoding/json"
@@ -38,6 +38,37 @@ type UserLogin struct {
 
 type ResponseId struct {
 	ID int `json:"id"`
+}
+
+func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
+	log.Println("POST /users")
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	var user models.Person
+	err = json.Unmarshal(body, &user)
+	log.Println("user recieved: ", user)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if user.Login == "" || user.Password == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = h.useCase.RegisterPerson(user.Login, user.Password, user.FirstName, user.LastName, user.Email, user.PhoneNumber)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {

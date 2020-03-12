@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"joblessness/haha/auth"
+	"joblessness/haha/auth/delivery/http"
 	"joblessness/haha/auth/repository/postgres"
 	"joblessness/haha/auth/usecase"
 	"joblessness/haha/handlers"
@@ -79,11 +80,7 @@ func (app *App) StartRouter() {
 	router.Methods("OPTIONS").HandlerFunc(cors.Cors.Preflight)
 
 	// users
-
-	router.HandleFunc("/users/login", app.authUse.Login).Methods("POST")
-	router.HandleFunc("/users/check", authApi.Check).Methods("POST")
-	router.HandleFunc("/users/logout", authApi.Logout).Methods("POST")
-	router.HandleFunc("/users", authApi.Register).Methods("POST")
+	httpAuth.RegisterHTTPEndpoints(router, app.authUse)
 
 	router.HandleFunc("/user/{user_id}", authApi.GetUserPage).Methods("GET")
 	router.HandleFunc("/users/{user_id}/avatar", authApi.SetAvatar).Methods("POST")
