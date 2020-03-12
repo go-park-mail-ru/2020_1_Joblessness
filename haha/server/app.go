@@ -13,6 +13,7 @@ import (
 	"joblessness/haha/utils/database"
 	"log"
 	"net/http"
+	"os"
 )
 
 type App struct {
@@ -21,7 +22,7 @@ type App struct {
 }
 
 func NewApp() *App {
-	database.InitDatabase("username", "9730", "username")
+	database.InitDatabase(os.Getenv("HAHA_DB_USER"), os.Getenv("HAHA_DB_PASSWORD"), os.Getenv("HAHA_DB_NAME"))
 	if err := database.OpenDatabase(); err != nil {
 		log.Println(err.Error())
 		return nil
