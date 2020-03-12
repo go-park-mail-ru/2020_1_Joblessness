@@ -2,7 +2,7 @@ package postgres
 
 import (
 	"database/sql"
-	"errors"
+	"joblessness/haha/auth"
 	"joblessness/haha/models"
 	"time"
 )
@@ -72,7 +72,7 @@ func (r UserRepository) CreatePerson(user *models.Person) (err error) {
 		return err
 	}
 	if columnCount != 0 {
-		return errors.New("Login taken")
+		return auth.ErrUserAlreadyExists
 	}
 
 	var personId uint64
@@ -97,7 +97,7 @@ func (r UserRepository) Login(login, password, SID string) (userId int, err erro
 		return 0, err
 	}
 	if userId == 0 {
-		return 0, errors.New("User wasnt found")
+		return 0, auth.ErrWrongLogPas
 	}
 
 	insertSession := `INSERT INTO session (user_id, session_id, expires) 
@@ -126,7 +126,7 @@ func (r UserRepository) SessionExists(sessionId string) (userId int, err error) 
 		return 0, err
 	}
 	if userId == 0 {
-		return 0, nil
+		return 0, auth.ErrWrongSID
 	}
 
 	if expires.Before(time.Now()) {

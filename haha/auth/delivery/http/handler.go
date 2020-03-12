@@ -62,7 +62,14 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.useCase.RegisterPerson(user.Login, user.Password, user.FirstName, user.LastName, user.Email, user.PhoneNumber)
-	if err != nil {
+	switch err {
+	case auth.ErrUserAlreadyExists:
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	case nil:
+		log.Println("Success")
+	default:
 		log.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -95,8 +102,15 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userId, sessionId, err := h.useCase.Login(user.Login, user.Password)
-	if err != nil {
-		log.Println("db broken: ", err.Error())
+	switch err {
+	case auth.ErrWrongLogPas:
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	case nil:
+		log.Println("Success")
+	default:
+		log.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -140,19 +154,29 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
-	//TODO переписать if`ы
 	log.Println("POST /users/check")
 
 	session, err := r.Cookie("session_id")
-	if err == nil {
-		if userId, err := h.useCase.SessionExists(session.Value); err == nil && userId != 0 {
-			jsonData, _ := json.Marshal(models.Response{userId})
-			w.WriteHeader(http.StatusCreated)
-			w.Write(jsonData)
-		} else {
-			w.WriteHeader(http.StatusUnauthorized)
-		}
-	} else {
+	if err == http.ErrNoCookie {
 		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
+
+	userId, err := h.useCase.SessionExists(session.Value)
+	switch err {
+	case auth.ErrWrongSID:
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	case nil:
+		log.Println("Success")
+	default:
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	jsonData, _ := json.Marshal(models.Response{userId})
+	w.WriteHeader(http.StatusCreated)
+	w.Write(jsonData)
 }
