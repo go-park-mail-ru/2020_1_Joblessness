@@ -2,15 +2,18 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 	"joblessness/haha/auth"
 	"joblessness/haha/models"
 	"time"
 )
 
 type User struct {
-	ID          uint
+	ID          uint64
 	Login       string
 	Password    string
+	OrganizationID uint64
+	PersonID uint64
 	Tag         string
 	Email       string
 	PhoneNumber string
@@ -18,7 +21,7 @@ type User struct {
 }
 
 type Person struct {
-	ID uint
+	ID uint64
 	Name string
 	Gender string
 	Birthday time.Time
@@ -88,7 +91,7 @@ func (r UserRepository) CreatePerson(user *models.Person) (err error) {
 	return err
 }
 
-func (r UserRepository) Login(login, password, SID string) (userId int, err error) {
+func (r UserRepository) Login(login, password, SID string) (userId uint64, err error) {
 	//TODO user_id, session_id уникальные
 
 	checkUser := "SELECT id FROM users WHERE login = $1 AND password = $2;"
@@ -116,7 +119,7 @@ func (r UserRepository) Logout(sessionId string) (err error) {
 	return err
 }
 
-func (r UserRepository) SessionExists(sessionId string) (userId int, err error) {
+func (r UserRepository) SessionExists(sessionId string) (userId uint64, err error) {
 	//TODO session_id - pk
 
 	checkUser := "SELECT user_id, expires FROM session WHERE session_id = $1;"
@@ -136,4 +139,51 @@ func (r UserRepository) SessionExists(sessionId string) (userId int, err error) 
 	}
 
 	return userId, err
+}
+
+func (r UserRepository) GetPerson(userID uint64) (models.Person, error) {
+	user := User{ID: userID}
+
+	getUser := "SELECT login, password, person, email, phone FROM users WHERE id = $1;"
+	err := r.db.QueryRow(getUser, userID).
+		Scan(&user.Login, &user.Password, &user.PersonID, &user.Email, &user.PhoneNumber)
+	if err != nil {
+		return models.Person{}, err
+	}
+
+	if user.PersonID == 0 {
+		return models.Person{}, errors.New("this user is not a person")
+	}
+
+	var person Person
+
+	getPerson := "SELECT name FROM person WHERE id = $1;"
+	err = r.db.QueryRow(getPerson, user.PersonID).Scan(&person.Name)
+	if err != nil {
+		return models.Person{}, err
+	}
+
+	return *toModel(&user, &person), nil
+}
+
+func (r UserRepository) ChangePerson(p models.Person) error {
+	user := User{ID: p.ID}
+
+	getUser := "SELECT person FROM users WHERE id = $1;"
+	err := r.db.QueryRow(getUser, user.ID).Scan(&user.PersonID)
+	if err != nil {
+		return err
+	}
+
+	if user.PersonID == 0 {
+		return errors.New("this user is not a person")
+	}
+
+	changePerson := "UPDATE person SET name = $1 WHERE id = $2;"
+	_, err = r.db.Exec(changePerson, p.FirstName, user.PersonID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -6,6 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	"joblessness/haha/models"
 	reflect "reflect"
 )
 
@@ -13,6 +14,22 @@ import (
 type MockUseCase struct {
 	ctrl     *gomock.Controller
 	recorder *MockUseCaseMockRecorder
+}
+
+func (m *MockUseCase) Login(login, password string) (uint64, string, error) {
+	panic("implement me")
+}
+
+func (m *MockUseCase) SessionExists(sessionId string) (uint64, error) {
+	panic("implement me")
+}
+
+func (m *MockUseCase) ChangePerson(p models.Person) error {
+	panic("implement me")
+}
+
+func (m *MockUseCase) GetPerson(userID uint64) (models.Person, error) {
+	panic("implement me")
 }
 
 // MockUseCaseMockRecorder is the mock recorder for MockUseCase

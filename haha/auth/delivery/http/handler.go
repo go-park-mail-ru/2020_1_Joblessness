@@ -2,11 +2,13 @@ package httpAuth
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"io/ioutil"
 	"joblessness/haha/auth"
 	"joblessness/haha/models"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -41,8 +43,6 @@ type ResponseId struct {
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
-	log.Println("POST /users")
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -79,8 +79,6 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	log.Println("POST /users/login")
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -132,8 +130,6 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
-	log.Println("POST /users/logout")
-
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -154,8 +150,6 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
-	log.Println("POST /users/check")
-
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -179,4 +173,73 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 	jsonData, _ := json.Marshal(models.Response{userId})
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
+}
+
+func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
+	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
+
+	user, err := h.useCase.GetPerson(userID)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	type Response struct {
+		User models.UserInfo `json:"user"`
+		Summaries []models.UserSummary `json:"summaries"`
+	}
+
+	jsonData, _ := json.Marshal(Response{
+		models.UserInfo{user.FirstName, user.LastName, "", ""},
+		[]models.UserSummary{},
+	})
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}
+
+func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
+	session, err := r.Cookie("session_id")
+	log.Println("session cookie: ", session)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	userID, err := h.useCase.SessionExists(session.Value)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	if reqID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); reqID != userID {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	var person models.Person
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = json.Unmarshal(body, &person)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	person.ID = userID
+
+	err = h.useCase.ChangePerson(person)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

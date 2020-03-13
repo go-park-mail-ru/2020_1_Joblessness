@@ -12,4 +12,6 @@ func RegisterHTTPEndpoints(router *mux.Router, uc auth.UseCase) {
 	router.HandleFunc("/users/check", h.Check).Methods("POST")
 	router.HandleFunc("/users/logout", h.Logout).Methods("POST")
 	router.HandleFunc("/users", h.Register).Methods("POST")
+	router.HandleFunc("/users/{user_id}", h.GetPerson).Methods("GET")
+	router.HandleFunc("/users/{user_id}", h.ChangePerson).Methods("PUT")
 }

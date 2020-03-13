@@ -1,7 +1,7 @@
 package models
 
 type Person struct {
-	ID uint `json:"id,omitempty"`
+	ID uint64 `json:"id,omitempty"`
 	Login string `json:"login,omitempty"`
 	Password string `json:"password,omitempty"`
 
@@ -17,5 +17,5 @@ type UserLogin struct {
 }
 
 type Response struct {
-	ID int `json:"id"`
+	ID uint64 `json:"id"`
 }

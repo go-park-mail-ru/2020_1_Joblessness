@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"joblessness/haha/auth"
@@ -9,6 +8,7 @@ import (
 	"joblessness/haha/auth/repository/postgres"
 	"joblessness/haha/auth/usecase"
 	"joblessness/haha/handlers"
+	"joblessness/haha/middleware"
 	"joblessness/haha/utils/cors"
 	"joblessness/haha/utils/database"
 	"log"
@@ -47,45 +47,24 @@ func echoFunc(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello %s!", message)
 }
 
-
-func RecoveryMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		defer func() {
-			err := recover()
-			if err != nil {
-				log.Println(err)
-
-				jsonBody, _ := json.Marshal(map[string]string{
-					"error": "There was an internal haha error",
-				})
-
-				w.WriteHeader(http.StatusInternalServerError)
-				w.Write(jsonBody)
-			}
-		}()
-
-		next.ServeHTTP(w, r)
-	})
-}
-
 func (app *App) StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
 	authApi := handlers.NewAuthHandler()
 	vacancyApi := handlers.NewVacancyHandler()
 	summaryApi := handlers.NewSummaryHandler()
 
-	router.Use(RecoveryMiddleware)
+	m := middleware.NewMiddleware()
+
+	router.Use(m.RecoveryMiddleware)
 	router.Use(cors.Cors.CorsMiddleware)
+	router.Use(m.LogMiddleware)
 	router.HandleFunc("/echo/{message}", echoFunc)
 	router.Methods("OPTIONS").HandlerFunc(cors.Cors.Preflight)
 
 	// users
 	httpAuth.RegisterHTTPEndpoints(router, app.authUse)
 
-	router.HandleFunc("/user/{user_id}", authApi.GetUserPage).Methods("GET")
 	router.HandleFunc("/users/{user_id}/avatar", authApi.SetAvatar).Methods("POST")
-	router.HandleFunc("/user/{user_id}", authApi.ChangeUserInfo).Methods("POST")
 
 	// vacancies
 

@@ -40,7 +40,7 @@ func (a *AuthUseCase) RegisterPerson(login, password, firstName, lastName, email
 	return a.userRepo.CreatePerson(person)
 }
 
-func (a *AuthUseCase) Login(login, password string) (userId int, sessionId string, err error) {
+func (a *AuthUseCase) Login(login, password string) (userId uint64, sessionId string, err error) {
 	sessionId = GetSID(64)
 	userId, err = a.userRepo.Login(login, password, sessionId)
 	return userId, sessionId, err
@@ -50,6 +50,14 @@ func (a *AuthUseCase) Logout(sessionId string) error {
 	return a.userRepo.Logout(sessionId)
 }
 
-func (a *AuthUseCase) SessionExists(sessionId string) (int, error) {
+func (a *AuthUseCase) SessionExists(sessionId string) (uint64, error) {
 	return a.userRepo.SessionExists(sessionId)
+}
+
+func (a *AuthUseCase) GetPerson(userID uint64) (models.Person, error) {
+	return a.userRepo.GetPerson(userID)
+}
+
+func (a *AuthUseCase) ChangePerson(p models.Person) error {
+	return a.userRepo.ChangePerson(p)
 }

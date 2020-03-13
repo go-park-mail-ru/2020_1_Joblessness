@@ -30,10 +30,10 @@ func (api *AuthHandler) GetUserPage(w http.ResponseWriter, r *http.Request) {
 	log.Println("GET /user/{user_id}")
 
 	var currentUser *models.Person
-	userId, _ := strconv.Atoi(mux.Vars(r)["user_id"])
+	userId, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 
 	for _, user := range api.Users {
-		if (*user).ID == uint(userId) {
+		if (*user).ID == userId {
 			currentUser = user
 		}
 	}
@@ -75,7 +75,7 @@ func (api *AuthHandler) ChangeUserInfo(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	if reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
+	if reqId, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); reqId != userId {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -120,7 +120,7 @@ func (api *AuthHandler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	if reqId, _ := strconv.Atoi(mux.Vars(r)["user_id"]); uint(reqId) != userId {
+	if reqId, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); reqId != userId {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
