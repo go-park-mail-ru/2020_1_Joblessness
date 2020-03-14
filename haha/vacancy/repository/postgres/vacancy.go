@@ -185,5 +185,12 @@ func (r *VacancyRepository) DeleteVacancy(vacancyID int) (err error) {
 		return err
 	}
 
+	deleteRequirements := `DELETE FROM requirements
+						   WHERE vacancy_id = $1`
+	_, err = r.db.Exec(deleteRequirements, vacancyID)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
