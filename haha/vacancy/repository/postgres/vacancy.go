@@ -80,7 +80,7 @@ func (r *VacancyRepository) CreateVacancy(vacancy models.Vacancy) (vacancyID uin
 						vacancyDB.SalaryFrom, vacancyDB.SalaryTo, vacancyDB.WithTax, vacancyDB.Responsibilities,
 						vacancyDB.Conditions, vacancyDB.Keywords).Scan(&vacancyID)
 	if err != nil {
-		return 0, err
+		return vacancyID, err
 	}
 
 	createRequirements := `INSERT INTO requirements (vacancy_id, driver_license, has_car, schedule, employment)
@@ -88,7 +88,7 @@ func (r *VacancyRepository) CreateVacancy(vacancy models.Vacancy) (vacancyID uin
 	_, err = r.db.Exec(createRequirements, requirementsDB.VacancyID, requirementsDB.DriverLicense,
 					   requirementsDB.HasCar, requirementsDB.Schedule, requirementsDB.Employment)
 	if err != nil {
-		return 0, err
+		return vacancyID, err
 	}
 
 	return vacancyID, nil
@@ -100,7 +100,7 @@ func (r *VacancyRepository) GetVacancies() (vacancies []models.Vacancy, err erro
 					 FROM vacancy;`
 	rows, err := r.db.Query(getVacancies)
 	if err != nil {
-		return []models.Vacancy{}, err
+		return vacancies, err
 	}
 
 	getRequirements := `SELECT id, driver_license, has_car, schedule, employment
@@ -112,14 +112,14 @@ func (r *VacancyRepository) GetVacancies() (vacancies []models.Vacancy, err erro
 						&vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities, &vacancyDB.Conditions,
 						&vacancyDB.Keywords)
 		if err != nil {
-			return []models.Vacancy{}, err
+			return vacancies, err
 		}
 
 		var requirementsDB Requirements
 
 		err = r.db.QueryRow(getRequirements, vacancyDB.ID).Scan(&requirementsDB)
 		if err != nil {
-			return []models.Vacancy{}, err
+			return vacancies, err
 		}
 
 		vacancies = append(vacancies, *toModel(&vacancyDB, &requirementsDB))
@@ -136,7 +136,7 @@ func (r *VacancyRepository) GetVacancy(vacancyID int) (vacancy models.Vacancy, e
 				   FROM vacancy WHERE id = $1;`
 	err = r.db.QueryRow(getVacancy, vacancyID).Scan(vacancyDB)
 	if err != nil {
-		return models.Vacancy{}, err
+		return vacancy, err
 	}
 
 	var requirementsDB Requirements
@@ -145,7 +145,7 @@ func (r *VacancyRepository) GetVacancy(vacancyID int) (vacancy models.Vacancy, e
 						FROM requirements WHERE vacancy_id = $1;`
 	err = r.db.QueryRow(getRequirements, vacancyDB.ID).Scan(&requirementsDB)
 	if err != nil {
-		return models.Vacancy{}, err
+		return vacancy, err
 	}
 
 	return *toModel(&vacancyDB, &requirementsDB), nil
