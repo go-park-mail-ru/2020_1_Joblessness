@@ -61,6 +61,21 @@ func (mr *MockUseCaseMockRecorder) ChangePerson(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePerson", reflect.TypeOf((*MockUseCase)(nil).ChangePerson), arg0)
 }
 
+// GetListOfOrgs mocks base method
+func (m *MockUseCase) GetListOfOrgs(arg0 int) ([]models.Organization, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetListOfOrgs", arg0)
+	ret0, _ := ret[0].([]models.Organization)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetListOfOrgs indicates an expected call of GetListOfOrgs
+func (mr *MockUseCaseMockRecorder) GetListOfOrgs(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetListOfOrgs", reflect.TypeOf((*MockUseCase)(nil).GetListOfOrgs), arg0)
+}
+
 // GetOrganization mocks base method
 func (m *MockUseCase) GetOrganization(arg0 uint64) (*models.Organization, error) {
 	m.ctrl.T.Helper()
