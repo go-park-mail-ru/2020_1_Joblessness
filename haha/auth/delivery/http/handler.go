@@ -37,6 +37,7 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
 	body, err := ioutil.ReadAll(r.Body)
+	golog.Debugf("#%s: %s",  rID, body)
 	if err != nil {
 		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -44,7 +45,6 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	}
 	var user models.Person
 	err = json.Unmarshal(body, &user)
-	golog.Debugf("#%s: %s",  rID, user)
 	if err != nil {
 		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -83,9 +83,10 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	golog.Debugf("#%s: %s",  rID, body)
+
 	var org models.Organization
 	err = json.Unmarshal(body, &org)
-	golog.Debugf("#%s: %s",  org)
 	if err != nil {
 		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)

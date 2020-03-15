@@ -34,7 +34,6 @@ func (m *Middleware) LogMiddleware(next http.Handler) http.Handler {
 
 		requestNumber := genRequestNumber(6)
 		r = r.WithContext(context.WithValue(r.Context(), "rID", requestNumber))
-		next.ServeHTTP(w, r)
 
 		log.Printf("#%s: %s %s", requestNumber, r.Method, r.URL)
 		next.ServeHTTP(cw, r)
