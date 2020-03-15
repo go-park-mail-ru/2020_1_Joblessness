@@ -1,4 +1,4 @@
-package http
+package httpVacancy
 
 import (
 	"encoding/json"
@@ -94,8 +94,6 @@ func (h *Handler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
-	log.Println("PUT /vacancies/{vacancy_id}")
-
 	vacancyID, err := strconv.ParseUint(mux.Vars(r)["vacancy_id"], 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -136,8 +134,6 @@ func (h *Handler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
-	log.Println("DELETE /vacancies/{vacancy_id}")
-
 	vacancyID, err := strconv.ParseUint(mux.Vars(r)["vacancy_id"], 10, 64)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
