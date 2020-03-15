@@ -22,17 +22,6 @@ func NewHandler(useCase auth.UseCase) *Handler {
 	}
 }
 
-type inputPerson struct {
-	ID uint `json:"id,omitempty"`
-	Login string `json:"login,omitempty"`
-	Password string `json:"password,omitempty"`
-
-	FirstName string `json:"first-name,omitempty"`
-	LastName string `json:"last-name,omitempty"`
-	Email string `json:"email,omitempty"`
-	PhoneNumber string `json:"phone-number,omitempty"`
-}
-
 type UserLogin struct {
 	Login string `json:"login"`
 	Password string `json:"password"`
@@ -186,27 +175,13 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
-	session, err := r.Cookie("session_id")
-	if err == http.ErrNoCookie {
+	userID, ok := r.Context().Value("userID").(uint64)
+	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
-	userId, err := h.useCase.SessionExists(session.Value)
-	switch err {
-	case auth.ErrWrongSID:
-		log.Println(err.Error())
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	case nil:
-		log.Println("Success")
-	default:
-		log.Println(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	jsonData, _ := json.Marshal(models.Response{userId})
+	jsonData, _ := json.Marshal(models.Response{userID})
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }
@@ -235,18 +210,12 @@ func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
-	session, err := r.Cookie("session_id")
-	log.Println("session cookie: ", session)
-	if err != nil {
+	userID, ok := r.Context().Value("userID").(uint64)
+	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	userID, err := h.useCase.SessionExists(session.Value)
-	if err != nil {
-		log.Println(err.Error())
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+
 	if reqID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); reqID != userID {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -302,18 +271,12 @@ func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
-	session, err := r.Cookie("session_id")
-	log.Println("session cookie: ", session)
-	if err != nil {
+	userID, ok := r.Context().Value("userID").(uint64)
+	if !ok {
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	userID, err := h.useCase.SessionExists(session.Value)
-	if err != nil {
-		log.Println(err.Error())
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+
 	if reqID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); reqID != userID {
 		w.WriteHeader(http.StatusForbidden)
 		return

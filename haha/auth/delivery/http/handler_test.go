@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"joblessness/haha/auth"
 	"joblessness/haha/auth/usecase/mock"
+	"joblessness/haha/middleware"
 	"joblessness/haha/models"
 	"net/http"
 	"net/http/httptest"
@@ -22,8 +23,9 @@ func TestRegistration(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
+	m := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, uc)
+	RegisterHTTPEndpoints(router, m, uc)
 
 	person := models.Person{
 		Login:       "new username",
@@ -37,7 +39,7 @@ func TestRegistration(t *testing.T) {
 	assert.NoError(t, err)
 
 	uc.EXPECT().
-		RegisterPerson(person.Login, person.Password, person.FirstName, person.LastName, person.Email, person.PhoneNumber).
+		RegisterPerson(person).
 		Return(nil).
 		Times(1)
 
@@ -54,8 +56,9 @@ func TestFailedRegistration(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
+	m := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, uc)
+	RegisterHTTPEndpoints(router, m, uc)
 
 	person := models.Person{
 		Login:       "new username",
@@ -69,7 +72,7 @@ func TestFailedRegistration(t *testing.T) {
 	assert.NoError(t, err)
 
 	uc.EXPECT().
-		RegisterPerson(person.Login, person.Password, person.FirstName, person.LastName, person.Email, person.PhoneNumber).
+		RegisterPerson(&person).
 		Return(auth.ErrUserAlreadyExists).
 		Times(1)
 
@@ -86,8 +89,9 @@ func TestLogin(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
+	m := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, uc)
+	RegisterHTTPEndpoints(router, m, uc)
 
 	userLogin := models.UserLogin{
 		Login:    "username",
@@ -98,7 +102,7 @@ func TestLogin(t *testing.T) {
 
 	uc.EXPECT().
 		Login(userLogin.Login, userLogin.Password).
-		Return(1, "sid", nil).
+		Return(uint64(1), "sid", nil).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(userJSON))
@@ -115,8 +119,9 @@ func TestFailedLoginNotFound(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
+	m := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, uc)
+	RegisterHTTPEndpoints(router, m, uc)
 
 	userLogin := models.UserLogin{
 		Login:    "username",
@@ -127,7 +132,7 @@ func TestFailedLoginNotFound(t *testing.T) {
 
 	uc.EXPECT().
 		Login(userLogin.Login, userLogin.Password).
-		Return(0, "", auth.ErrWrongLogPas).
+		Return(uint64(0), "", auth.ErrWrongLogPas).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(userJSON))
@@ -143,8 +148,9 @@ func TestLogout(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
+	m := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, uc)
+	RegisterHTTPEndpoints(router, m, uc)
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -171,8 +177,9 @@ func TestLogoutNoCookie(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
+	m := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, uc)
+	RegisterHTTPEndpoints(router, m, uc)
 
 	uc.EXPECT().
 		Logout(gomock.Any()).
@@ -191,8 +198,9 @@ func TestLogoutSomethingWentWrong(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
+	m := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, uc)
+	RegisterHTTPEndpoints(router, m, uc)
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -219,8 +227,9 @@ func TestCheck(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
+	m := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, uc)
+	RegisterHTTPEndpoints(router, m, uc)
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -230,7 +239,7 @@ func TestCheck(t *testing.T) {
 
 	uc.EXPECT().
 		SessionExists(cookie.Value).
-		Return(1, nil).
+		Return(uint64(1), nil).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))
@@ -247,8 +256,9 @@ func TestCheckNoCookie(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
+	m := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, uc)
+	RegisterHTTPEndpoints(router, m, uc)
 
 
 	uc.EXPECT().
@@ -268,8 +278,9 @@ func TestCheckWrongSid(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
+	m := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, uc)
+	RegisterHTTPEndpoints(router, m, uc)
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -279,7 +290,7 @@ func TestCheckWrongSid(t *testing.T) {
 
 	uc.EXPECT().
 		SessionExists(cookie.Value).
-		Return(0, auth.ErrWrongSID).
+		Return(uint64(0), auth.ErrWrongSID).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))
@@ -296,8 +307,9 @@ func TestCheckSomethingWentWrong(t *testing.T) {
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
+	m := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, uc)
+	RegisterHTTPEndpoints(router, m, uc)
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -307,7 +319,7 @@ func TestCheckSomethingWentWrong(t *testing.T) {
 
 	uc.EXPECT().
 		SessionExists(cookie.Value).
-		Return(0, errors.New("err")).
+		Return(uint64(0), errors.New("err")).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))

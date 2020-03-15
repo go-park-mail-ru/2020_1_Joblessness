@@ -24,9 +24,10 @@ type App struct {
 	httpServer *http.Server
 	authUse auth.UseCase
 	vacancyUse vacancy.UseCase
+	corsHandler *cors.CorsHandler
 }
 
-func NewApp() *App {
+func NewApp(c *cors.CorsHandler) *App {
 	database.InitDatabase(os.Getenv("HAHA_DB_USER"), os.Getenv("HAHA_DB_PASSWORD"), os.Getenv("HAHA_DB_NAME"))
 	if err := database.OpenDatabase(); err != nil {
 		log.Println(err.Error())
@@ -41,17 +42,8 @@ func NewApp() *App {
 	return &App{
 		authUse: usecaseAuth.NewAuthUseCase(userRepo),
 		vacancyUse: usecaseVacancy.NewVacancyUseCase(vacancyRepo),
+		corsHandler: c,
 	}
-}
-
-func echoFunc(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("/users/echo")
-
-	cors.Cors.PrivateApi(&w, r)
-
-	params := mux.Vars(r)
-	message := params["message"]
-	fmt.Fprintf(w, "Hello %s!", message)
 }
 
 func (app *App) StartRouter() {
@@ -59,16 +51,15 @@ func (app *App) StartRouter() {
 	authApi := handlers.NewAuthHandler()
 	summaryApi := handlers.NewSummaryHandler()
 
-	m := middleware.NewMiddleware()
+	m := middleware.NewMiddleware(app.authUse)
 
 	router.Use(m.RecoveryMiddleware)
-	router.Use(cors.Cors.CorsMiddleware)
+	router.Use(app.corsHandler.CorsMiddleware)
 	router.Use(m.LogMiddleware)
-	router.HandleFunc("/echo/{message}", echoFunc)
-	router.Methods("OPTIONS").HandlerFunc(cors.Cors.Preflight)
+	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
 	// users
-	httpAuth.RegisterHTTPEndpoints(router, app.authUse)
+	httpAuth.RegisterHTTPEndpoints(router, m, app.authUse)
 
 	router.HandleFunc("/users/{user_id}/avatar", authApi.SetAvatar).Methods("POST")
 
