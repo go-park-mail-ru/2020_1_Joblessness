@@ -5,12 +5,16 @@ import (
 	"github.com/gorilla/mux"
 	"joblessness/haha/auth"
 	"joblessness/haha/auth/delivery/http"
-	"joblessness/haha/auth/repository/postgres"
-	"joblessness/haha/auth/usecase"
+	postgresAuth "joblessness/haha/auth/repository/postgres"
+	usecaseAuth "joblessness/haha/auth/usecase"
 	"joblessness/haha/handlers"
 	"joblessness/haha/middleware"
 	"joblessness/haha/utils/cors"
 	"joblessness/haha/utils/database"
+	"joblessness/haha/vacancy"
+	"joblessness/haha/vacancy/delivery/http"
+	postgresVacancy "joblessness/haha/vacancy/repository/postgres"
+	usecaseVacancy "joblessness/haha/vacancy/usecase"
 	"log"
 	"net/http"
 	"os"
@@ -19,6 +23,7 @@ import (
 type App struct {
 	httpServer *http.Server
 	authUse auth.UseCase
+	vacancyUse vacancy.UseCase
 }
 
 func NewApp() *App {
@@ -30,10 +35,12 @@ func NewApp() *App {
 	db := database.GetDatabase()
 
 
-	userRepo := postgres.NewUserRepository(db)
+	userRepo := postgresAuth.NewUserRepository(db)
+	vacancyRepo := postgresVacancy.NewVacancyRepository(db)
 
 	return &App{
-		authUse: usecase.NewAuthUseCase(userRepo),
+		authUse: usecaseAuth.NewAuthUseCase(userRepo),
+		vacancyUse: usecaseVacancy.NewVacancyUseCase(vacancyRepo),
 	}
 }
 
@@ -50,7 +57,6 @@ func echoFunc(w http.ResponseWriter, r *http.Request) {
 func (app *App) StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
 	authApi := handlers.NewAuthHandler()
-	vacancyApi := handlers.NewVacancyHandler()
 	summaryApi := handlers.NewSummaryHandler()
 
 	m := middleware.NewMiddleware()
@@ -67,12 +73,7 @@ func (app *App) StartRouter() {
 	router.HandleFunc("/users/{user_id}/avatar", authApi.SetAvatar).Methods("POST")
 
 	// vacancies
-
-	router.HandleFunc("/vacancies", vacancyApi.CreateVacancy).Methods("POST")
-	router.HandleFunc("/vacancies", vacancyApi.GetVacancies).Methods("GET")
-	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.GetVacancy).Methods("GET")
-	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.ChangeVacancy).Methods("PUT")
-	router.HandleFunc("/vacancies/{vacancy_id}", vacancyApi.DeleteVacancy).Methods("DELETE")
+	httpVacancy.RegisterHTTPEndpoints(router, app.vacancyUse)
 
 	// summaries
 

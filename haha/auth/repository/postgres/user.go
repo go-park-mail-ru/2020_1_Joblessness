@@ -10,15 +10,16 @@ import (
 )
 
 type User struct {
-	ID          uint64
-	Login       string
-	Password    string
+	ID             uint64
+	Login          string
+	Password       string
 	OrganizationID uint64
-	PersonID uint64
-	Tag         string
-	Email       string
-	PhoneNumber string
-	Registered  time.Time
+	PersonID       uint64
+	Tag            string
+	Email          string
+	Phone          string
+	Registered     time.Time
+	Avatar         string
 }
 
 type Person struct {
@@ -41,12 +42,12 @@ func toPostgresPerson(u *models.Person) (*User, *Person) {
 	}
 
 	return &User{
-		ID: u.ID,
-		Login: u.Login,
+		ID:       u.ID,
+		Login:    u.Login,
 		Password: u.Password,
 		Tag: u.Tag,
 		Email: u.Email,
-		PhoneNumber: u.PhoneNumber,
+		Phone: u.PhoneNumber,
 	},
 
 	&Person{
@@ -63,7 +64,7 @@ func toPostgresOrg(o *models.Organization) (*User, *Organization) {
 			Password: o.Password,
 			Tag: o.Tag,
 			Email: o.Email,
-			PhoneNumber: o.PhoneNumber,
+			Phone: o.PhoneNumber,
 		},
 
 		&Organization{
@@ -87,7 +88,7 @@ func toModelPerson(u *User, p *Person) *models.Person {
 			u.Registered.Hour(), u.Registered.Minute(), u.Registered.Second()),
 		Gender: p.Gender,
 		Email:       u.Email,
-		PhoneNumber: u.PhoneNumber,
+		PhoneNumber: u.Phone,
 	}
 
 	name := strings.Split(p.Name, " ")
@@ -111,7 +112,7 @@ func toModelOrganization(u *User, o *Organization) *models.Organization {
 		Site: o.Site,
 		Name: o.Name,
 		Email:       u.Email,
-		PhoneNumber: u.PhoneNumber,
+		PhoneNumber: u.Phone,
 	}
 }
 
@@ -233,9 +234,9 @@ func (r UserRepository) SessionExists(sessionId string) (userId uint64, err erro
 func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	user := User{ID: userID}
 
-	getUser := "SELECT login, password, person_id, email, phone FROM users WHERE id = $1"
+	getUser := "SELECT login, password, person_id, email, phone FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, userID).
-		Scan(&user.Login, &user.Password, &user.PersonID, &user.Email, &user.PhoneNumber)
+		Scan(&user.Login, &user.Password, &user.PersonID, &user.Email, &user.Phone)
 	if err != nil {
 		return nil, err
 	}

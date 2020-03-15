@@ -83,7 +83,7 @@ func (r *VacancyRepository) CreateVacancy(vacancy models.Vacancy) (vacancyID uin
 		return vacancyID, err
 	}
 
-	createRequirements := `INSERT INTO requirements (vacancy_id, driver_license, has_car, schedule, employment)
+	createRequirements := `INSERT INTO requirement (vacancy_id, driver_license, has_car, schedule, employment)
 						 VALUES ($1, $2, $3, $4, $5, $6);`
 	_, err = r.db.Exec(createRequirements, requirementsDB.VacancyID, requirementsDB.DriverLicense,
 					   requirementsDB.HasCar, requirementsDB.Schedule, requirementsDB.Employment)
@@ -104,7 +104,7 @@ func (r *VacancyRepository) GetVacancies() (vacancies []models.Vacancy, err erro
 	}
 
 	getRequirements := `SELECT id, driver_license, has_car, schedule, employment
-						FROM requirements WHERE vacancy_id = $1;`
+						FROM requirement WHERE vacancy_id = $1;`
 
 	for rows.Next() {
 		var vacancyDB Vacancy
@@ -128,7 +128,7 @@ func (r *VacancyRepository) GetVacancies() (vacancies []models.Vacancy, err erro
 	return vacancies, nil
 }
 
-func (r *VacancyRepository) GetVacancy(vacancyID int) (vacancy models.Vacancy, err error) {
+func (r *VacancyRepository) GetVacancy(vacancyID uint64) (vacancy models.Vacancy, err error) {
 	var vacancyDB Vacancy
 
 	getVacancy := `SELECT id, organization_id, name, description, salary_from, salary_to, with_tax, responsibilities,
@@ -142,7 +142,7 @@ func (r *VacancyRepository) GetVacancy(vacancyID int) (vacancy models.Vacancy, e
 	var requirementsDB Requirements
 
 	getRequirements := `SELECT id, driver_license, has_car, schedule, employment
-						FROM requirements WHERE vacancy_id = $1;`
+						FROM requirement WHERE vacancy_id = $1;`
 	err = r.db.QueryRow(getRequirements, vacancyDB.ID).Scan(&requirementsDB)
 	if err != nil {
 		return vacancy, err
@@ -165,7 +165,7 @@ func (r *VacancyRepository) ChangeVacancy(vacancy models.Vacancy) (err error) {
 		return err
 	}
 
-	changeRequirements := `UPDATE requirements
+	changeRequirements := `UPDATE requirement
 						   SET driver_license = $1, has_car = $2, schedule = $3, employment = $4
 						   WHERE vacancy_id = $5`
 	_, err = r.db.Exec(changeRequirements, &requirementsDB.DriverLicense, &requirementsDB.HasCar,
@@ -177,7 +177,7 @@ func (r *VacancyRepository) ChangeVacancy(vacancy models.Vacancy) (err error) {
 	return nil
 }
 
-func (r *VacancyRepository) DeleteVacancy(vacancyID int) (err error) {
+func (r *VacancyRepository) DeleteVacancy(vacancyID uint64) (err error) {
 	deleteVacancy := `DELETE FROM vacancy
 					  WHERE id = $1`
 	_, err = r.db.Exec(deleteVacancy, vacancyID)
@@ -185,7 +185,7 @@ func (r *VacancyRepository) DeleteVacancy(vacancyID int) (err error) {
 		return err
 	}
 
-	deleteRequirements := `DELETE FROM requirements
+	deleteRequirements := `DELETE FROM requirement
 						   WHERE vacancy_id = $1`
 	_, err = r.db.Exec(deleteRequirements, vacancyID)
 	if err != nil {
