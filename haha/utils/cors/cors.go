@@ -10,8 +10,10 @@ type CorsHandler struct {
 	allowedOrigins []string
 }
 
-var Cors = CorsHandler{
-	allowedOrigins: []string{},
+func NewCorsHandler() *CorsHandler {
+	return &CorsHandler{
+		allowedOrigins: []string{},
+	}
 }
 
 func (corsList *CorsHandler) AddOrigin(originName string) {
@@ -19,7 +21,7 @@ func (corsList *CorsHandler) AddOrigin(originName string) {
 }
 
 func (corsList *CorsHandler) Preflight(w http.ResponseWriter, req *http.Request) {
-	Cors.PrivateApi(&w, req)
+	corsList.PrivateApi(&w, req)
 }
 
 //TODO разбить

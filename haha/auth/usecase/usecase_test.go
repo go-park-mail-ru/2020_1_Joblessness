@@ -30,7 +30,8 @@ func TestAuthPersonFlow(t *testing.T) {
 
 	//RegisterPerson
 	repo.EXPECT().CreatePerson(person).Return(nil).Times(1)
-	err := uc.RegisterPerson(login, password, firstName, "", "", phone)
+	repo.EXPECT().DoesUserExists(login).Return(nil).Times(1)
+	err := uc.RegisterPerson(person)
 	assert.NoError(t, err)
 
 	//Login

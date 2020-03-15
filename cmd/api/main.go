@@ -6,12 +6,14 @@ import (
 )
 
 func main() {
-	cors.Cors.AddOrigin("https://91.210.170.6:8000")
-	cors.Cors.AddOrigin("http://91.210.170.6:8000")
-	cors.Cors.AddOrigin("http://localhost:8000")
-	cors.Cors.AddOrigin("http://localhost:8080")
-	cors.Cors.AddOrigin("https://compassionate-wescoff-a0cb89.netlify.com")
+	corsHandler := cors.NewCorsHandler()
+	
+	corsHandler.AddOrigin("https://91.210.170.6:8000")
+	corsHandler.AddOrigin("http://91.210.170.6:8000")
+	corsHandler.AddOrigin("http://localhost:8000")
+	corsHandler.AddOrigin("http://localhost:8080")
+	corsHandler.AddOrigin("https://compassionate-wescoff-a0cb89.netlify.com")
 
-	app := server.NewApp()
+	app := server.NewApp(corsHandler)
 	app.StartRouter()
 }

@@ -33,6 +33,20 @@ func (m *MockUseCase) EXPECT() *MockUseCaseMockRecorder {
 	return m.recorder
 }
 
+// ChangeOrganization mocks base method
+func (m *MockUseCase) ChangeOrganization(arg0 models.Organization) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeOrganization", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeOrganization indicates an expected call of ChangeOrganization
+func (mr *MockUseCaseMockRecorder) ChangeOrganization(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeOrganization", reflect.TypeOf((*MockUseCase)(nil).ChangeOrganization), arg0)
+}
+
 // ChangePerson mocks base method
 func (m *MockUseCase) ChangePerson(arg0 models.Person) error {
 	m.ctrl.T.Helper()
@@ -45,6 +59,21 @@ func (m *MockUseCase) ChangePerson(arg0 models.Person) error {
 func (mr *MockUseCaseMockRecorder) ChangePerson(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePerson", reflect.TypeOf((*MockUseCase)(nil).ChangePerson), arg0)
+}
+
+// GetOrganization mocks base method
+func (m *MockUseCase) GetOrganization(arg0 uint64) (*models.Organization, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrganization", arg0)
+	ret0, _ := ret[0].(*models.Organization)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrganization indicates an expected call of GetOrganization
+func (mr *MockUseCaseMockRecorder) GetOrganization(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganization", reflect.TypeOf((*MockUseCase)(nil).GetOrganization), arg0)
 }
 
 // GetPerson mocks base method
@@ -92,18 +121,32 @@ func (mr *MockUseCaseMockRecorder) Logout(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockUseCase)(nil).Logout), arg0)
 }
 
-// RegisterPerson mocks base method
-func (m *MockUseCase) RegisterPerson(arg0, arg1, arg2, arg3, arg4, arg5 string) error {
+// RegisterOrganization mocks base method
+func (m *MockUseCase) RegisterOrganization(arg0 *models.Organization) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterPerson", arg0, arg1, arg2, arg3, arg4, arg5)
+	ret := m.ctrl.Call(m, "RegisterOrganization", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RegisterOrganization indicates an expected call of RegisterOrganization
+func (mr *MockUseCaseMockRecorder) RegisterOrganization(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterOrganization", reflect.TypeOf((*MockUseCase)(nil).RegisterOrganization), arg0)
+}
+
+// RegisterPerson mocks base method
+func (m *MockUseCase) RegisterPerson(arg0 *models.Person) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterPerson", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RegisterPerson indicates an expected call of RegisterPerson
-func (mr *MockUseCaseMockRecorder) RegisterPerson(arg0, arg1, arg2, arg3, arg4, arg5 interface{}) *gomock.Call {
+func (mr *MockUseCaseMockRecorder) RegisterPerson(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterPerson", reflect.TypeOf((*MockUseCase)(nil).RegisterPerson), arg0, arg1, arg2, arg3, arg4, arg5)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterPerson", reflect.TypeOf((*MockUseCase)(nil).RegisterPerson), arg0)
 }
 
 // SessionExists mocks base method

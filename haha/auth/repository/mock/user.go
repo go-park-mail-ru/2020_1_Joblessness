@@ -33,6 +33,20 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 	return m.recorder
 }
 
+// ChangeOrganization mocks base method
+func (m *MockUserRepository) ChangeOrganization(arg0 models.Organization) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeOrganization", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeOrganization indicates an expected call of ChangeOrganization
+func (mr *MockUserRepositoryMockRecorder) ChangeOrganization(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeOrganization", reflect.TypeOf((*MockUserRepository)(nil).ChangeOrganization), arg0)
+}
+
 // ChangePerson mocks base method
 func (m *MockUserRepository) ChangePerson(arg0 models.Person) error {
 	m.ctrl.T.Helper()
@@ -47,6 +61,20 @@ func (mr *MockUserRepositoryMockRecorder) ChangePerson(arg0 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePerson", reflect.TypeOf((*MockUserRepository)(nil).ChangePerson), arg0)
 }
 
+// CreateOrganization mocks base method
+func (m *MockUserRepository) CreateOrganization(arg0 *models.Organization) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOrganization", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateOrganization indicates an expected call of CreateOrganization
+func (mr *MockUserRepositoryMockRecorder) CreateOrganization(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganization", reflect.TypeOf((*MockUserRepository)(nil).CreateOrganization), arg0)
+}
+
 // CreatePerson mocks base method
 func (m *MockUserRepository) CreatePerson(arg0 *models.Person) error {
 	m.ctrl.T.Helper()
@@ -59,6 +87,35 @@ func (m *MockUserRepository) CreatePerson(arg0 *models.Person) error {
 func (mr *MockUserRepositoryMockRecorder) CreatePerson(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePerson", reflect.TypeOf((*MockUserRepository)(nil).CreatePerson), arg0)
+}
+
+// DoesUserExists mocks base method
+func (m *MockUserRepository) DoesUserExists(arg0 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DoesUserExists", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DoesUserExists indicates an expected call of DoesUserExists
+func (mr *MockUserRepositoryMockRecorder) DoesUserExists(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoesUserExists", reflect.TypeOf((*MockUserRepository)(nil).DoesUserExists), arg0)
+}
+
+// GetOrganization mocks base method
+func (m *MockUserRepository) GetOrganization(arg0 uint64) (*models.Organization, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrganization", arg0)
+	ret0, _ := ret[0].(*models.Organization)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrganization indicates an expected call of GetOrganization
+func (mr *MockUserRepositoryMockRecorder) GetOrganization(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganization", reflect.TypeOf((*MockUserRepository)(nil).GetOrganization), arg0)
 }
 
 // GetPerson mocks base method
