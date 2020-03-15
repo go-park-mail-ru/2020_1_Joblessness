@@ -15,4 +15,5 @@ type UserRepository interface {
 	GetOrganization(userID uint64) (*models.Organization, error)
 	ChangeOrganization(p models.Organization) error
 	DoesUserExists(login string) error
+	GetListOfOrgs(page int) ([]models.Organization, error)
 }

@@ -12,4 +12,5 @@ type UseCase interface {
 	ChangePerson(p models.Person) error
 	GetOrganization(userID uint64) (*models.Organization, error)
 	ChangeOrganization(o models.Organization) error
+	GetListOfOrgs(page int) ([]models.Organization, error)
 }

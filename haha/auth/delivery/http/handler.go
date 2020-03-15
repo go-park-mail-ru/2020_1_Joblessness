@@ -342,3 +342,31 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *Handler) GetListOfOrgs(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+	page, err := strconv.Atoi(r.FormValue("page"))
+	if err != nil {
+		golog.Errorf("#%s: %s",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	listOrgs, err := h.useCase.GetListOfOrgs(page)
+	if err != nil {
+		golog.Errorf("#%s: %s",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	type Response struct {
+		Organizations []models.Organization `json:"organizations"`
+	}
+
+	jsonData, _ := json.Marshal(Response{
+		listOrgs,
+	})
+
+	w.WriteHeader(http.StatusNoContent)
+	w.Write(jsonData)
+}

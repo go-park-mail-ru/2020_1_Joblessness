@@ -74,3 +74,7 @@ func (a *AuthUseCase) GetOrganization(userID uint64) (*models.Organization, erro
 func (a *AuthUseCase) ChangeOrganization(o models.Organization) error {
 	return a.userRepo.ChangeOrganization(o)
 }
+
+func (a *AuthUseCase) GetListOfOrgs(page int) (result []models.Organization, err error) {
+	return nil, nil
+}
