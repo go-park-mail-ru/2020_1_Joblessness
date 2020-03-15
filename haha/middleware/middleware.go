@@ -13,7 +13,7 @@ import (
 type Middleware struct {
 }
 
-func NewMiddleware(authUseCase auth.UseCase) *Middleware {
+func NewMiddleware() *Middleware {
 	return &Middleware{}
 }
 
