@@ -33,6 +33,20 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 	return m.recorder
 }
 
+// ChangePerson mocks base method
+func (m *MockUserRepository) ChangePerson(arg0 models.Person) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangePerson", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangePerson indicates an expected call of ChangePerson
+func (mr *MockUserRepositoryMockRecorder) ChangePerson(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePerson", reflect.TypeOf((*MockUserRepository)(nil).ChangePerson), arg0)
+}
+
 // CreatePerson mocks base method
 func (m *MockUserRepository) CreatePerson(arg0 *models.Person) error {
 	m.ctrl.T.Helper()
@@ -47,11 +61,26 @@ func (mr *MockUserRepositoryMockRecorder) CreatePerson(arg0 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePerson", reflect.TypeOf((*MockUserRepository)(nil).CreatePerson), arg0)
 }
 
+// GetPerson mocks base method
+func (m *MockUserRepository) GetPerson(arg0 uint64) (*models.Person, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPerson", arg0)
+	ret0, _ := ret[0].(*models.Person)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPerson indicates an expected call of GetPerson
+func (mr *MockUserRepositoryMockRecorder) GetPerson(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPerson", reflect.TypeOf((*MockUserRepository)(nil).GetPerson), arg0)
+}
+
 // Login mocks base method
-func (m *MockUserRepository) Login(arg0, arg1, arg2 string) (int, error) {
+func (m *MockUserRepository) Login(arg0, arg1, arg2 string) (uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Login", arg0, arg1, arg2)
-	ret0, _ := ret[0].(int)
+	ret0, _ := ret[0].(uint64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -77,10 +106,10 @@ func (mr *MockUserRepositoryMockRecorder) Logout(arg0 interface{}) *gomock.Call 
 }
 
 // SessionExists mocks base method
-func (m *MockUserRepository) SessionExists(arg0 string) (int, error) {
+func (m *MockUserRepository) SessionExists(arg0 string) (uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SessionExists", arg0)
-	ret0, _ := ret[0].(int)
+	ret0, _ := ret[0].(uint64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

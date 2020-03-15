@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func TestAuthFlow(t *testing.T) {
+func TestAuthPersonFlow(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
@@ -17,16 +17,20 @@ func TestAuthFlow(t *testing.T) {
 
 	login := "user"
 	password := "password"
+	phone := "phone"
+	firstName := "name"
 	sidEx := "sid"
-	userIdEx := 1
+	userIdEx := uint64(1)
 	person := &models.Person{
 		Login:       login,
 		Password:    password,
+		FirstName: firstName,
+		PhoneNumber: phone,
 	}
 
-	//Register
+	//RegisterPerson
 	repo.EXPECT().CreatePerson(person).Return(nil).Times(1)
-	err := uc.RegisterPerson(login, password, "", "", "", "")
+	err := uc.RegisterPerson(login, password, firstName, "", "", phone)
 	assert.NoError(t, err)
 
 	//Login
@@ -46,4 +50,17 @@ func TestAuthFlow(t *testing.T) {
 	userId, err = uc.SessionExists(sidEx)
 	assert.NoError(t, err)
 	assert.Equal(t, userIdEx, userId, "Id corrupted")
+
+	//GetPerson
+	repo.EXPECT().GetPerson(userIdEx).Return(person, nil).Times(1)
+	resultPerson, err := uc.GetPerson(userIdEx)
+	assert.NoError(t, err)
+	assert.ObjectsAreEqual(person, resultPerson)
+
+	//ChangePerson
+	lastName := "NaNa"
+	person.LastName = lastName
+	repo.EXPECT().ChangePerson(*person).Return(nil).Times(1)
+	err = uc.ChangePerson(*person)
+	assert.NoError(t, err)
 }

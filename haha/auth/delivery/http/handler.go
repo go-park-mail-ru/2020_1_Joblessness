@@ -42,7 +42,7 @@ type ResponseId struct {
 	ID int `json:"id"`
 }
 
-func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -61,7 +61,43 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.useCase.RegisterPerson(user.Login, user.Password, user.FirstName, user.LastName, user.Email, user.PhoneNumber)
+	err = h.useCase.RegisterPerson(&user)
+	switch err {
+	case auth.ErrUserAlreadyExists:
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	case nil:
+		log.Println("Success")
+	default:
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	var org models.Organization
+	err = json.Unmarshal(body, &org)
+	log.Println("org recieved: ", org)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if org.Login == "" || org.Password == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = h.useCase.RegisterOrganization(&org)
 	switch err {
 	case auth.ErrUserAlreadyExists:
 		log.Println(err.Error())
@@ -235,6 +271,73 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 	person.ID = userID
 
 	err = h.useCase.ChangePerson(person)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
+	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
+
+	user, err := h.useCase.GetOrganization(userID)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	type Response struct {
+		User models.OrganizationInfo `json:"user"`
+	}
+
+	jsonData, _ := json.Marshal(Response{
+		models.OrganizationInfo{user.Name, user.Site, "", ""},
+	})
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}
+
+func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
+	session, err := r.Cookie("session_id")
+	log.Println("session cookie: ", session)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	userID, err := h.useCase.SessionExists(session.Value)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	if reqID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); reqID != userID {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	var org models.Organization
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = json.Unmarshal(body, &org)
+	if err != nil {
+		log.Println(err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	org.ID = userID
+
+	err = h.useCase.ChangeOrganization(org)
 	if err != nil {
 		log.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

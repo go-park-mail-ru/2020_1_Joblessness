@@ -26,19 +26,24 @@ func GetSID(n int) string {
 	return string(b)
 }
 
-func (a *AuthUseCase) RegisterPerson(login, password, firstName, lastName, email, phone string) (err error) {
-	person := &models.Person{
-		ID:          0,
-		Login:       login,
-		Password:    password,
-		FirstName:   firstName,
-		LastName:    lastName,
-		Email:       email,
-		PhoneNumber: phone,
+func (a *AuthUseCase) RegisterPerson(p *models.Person) (err error) {
+	err = a.userRepo.DoesUserExists(p.Login)
+	if err != nil {
+		return err
 	}
 
-	return a.userRepo.CreatePerson(person)
+	return a.userRepo.CreatePerson(p)
 }
+
+func (a *AuthUseCase) RegisterOrganization(o *models.Organization) (err error) {
+	err = a.userRepo.DoesUserExists(o.Login)
+	if err != nil {
+		return err
+	}
+
+	return a.userRepo.CreateOrganization(o)
+}
+
 
 func (a *AuthUseCase) Login(login, password string) (userId uint64, sessionId string, err error) {
 	sessionId = GetSID(64)
@@ -54,10 +59,18 @@ func (a *AuthUseCase) SessionExists(sessionId string) (uint64, error) {
 	return a.userRepo.SessionExists(sessionId)
 }
 
-func (a *AuthUseCase) GetPerson(userID uint64) (models.Person, error) {
+func (a *AuthUseCase) GetPerson(userID uint64) (*models.Person, error) {
 	return a.userRepo.GetPerson(userID)
 }
 
 func (a *AuthUseCase) ChangePerson(p models.Person) error {
 	return a.userRepo.ChangePerson(p)
+}
+
+func (a *AuthUseCase) GetOrganization(userID uint64) (*models.Organization, error) {
+	return a.userRepo.GetOrganization(userID)
+}
+
+func (a *AuthUseCase) ChangeOrganization(o models.Organization) error {
+	return a.userRepo.ChangeOrganization(o)
 }

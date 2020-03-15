@@ -6,7 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	"joblessness/haha/models"
+	models "joblessness/haha/models"
 	reflect "reflect"
 )
 
@@ -14,22 +14,6 @@ import (
 type MockUseCase struct {
 	ctrl     *gomock.Controller
 	recorder *MockUseCaseMockRecorder
-}
-
-func (m *MockUseCase) Login(login, password string) (uint64, string, error) {
-	panic("implement me")
-}
-
-func (m *MockUseCase) SessionExists(sessionId string) (uint64, error) {
-	panic("implement me")
-}
-
-func (m *MockUseCase) ChangePerson(p models.Person) error {
-	panic("implement me")
-}
-
-func (m *MockUseCase) GetPerson(userID uint64) (models.Person, error) {
-	panic("implement me")
 }
 
 // MockUseCaseMockRecorder is the mock recorder for MockUseCase
@@ -49,11 +33,40 @@ func (m *MockUseCase) EXPECT() *MockUseCaseMockRecorder {
 	return m.recorder
 }
 
+// ChangePerson mocks base method
+func (m *MockUseCase) ChangePerson(arg0 models.Person) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangePerson", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangePerson indicates an expected call of ChangePerson
+func (mr *MockUseCaseMockRecorder) ChangePerson(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePerson", reflect.TypeOf((*MockUseCase)(nil).ChangePerson), arg0)
+}
+
+// GetPerson mocks base method
+func (m *MockUseCase) GetPerson(arg0 uint64) (*models.Person, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPerson", arg0)
+	ret0, _ := ret[0].(*models.Person)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPerson indicates an expected call of GetPerson
+func (mr *MockUseCaseMockRecorder) GetPerson(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPerson", reflect.TypeOf((*MockUseCase)(nil).GetPerson), arg0)
+}
+
 // Login mocks base method
-func (m *MockUseCase) Login(arg0, arg1 string) (int, string, error) {
+func (m *MockUseCase) Login(arg0, arg1 string) (uint64, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Login", arg0, arg1)
-	ret0, _ := ret[0].(int)
+	ret0, _ := ret[0].(uint64)
 	ret1, _ := ret[1].(string)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -94,10 +107,10 @@ func (mr *MockUseCaseMockRecorder) RegisterPerson(arg0, arg1, arg2, arg3, arg4, 
 }
 
 // SessionExists mocks base method
-func (m *MockUseCase) SessionExists(arg0 string) (int, error) {
+func (m *MockUseCase) SessionExists(arg0 string) (uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SessionExists", arg0)
-	ret0, _ := ret[0].(int)
+	ret0, _ := ret[0].(uint64)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
