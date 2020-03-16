@@ -78,7 +78,7 @@ func (a *AuthUseCase) ChangeOrganization(o models.Organization) error {
 }
 
 func (a *AuthUseCase) GetListOfOrgs(page int) (result []models.Organization, err error) {
-	return nil, nil
+	return a.userRepo.GetListOfOrgs(page)
 }
 
 func (a *AuthUseCase) SetAvatar(form *multipart.Form, userID uint64) (err error) {

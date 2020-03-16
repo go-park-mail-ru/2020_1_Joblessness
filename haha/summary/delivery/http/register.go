@@ -6,7 +6,7 @@ import (
 	"joblessness/haha/summary"
 )
 
-func RegisterHTTPEndpoints(router *mux.Router, m *middleware.AuthMiddleware, uc summary.UseCase) {
+func RegisterHTTPEndpoints(router *mux.Router, m *middleware.AuthMiddleware, uc summary.SummaryUseCase) {
 	h := NewHandler(uc)
 
 	router.HandleFunc("/summaries", m.CheckAuth(h.CreateSummary)).Methods("POST")

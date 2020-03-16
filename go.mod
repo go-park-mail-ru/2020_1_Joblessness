@@ -3,7 +3,7 @@ module joblessness
 go 1.13
 
 require (
-	github.com/aws/aws-sdk-go v1.29.24 // indirect
+	github.com/aws/aws-sdk-go v1.29.24
 	github.com/golang/mock v1.4.1
 	github.com/gorilla/mux v1.7.4
 	github.com/juju/loggo v0.0.0-20190526231331-6e530bcce5d8

@@ -68,10 +68,10 @@ func (m *Middleware) RecoveryMiddleware(next http.Handler) http.Handler {
 }
 
 type AuthMiddleware struct {
-	auth auth.UseCase
+	auth auth.AuthUseCase
 }
 
-func NewAuthMiddleware(authUseCase auth.UseCase) *AuthMiddleware {
+func NewAuthMiddleware(authUseCase auth.AuthUseCase) *AuthMiddleware {
 	return &AuthMiddleware{auth: authUseCase}
 }
 

@@ -74,15 +74,15 @@ type GetOptions struct {
 	userID uint64
 }
 
-type Repository struct {
+type SummaryRepository struct {
 	db *sql.DB
 }
 
-func NewRepository(db *sql.DB) *Repository {
-	return &Repository{db}
+func NewSummaryRepository(db *sql.DB) *SummaryRepository {
+	return &SummaryRepository{db}
 }
 
-func (r *Repository) CreateSummary(summary *models.Summary) (summaryID uint64, err error) {
+func (r *SummaryRepository) CreateSummary(summary *models.Summary) (summaryID uint64, err error) {
 	summaryDB, educationDBs, experienceDBs := toPostgres(summary)
 
 	createSummary := `INSERT INTO summary (author, keywords)
@@ -117,13 +117,13 @@ func (r *Repository) CreateSummary(summary *models.Summary) (summaryID uint64, e
 	return summaryID, nil
 }
 
-func (r *Repository) GetEducationsBySummaryID(summaryID uint64) (*[]Education, error) {
+func (r *SummaryRepository) GetEducationsBySummaryID(summaryID uint64) ([]Education, error) {
 	getEducations := `SELECT (institution, speciality, graduated, type)
 					  FROM education WHERE summary_id = $1`
 
 	rows, err := r.db.Query(getEducations, summaryID)
 	if err != nil {
-		return &[]Education{}, err
+		return nil, err
 	}
 
 	var educationDBs []Education
@@ -134,16 +134,16 @@ func (r *Repository) GetEducationsBySummaryID(summaryID uint64) (*[]Education, e
 		err = rows.Scan(&educationDB.Institution, &educationDB.Speciality, &educationDB.Graduated,
 			&educationDB.Type)
 		if err != nil {
-			return &[]Education{}, err
+			return nil, err
 		}
 
 		educationDBs = append(educationDBs, educationDB)
 	}
 
-	return &educationDBs, nil
+	return educationDBs, nil
 }
 
-func (r *Repository) GetExperiencesBySummaryID(summaryID uint64) (*[]Experience, error) {
+func (r *SummaryRepository) GetExperiencesBySummaryID(summaryID uint64) (*[]Experience, error) {
 	getExperience := `SELECT (company_name, role, responsibilities, start, stop)
 					  FROM experience WHERE summary_id = $1`
 
@@ -169,7 +169,7 @@ func (r *Repository) GetExperiencesBySummaryID(summaryID uint64) (*[]Experience,
 	return &experienceDBs, nil
 }
 
-func (r *Repository) GetSummaries(opt *GetOptions) (*[]models.Summary, error) {
+func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, error) {
 	var rows *sql.Rows
 	var err error
 
@@ -178,14 +178,14 @@ func (r *Repository) GetSummaries(opt *GetOptions) (*[]models.Summary, error) {
 					 	FROM summary;`
 		rows, err = r.db.Query(getSummaries)
 		if err != nil {
-			return &[]models.Summary{}, err
+			return nil, err
 		}
 	} else {
 		getSummaries := `SELECT (id, author, keywords)
 					 	FROM summary WHERE author = $1;`
 		rows, err = r.db.Query(getSummaries, opt.userID)
 		if err != nil {
-			return &[]models.Summary{}, err
+			return nil, err
 		}
 	}
 
@@ -196,34 +196,34 @@ func (r *Repository) GetSummaries(opt *GetOptions) (*[]models.Summary, error) {
 
 		err = rows.Scan(&summaryDB.ID, &summaryDB.AuthorID, &summaryDB.Keywords)
 		if err != nil {
-			return &[]models.Summary{}, err
+			return nil, err
 		}
 
 		educationDBs, err := r.GetEducationsBySummaryID(summaryDB.ID)
 		if err != nil {
-			return &[]models.Summary{}, err
+			return nil, err
 		}
 
 		experienceDBs, err := r.GetExperiencesBySummaryID(summaryDB.ID)
 		if err != nil {
-			return &[]models.Summary{}, err
+			return nil, err
 		}
 
-		summaries = append(summaries, *toModel(&summaryDB, educationDBs, experienceDBs))
+		summaries = append(summaries, *toModel(&summaryDB, &educationDBs, experienceDBs))
 	}
 
-	return &summaries, nil
+	return summaries, nil
 }
 
-func (r *Repository) GetAllSummaries() (summaries *[]models.Summary, err error) {
+func (r *SummaryRepository) GetAllSummaries() (summaries []models.Summary, err error) {
 	return r.GetSummaries(&GetOptions{})
 }
 
-func (r *Repository) GetUserSummaries(userID uint64) (summaries *[]models.Summary, err error) {
+func (r *SummaryRepository) GetUserSummaries(userID uint64) (summaries []models.Summary, err error) {
 	return r.GetSummaries(&GetOptions{userID})
 }
 
-func (r *Repository) GetSummary(summaryID uint64) (*models.Summary, error) {
+func (r *SummaryRepository) GetSummary(summaryID uint64) (*models.Summary, error) {
 	var summaryDB Summary
 
 	getSummary := `SELECT (author, keywords)
@@ -243,10 +243,10 @@ func (r *Repository) GetSummary(summaryID uint64) (*models.Summary, error) {
 		return &models.Summary{}, err
 	}
 
-	return toModel(&summaryDB, educationDBs, experienceDBs), nil
+	return toModel(&summaryDB, &educationDBs, experienceDBs), nil
 }
 
-func (r *Repository) ChangeSummary(summary *models.Summary) (err error) {
+func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 	summaryDB, educationDBs, experienceDBs := toPostgres(summary)
 
 	changeSummary := `UPDATE summary
@@ -285,7 +285,7 @@ func (r *Repository) ChangeSummary(summary *models.Summary) (err error) {
 	return nil
 }
 
-func (r *Repository) DeleteSummary(summaryID uint64) (err error) {
+func (r *SummaryRepository) DeleteSummary(summaryID uint64) (err error) {
 	deleteSummary := `DELETE FROM summary
 					  WHERE id = $1`
 	_, err = r.db.Exec(deleteSummary, summaryID)

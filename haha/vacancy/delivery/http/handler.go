@@ -3,6 +3,7 @@ package httpVacancy
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/kataras/golog"
 	"io/ioutil"
 	"joblessness/haha/models"
 	"joblessness/haha/vacancy"
@@ -24,23 +25,35 @@ type Response struct {
 }
 
 func (h *Handler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
-	var vacancy models.Vacancy
-	json.NewDecoder(r.Body).Decode(&vacancy)
+	rID := r.Context().Value("rID").(string)
 
-	if vacancy.Name == "" {
+	var newVacancy models.Vacancy
+	err := json.NewDecoder(r.Body).Decode(&newVacancy)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if newVacancy.Name == "" {
+		golog.Errorf("#%s: %s",  rID, "empty vacancy name")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	vacancyID, err := h.useCase.CreateVacancy(vacancy)
+	//TODO проверять существование контекста
+	newVacancy.UserID =  r.Context().Value("userID").(uint64)
+
+	vacancyID, err := h.useCase.CreateVacancy(newVacancy)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	jsonData, err := json.Marshal(Response{vacancyID})
 	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -49,20 +62,24 @@ func (h *Handler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetVacancies(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	vacancies, err := h.useCase.GetVacancies()
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if len(vacancies) == 0 {
+		golog.Errorf("#%s: %s",  rID, "no vacancies")
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
 	jsonData, err := json.Marshal(vacancies)
 	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -71,21 +88,25 @@ func (h *Handler) GetVacancies(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetVacancy(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	vacancyId, err := strconv.ParseUint(mux.Vars(r)["vacancy_id"], 10, 64)
 	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	vacancy, err := h.useCase.GetVacancy(vacancyId)
+	getVacancy, err := h.useCase.GetVacancy(vacancyId)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	jsonData, err := json.Marshal(vacancy)
+	jsonData, err := json.Marshal(getVacancy)
 	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -94,36 +115,40 @@ func (h *Handler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	vacancyID, err := strconv.ParseUint(mux.Vars(r)["vacancy_id"], 10, 64)
 	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	var vacancy models.Vacancy
+	var newVacancy models.Vacancy
 
-	err = json.Unmarshal(body, &vacancy)
+	err = json.Unmarshal(body, &newVacancy)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if vacancy.Name == "" {
+	if newVacancy.Name == "" {
+		golog.Errorf("#%s: %s",  rID, "empty vacancy name")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	vacancy.ID = vacancyID
+	newVacancy.ID = vacancyID
 
-	err = h.useCase.ChangeVacancy(vacancy)
+	err = h.useCase.ChangeVacancy(newVacancy)
 	if err != nil {
 		log.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
@@ -134,15 +159,18 @@ func (h *Handler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	vacancyID, err := strconv.ParseUint(mux.Vars(r)["vacancy_id"], 10, 64)
 	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	err = h.useCase.DeleteVacancy(vacancyID)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

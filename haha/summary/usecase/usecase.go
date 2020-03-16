@@ -6,10 +6,10 @@ import (
 )
 
 type SummaryUseCase struct {
-	summaryRepo summary.Repository
+	summaryRepo summary.SummaryRepository
 }
 
-func NewSummaryUseCase(summaryRepo summary.Repository) *SummaryUseCase {
+func NewSummaryUseCase(summaryRepo summary.SummaryRepository) *SummaryUseCase {
 	return &SummaryUseCase{summaryRepo}
 }
 
@@ -17,11 +17,11 @@ func (u *SummaryUseCase) CreateSummary(summary *models.Summary) (summaryID uint6
 	return u.summaryRepo.CreateSummary(summary)
 }
 
-func (u *SummaryUseCase) GetAllSummaries() (summaries *[]models.Summary, err error) {
+func (u *SummaryUseCase) GetAllSummaries() (summaries []models.Summary, err error) {
 	return u.summaryRepo.GetAllSummaries()
 }
 
-func (u *SummaryUseCase) GetUserSummaries(userID uint64) (summaries *[]models.Summary, err error) {
+func (u *SummaryUseCase) GetUserSummaries(userID uint64) (summaries []models.Summary, err error) {
 	return u.summaryRepo.GetUserSummaries(userID)
 }
 

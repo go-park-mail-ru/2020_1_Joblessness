@@ -3,6 +3,7 @@ package httpAuth
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/juju/loggo"
 	"github.com/kataras/golog"
 	"io/ioutil"
 	"joblessness/haha/auth"
@@ -13,11 +14,11 @@ import (
 )
 
 type Handler struct {
-	useCase auth.UseCase
+	useCase auth.AuthUseCase
 	logger  *loggo.Logger
 }
 
-func NewHandler(useCase auth.UseCase) *Handler {
+func NewHandler(useCase auth.AuthUseCase) *Handler {
 	return &Handler{
 		useCase: useCase,
 	}
@@ -388,6 +389,8 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetListOfOrgs(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
+	//TODO проверять существование контекста
+
 	page, err := strconv.Atoi(r.FormValue("page"))
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)

@@ -21,7 +21,7 @@ type Vacancy struct {
 func toPostgres(v *models.Vacancy) *Vacancy {
 	return &Vacancy{
 		ID:               v.ID,
-		OrganizationID:   0,
+		OrganizationID:   v.UserID,
 		Name:             v.Name,
 		Description:      v.Description,
 		SalaryFrom:       v.Salary,
@@ -36,6 +36,7 @@ func toPostgres(v *models.Vacancy) *Vacancy {
 func toModel(v *Vacancy) *models.Vacancy {
 	return &models.Vacancy{
 		ID:          v.ID,
+		UserID: 	 v.OrganizationID,
 		Name:        v.Name,
 		Description: v.Description,
 		Skills:      "",
@@ -55,8 +56,6 @@ func NewVacancyRepository(db *sql.DB) *VacancyRepository {
 
 func (r *VacancyRepository) CreateVacancy(vacancy models.Vacancy) (vacancyID uint64, err error) {
 	vacancyDB := toPostgres(&vacancy)
-
-	vacancyDB.OrganizationID = 1
 
 	createVacancy := `INSERT INTO vacancy (organization_id, name, description, salary_from, salary_to, with_tax,
                      					   responsibilities, conditions, keywords)
@@ -111,6 +110,7 @@ func (r *VacancyRepository) GetVacancy(vacancyID uint64) (vacancy models.Vacancy
 
 func (r *VacancyRepository) ChangeVacancy(vacancy models.Vacancy) (err error) {
 	vacancyDB := toPostgres(&vacancy)
+	//TODO проверять автора
 
 	changeVacancy := `UPDATE vacancy
 					  SET organization_id = $1, name = $2, description = $3, salary_from = $4, salary_to = $5,
@@ -127,6 +127,7 @@ func (r *VacancyRepository) ChangeVacancy(vacancy models.Vacancy) (err error) {
 }
 
 func (r *VacancyRepository) DeleteVacancy(vacancyID uint64) (err error) {
+	//TODO проверять автора
 	deleteVacancy := `DELETE FROM vacancy
 					  WHERE id = $1`
 	_, err = r.db.Exec(deleteVacancy, vacancyID)

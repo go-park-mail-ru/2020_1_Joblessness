@@ -7,8 +7,11 @@ import (
 	"joblessness/haha/auth/delivery/http"
 	postgresAuth "joblessness/haha/auth/repository/postgres"
 	usecaseAuth "joblessness/haha/auth/usecase"
-	"joblessness/haha/handlers"
 	"joblessness/haha/middleware"
+	"joblessness/haha/summary"
+	httpSummary "joblessness/haha/summary/delivery/http"
+	postgresSummary "joblessness/haha/summary/repository/postgres"
+	usecaseSummary "joblessness/haha/summary/usecase"
 	"joblessness/haha/utils/cors"
 	"joblessness/haha/utils/database"
 	"joblessness/haha/vacancy"
@@ -22,8 +25,9 @@ import (
 
 type App struct {
 	httpServer *http.Server
-	authUse auth.UseCase
+	authUse auth.AuthUseCase
 	vacancyUse vacancy.UseCase
+	summaryUse summary.SummaryUseCase
 	corsHandler *cors.CorsHandler
 }
 
@@ -38,18 +42,18 @@ func NewApp(c *cors.CorsHandler) *App {
 
 	userRepo := postgresAuth.NewUserRepository(db)
 	vacancyRepo := postgresVacancy.NewVacancyRepository(db)
+	summaryRepo := postgresSummary.NewSummaryRepository(db)
 
 	return &App{
 		authUse: usecaseAuth.NewAuthUseCase(userRepo),
 		vacancyUse: usecaseVacancy.NewVacancyUseCase(vacancyRepo),
+		summaryUse: usecaseSummary.NewSummaryUseCase(summaryRepo),
 		corsHandler: c,
 	}
 }
 
 func (app *App) StartRouter() {
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
-	authApi := handlers.NewAuthHandler()
-	summaryApi := handlers.NewSummaryHandler()
 
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
@@ -62,21 +66,13 @@ func (app *App) StartRouter() {
 	// users
 	httpAuth.RegisterHTTPEndpoints(router, mAuth, app.authUse)
 
-	router.HandleFunc("/users/{user_id}/avatar", authApi.SetAvatar).Methods("POST")
 
 	// vacancies
-	httpVacancy.RegisterHTTPEndpoints(router, app.vacancyUse)
+	httpVacancy.RegisterHTTPEndpoints(router, mAuth, app.vacancyUse)
 
 	// summaries
 
-	router.HandleFunc("/summaries", summaryApi.CreateSummary).Methods("POST")
-	router.HandleFunc("/summaries", summaryApi.GetSummaries).Methods("GET")
-	router.HandleFunc("/summaries/{summary_id}", summaryApi.GetSummary).Methods("GET")
-	router.HandleFunc("/summaries/{summary_id}", summaryApi.ChangeSummary).Methods("PUT")
-	router.HandleFunc("/summaries/{summary_id}", summaryApi.DeleteSummary).Methods("DELETE")
-	router.HandleFunc("/summaries/{summary_id}/print", summaryApi.PrintSummary).Methods("GET")
-	router.HandleFunc("/user/{user_id}/summaries", summaryApi.GetUserSummaries).Methods("GET")
-
+	httpSummary.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
 	http.Handle("/", router)
 	fmt.Println("Server started")
 	http.ListenAndServe(":8001", router)

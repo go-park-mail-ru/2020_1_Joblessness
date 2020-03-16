@@ -5,7 +5,7 @@ import (
 	"mime/multipart"
 )
 
-type UseCase interface {
+type AuthUseCase interface {
 	RegisterPerson(*models.Person) error
 	RegisterOrganization(*models.Organization) error
 	Login(login, password string) (uint64, string, error)
