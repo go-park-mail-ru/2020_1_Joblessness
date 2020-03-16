@@ -2,7 +2,7 @@ package vacancy
 
 import "joblessness/haha/models"
 
-type UseCase interface {
+type VacancyUseCase interface {
 	CreateVacancy(vacancy models.Vacancy) (uint64, error)
 	GetVacancies() ([]models.Vacancy, error)
 	GetVacancy(vacancyID uint64) (models.Vacancy, error)

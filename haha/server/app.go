@@ -26,7 +26,7 @@ import (
 type App struct {
 	httpServer *http.Server
 	authUse auth.AuthUseCase
-	vacancyUse vacancy.UseCase
+	vacancyUse vacancy.VacancyUseCase
 	summaryUse summary.SummaryUseCase
 	corsHandler *cors.CorsHandler
 }

@@ -13,10 +13,10 @@ import (
 )
 
 type Handler struct {
-	useCase vacancy.UseCase
+	useCase vacancy.VacancyUseCase
 }
 
-func NewHandler(useCase vacancy.UseCase) *Handler {
+func NewHandler(useCase vacancy.VacancyUseCase) *Handler {
 	return &Handler{useCase}
 }
 

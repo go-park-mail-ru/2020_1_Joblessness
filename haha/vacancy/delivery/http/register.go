@@ -6,7 +6,7 @@ import (
 	"joblessness/haha/vacancy"
 )
 
-func RegisterHTTPEndpoints(router *mux.Router, m *middleware.AuthMiddleware, uc vacancy.UseCase) {
+func RegisterHTTPEndpoints(router *mux.Router, m *middleware.AuthMiddleware, uc vacancy.VacancyUseCase) {
 	h := NewHandler(uc)
 
 	router.HandleFunc("/vacancies", m.CheckAuth(h.CreateVacancy)).Methods("POST")
