@@ -4,6 +4,7 @@ type Person struct {
 	ID uint64 `json:"id,omitempty"`
 	Login string `json:"login,omitempty"`
 	Password string `json:"password,omitempty"`
+	Avatar string `json:"avatar,omitempty"`
 
 	FirstName string `json:"first-name,omitempty"`
 	LastName string `json:"last-name,omitempty"`
@@ -19,6 +20,7 @@ type Organization struct {
 	ID uint64 `json:"id,omitempty"`
 	Login string `json:"login,omitempty"`
 	Password string `json:"password,omitempty"`
+	Avatar string `json:"avatar,omitempty"`
 
 	Name string `json:"name,omitempty"`
 	Site string `json:"site,omitempty"`

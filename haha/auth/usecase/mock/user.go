@@ -7,6 +7,7 @@ package mock
 import (
 	gomock "github.com/golang/mock/gomock"
 	models "joblessness/haha/models"
+	multipart "mime/multipart"
 	reflect "reflect"
 )
 
@@ -177,4 +178,18 @@ func (m *MockUseCase) SessionExists(arg0 string) (uint64, error) {
 func (mr *MockUseCaseMockRecorder) SessionExists(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SessionExists", reflect.TypeOf((*MockUseCase)(nil).SessionExists), arg0)
+}
+
+// SetAvatar mocks base method
+func (m *MockUseCase) SetAvatar(arg0 *multipart.Form, arg1 uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetAvatar", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetAvatar indicates an expected call of SetAvatar
+func (mr *MockUseCaseMockRecorder) SetAvatar(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAvatar", reflect.TypeOf((*MockUseCase)(nil).SetAvatar), arg0, arg1)
 }

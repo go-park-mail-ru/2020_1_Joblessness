@@ -3,7 +3,9 @@ package usecase
 import (
 	"joblessness/haha/auth"
 	"joblessness/haha/models"
+	"joblessness/haha/utils/sss"
 	"math/rand"
+	"mime/multipart"
 )
 
 type AuthUseCase struct {
@@ -77,4 +79,13 @@ func (a *AuthUseCase) ChangeOrganization(o models.Organization) error {
 
 func (a *AuthUseCase) GetListOfOrgs(page int) (result []models.Organization, err error) {
 	return nil, nil
+}
+
+func (a *AuthUseCase) SetAvatar(form *multipart.Form, userID uint64) (err error) {
+	link, err := sss.UploadAvatar(form, userID)
+	if err != nil {
+		return err
+	}
+
+	return a.userRepo.SaveAvatarLink(link, userID)
 }

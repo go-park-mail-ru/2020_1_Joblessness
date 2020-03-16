@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"joblessness/haha/auth"
 	"joblessness/haha/models"
@@ -153,6 +154,17 @@ func (r UserRepository) CreateUser(login, password, email, phone string, personI
 	return err
 }
 
+func (r UserRepository) SaveAvatarLink(link string, userID uint64) (err error) {
+	if link == "" {
+		return errors.New("no link to save")
+	}
+
+	insertUser := `UPDATE users SET avatar = $1 WHERE id = $2;`
+	_, err = r.db.Exec(insertUser, link, userID)
+
+	return err
+}
+
 func (r UserRepository) CreatePerson(user *models.Person) (err error) {
 	dbUser, dbPerson := toPostgresPerson(user)
 
@@ -234,9 +246,9 @@ func (r UserRepository) SessionExists(sessionId string) (userId uint64, err erro
 func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	user := User{ID: userID}
 
-	getUser := "SELECT login, password, person_id, email, phone FROM users WHERE id = $1;"
+	getUser := "SELECT login, password, person_id, email, phone, avatar FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, userID).
-		Scan(&user.Login, &user.Password, &user.PersonID, &user.Email, &user.Phone)
+		Scan(&user.Login, &user.Password, &user.PersonID, &user.Email, &user.Phone, &user.Avatar)
 	if err != nil {
 		return nil, err
 	}
@@ -282,9 +294,9 @@ func (r UserRepository) ChangePerson(p models.Person) error {
 func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, error) {
 	user := User{ID: userID}
 
-	getUser := "SELECT login, password, organization_id, email, phone FROM users WHERE id = $1;"
+	getUser := "SELECT login, password, organization_id, email, phone, avatar FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, userID).
-		Scan(&user.Login, &user.Password, &user.OrganizationID, &user.Email, &user.Phone)
+		Scan(&user.Login, &user.Password, &user.OrganizationID, &user.Email, &user.Phone, &user.Avatar)
 	if err != nil {
 		return nil, err
 	}
