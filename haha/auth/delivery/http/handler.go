@@ -3,10 +3,11 @@ package httpAuth
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/juju/loggo"
+	"github.com/kataras/golog"
 	"io/ioutil"
 	"joblessness/haha/auth"
 	"joblessness/haha/models"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -14,6 +15,7 @@ import (
 
 type Handler struct {
 	useCase auth.UseCase
+	logger  *loggo.Logger
 }
 
 func NewHandler(useCase auth.UseCase) *Handler {
@@ -32,20 +34,25 @@ type ResponseId struct {
 }
 
 func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	body, err := ioutil.ReadAll(r.Body)
+	golog.Debugf("#%s: %s",  rID, body)
 	if err != nil {
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	var user models.Person
 	err = json.Unmarshal(body, &user)
-	log.Println("user recieved: ", user)
 	if err != nil {
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if user.Login == "" || user.Password == "" {
+		golog.Errorf("#%s: %s",  rID, "Empty login or password")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -53,13 +60,13 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	err = h.useCase.RegisterPerson(&user)
 	switch err {
 	case auth.ErrUserAlreadyExists:
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	case nil:
-		log.Println("Success")
+		golog.Infof("#%s: %s",  rID, "Успешно")
 	default:
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -68,20 +75,26 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	golog.Debugf("#%s: %s",  rID, body)
+
 	var org models.Organization
 	err = json.Unmarshal(body, &org)
-	log.Println("org recieved: ", org)
 	if err != nil {
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if org.Login == "" || org.Password == "" {
+		golog.Errorf("#%s: %s",  rID, "Empty login or password")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -89,13 +102,13 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 	err = h.useCase.RegisterOrganization(&org)
 	switch err {
 	case auth.ErrUserAlreadyExists:
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	case nil:
-		log.Println("Success")
+		golog.Infof("#%s: %s",  rID, "success")
 	default:
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -104,22 +117,25 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	var user models.UserLogin
 	err = json.Unmarshal(body, &user)
-	log.Println("user recieved: ", user)
+	golog.Debugf("#%s: %s",  rID, user)
 	if err != nil {
-		log.Println("Unmarshal went wrong")
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if user.Login == "" || user.Password == "" {
-		log.Println("login or password empty")
+		golog.Errorf("#%s: %s",  rID, "login or password in empty")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -127,13 +143,13 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	userId, sessionId, err := h.useCase.Login(user.Login, user.Password)
 	switch err {
 	case auth.ErrWrongLogPas:
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	case nil:
-		log.Println("Success")
+		golog.Infof("#%s: %s",  rID, "success")
 	default:
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -155,14 +171,18 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	err = h.useCase.Logout(session.Value)
 	if err != nil {
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -175,8 +195,11 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	userID, ok := r.Context().Value("userID").(uint64)
 	if !ok {
+		golog.Errorf("#%s: %s",  rID, "no cookie")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
@@ -187,11 +210,12 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
-	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
+	rID := r.Context().Value("rID").(string)
 
+	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 	user, err := h.useCase.GetPerson(userID)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -210,13 +234,17 @@ func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	userID, ok := r.Context().Value("userID").(uint64)
 	if !ok {
+		golog.Errorf("#%s: %s",  rID, "no cookie")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	if reqID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); reqID != userID {
+		golog.Errorf("#%s: %s",  rID, "user requested and session user doesnt match")
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -225,14 +253,14 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	err = json.Unmarshal(body, &person)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -241,7 +269,7 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 
 	err = h.useCase.ChangePerson(person)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -250,11 +278,13 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 
 	user, err := h.useCase.GetOrganization(userID)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -271,13 +301,17 @@ func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	userID, ok := r.Context().Value("userID").(uint64)
 	if !ok {
+		golog.Errorf("#%s: %s",  rID, "no cookie")
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	if reqID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); reqID != userID {
+		golog.Errorf("#%s: %s",  rID, "user requested and session user doesnt match")
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -286,14 +320,14 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	err = json.Unmarshal(body, &org)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -302,10 +336,38 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 
 	err = h.useCase.ChangeOrganization(org)
 	if err != nil {
-		log.Println(err.Error())
+		golog.Errorf("#%s: %s",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h *Handler) GetListOfOrgs(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+	page, err := strconv.Atoi(r.FormValue("page"))
+	if err != nil {
+		golog.Errorf("#%s: %s",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	listOrgs, err := h.useCase.GetListOfOrgs(page)
+	if err != nil {
+		golog.Errorf("#%s: %s",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	type Response struct {
+		Organizations []models.Organization `json:"organizations"`
+	}
+
+	jsonData, _ := json.Marshal(Response{
+		listOrgs,
+	})
+
+	w.WriteHeader(http.StatusNoContent)
+	w.Write(jsonData)
 }

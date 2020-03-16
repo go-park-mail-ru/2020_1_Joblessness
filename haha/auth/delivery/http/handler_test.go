@@ -20,12 +20,14 @@ import (
 func TestRegistration(t *testing.T) {
 	t.Parallel()
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	m := middleware.NewMiddleware()
+	router.Use(m.LogMiddleware)
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
-	m := middleware.NewAuthMiddleware(uc)
+	mAuth := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, m, uc)
+	RegisterHTTPEndpoints(router, mAuth, uc)
 
 	person := models.Person{
 		Login:       "new username",
@@ -39,7 +41,7 @@ func TestRegistration(t *testing.T) {
 	assert.NoError(t, err)
 
 	uc.EXPECT().
-		RegisterPerson(person).
+		RegisterPerson(&person).
 		Return(nil).
 		Times(1)
 
@@ -53,12 +55,14 @@ func TestRegistration(t *testing.T) {
 func TestFailedRegistration(t *testing.T) {
 	t.Parallel()
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	m := middleware.NewMiddleware()
+	router.Use(m.LogMiddleware)
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
-	m := middleware.NewAuthMiddleware(uc)
+	mAuth := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, m, uc)
+	RegisterHTTPEndpoints(router, mAuth, uc)
 
 	person := models.Person{
 		Login:       "new username",
@@ -86,12 +90,14 @@ func TestFailedRegistration(t *testing.T) {
 func TestLogin(t *testing.T) {
 	t.Parallel()
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	m := middleware.NewMiddleware()
+	router.Use(m.LogMiddleware)
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
-	m := middleware.NewAuthMiddleware(uc)
+	mAuth := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, m, uc)
+	RegisterHTTPEndpoints(router, mAuth, uc)
 
 	userLogin := models.UserLogin{
 		Login:    "username",
@@ -116,12 +122,14 @@ func TestLogin(t *testing.T) {
 func TestFailedLoginNotFound(t *testing.T) {
 	t.Parallel()
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	m := middleware.NewMiddleware()
+	router.Use(m.LogMiddleware)
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
-	m := middleware.NewAuthMiddleware(uc)
+	mAuth := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, m, uc)
+	RegisterHTTPEndpoints(router, mAuth, uc)
 
 	userLogin := models.UserLogin{
 		Login:    "username",
@@ -145,12 +153,14 @@ func TestFailedLoginNotFound(t *testing.T) {
 func TestLogout(t *testing.T) {
 	t.Parallel()
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	m := middleware.NewMiddleware()
+	router.Use(m.LogMiddleware)
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
-	m := middleware.NewAuthMiddleware(uc)
+	mAuth := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, m, uc)
+	RegisterHTTPEndpoints(router, mAuth, uc)
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -174,12 +184,14 @@ func TestLogout(t *testing.T) {
 func TestLogoutNoCookie(t *testing.T) {
 	t.Parallel()
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	m := middleware.NewMiddleware()
+	router.Use(m.LogMiddleware)
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
-	m := middleware.NewAuthMiddleware(uc)
+	mAuth := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, m, uc)
+	RegisterHTTPEndpoints(router, mAuth, uc)
 
 	uc.EXPECT().
 		Logout(gomock.Any()).
@@ -195,12 +207,14 @@ func TestLogoutNoCookie(t *testing.T) {
 func TestLogoutSomethingWentWrong(t *testing.T) {
 	t.Parallel()
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	m := middleware.NewMiddleware()
+	router.Use(m.LogMiddleware)
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
-	m := middleware.NewAuthMiddleware(uc)
+	mAuth := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, m, uc)
+	RegisterHTTPEndpoints(router, mAuth, uc)
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -224,12 +238,14 @@ func TestLogoutSomethingWentWrong(t *testing.T) {
 func TestCheck(t *testing.T) {
 	t.Parallel()
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	m := middleware.NewMiddleware()
+	router.Use(m.LogMiddleware)
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
-	m := middleware.NewAuthMiddleware(uc)
+	mAuth := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, m, uc)
+	RegisterHTTPEndpoints(router, mAuth, uc)
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -253,12 +269,14 @@ func TestCheck(t *testing.T) {
 func TestCheckNoCookie(t *testing.T) {
 	t.Parallel()
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	m := middleware.NewMiddleware()
+	router.Use(m.LogMiddleware)
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
-	m := middleware.NewAuthMiddleware(uc)
+	mAuth := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, m, uc)
+	RegisterHTTPEndpoints(router, mAuth, uc)
 
 
 	uc.EXPECT().
@@ -275,12 +293,14 @@ func TestCheckNoCookie(t *testing.T) {
 func TestCheckWrongSid(t *testing.T) {
 	t.Parallel()
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	m := middleware.NewMiddleware()
+	router.Use(m.LogMiddleware)
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
-	m := middleware.NewAuthMiddleware(uc)
+	mAuth := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, m, uc)
+	RegisterHTTPEndpoints(router, mAuth, uc)
 
 	cookie := &http.Cookie {
 		Name: "session_id",
@@ -304,12 +324,14 @@ func TestCheckWrongSid(t *testing.T) {
 func TestCheckSomethingWentWrong(t *testing.T) {
 	t.Parallel()
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	m := middleware.NewMiddleware()
+	router.Use(m.LogMiddleware)
 
 	controller := gomock.NewController(t)
 	uc := mock.NewMockUseCase(controller)
-	m := middleware.NewAuthMiddleware(uc)
+	mAuth := middleware.NewAuthMiddleware(uc)
 
-	RegisterHTTPEndpoints(router, m, uc)
+	RegisterHTTPEndpoints(router, mAuth, uc)
 
 	cookie := &http.Cookie {
 		Name: "session_id",

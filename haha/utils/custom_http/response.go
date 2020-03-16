@@ -2,16 +2,16 @@ package custom_http
 
 import "net/http"
 
-type CustomResponseWriter struct {
+type StatusResponseWriter struct {
 	http.ResponseWriter
 	StatusCode int
 }
 
-func NewCustomResponseWriter(w http.ResponseWriter) *CustomResponseWriter {
-	return &CustomResponseWriter{ResponseWriter: w}
+func NewStatusResponseWriter(w http.ResponseWriter) *StatusResponseWriter {
+	return &StatusResponseWriter{ResponseWriter: w}
 }
 
-func (w *CustomResponseWriter) WriteHeader(statusCode int) {
+func (w *StatusResponseWriter) WriteHeader(statusCode int) {
 	w.StatusCode = statusCode
 	w.ResponseWriter.WriteHeader(statusCode)
 }

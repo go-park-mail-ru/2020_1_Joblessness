@@ -51,7 +51,8 @@ func (app *App) StartRouter() {
 	authApi := handlers.NewAuthHandler()
 	summaryApi := handlers.NewSummaryHandler()
 
-	m := middleware.NewMiddleware(app.authUse)
+	m := middleware.NewMiddleware()
+	mAuth := middleware.NewAuthMiddleware(app.authUse)
 
 	router.Use(m.RecoveryMiddleware)
 	router.Use(app.corsHandler.CorsMiddleware)
@@ -59,7 +60,7 @@ func (app *App) StartRouter() {
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
 	// users
-	httpAuth.RegisterHTTPEndpoints(router, m, app.authUse)
+	httpAuth.RegisterHTTPEndpoints(router, mAuth, app.authUse)
 
 	router.HandleFunc("/users/{user_id}/avatar", authApi.SetAvatar).Methods("POST")
 

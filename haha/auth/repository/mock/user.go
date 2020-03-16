@@ -103,6 +103,21 @@ func (mr *MockUserRepositoryMockRecorder) DoesUserExists(arg0 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoesUserExists", reflect.TypeOf((*MockUserRepository)(nil).DoesUserExists), arg0)
 }
 
+// GetListOfOrgs mocks base method
+func (m *MockUserRepository) GetListOfOrgs(arg0 int) ([]models.Organization, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetListOfOrgs", arg0)
+	ret0, _ := ret[0].([]models.Organization)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetListOfOrgs indicates an expected call of GetListOfOrgs
+func (mr *MockUserRepositoryMockRecorder) GetListOfOrgs(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetListOfOrgs", reflect.TypeOf((*MockUserRepository)(nil).GetListOfOrgs), arg0)
+}
+
 // GetOrganization mocks base method
 func (m *MockUserRepository) GetOrganization(arg0 uint64) (*models.Organization, error) {
 	m.ctrl.T.Helper()

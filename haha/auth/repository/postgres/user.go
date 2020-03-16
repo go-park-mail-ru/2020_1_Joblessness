@@ -162,7 +162,7 @@ func (r UserRepository) CreatePerson(user *models.Person) (err error) {
 		return err
 	}
 	//TODO исполнять как единая транзация
-	err = r.CreateUser(dbUser.Login, dbUser.Password, dbUser.Email, dbUser.PhoneNumber, personId, 0)
+	err = r.CreateUser(dbUser.Login, dbUser.Password, dbUser.Email, dbUser.Phone, personId, 0)
 
 	return err
 }
@@ -176,7 +176,7 @@ func (r UserRepository) CreateOrganization(org *models.Organization) (err error)
 		return err
 	}
 	//TODO исполнять как единая транзация
-	err = r.CreateUser(dbUser.Login, dbUser.Password, dbUser.Email, dbUser.PhoneNumber, 0, orgId)
+	err = r.CreateUser(dbUser.Login, dbUser.Password, dbUser.Email, dbUser.Phone, 0, orgId)
 
 	return err
 }
@@ -284,7 +284,7 @@ func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, er
 
 	getUser := "SELECT login, password, organization_id, email, phone FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, userID).
-		Scan(&user.Login, &user.Password, &user.OrganizationID, &user.Email, &user.PhoneNumber)
+		Scan(&user.Login, &user.Password, &user.OrganizationID, &user.Email, &user.Phone)
 	if err != nil {
 		return nil, err
 	}
@@ -324,4 +324,45 @@ func (r UserRepository) ChangeOrganization(o models.Organization) error {
 	}
 
 	return nil
+}
+
+func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, err error) {
+	getOrgs := `SELECT users.id, name, site
+FROM users, organization
+WHERE users.organization_id = organization.id
+ORDER BY registered desc
+LIMIT $1 OFFSET $2`
+
+	rows, err := r.db.Query(getOrgs, page*10, 9)
+	defer rows.Close()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		userId uint64
+		name, site string
+	)
+
+	for rows.Next() {
+		err := rows.Scan(&userId, &name, &site)
+		if err != nil {
+			return nil, err
+		}
+
+		result= append(result, models.Organization{
+			ID:          userId,
+			Login:       "",
+			Password:    "",
+			Name:        name,
+			Site:        site,
+			Email:       "",
+			PhoneNumber: "",
+			Tag:         "",
+			Registered:  "",
+		})
+	}
+
+	return result, rows.Err()
 }

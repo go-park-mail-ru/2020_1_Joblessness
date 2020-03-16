@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"encoding/json"
+	"github.com/kataras/golog"
 	"joblessness/haha/auth"
 	"joblessness/haha/utils/custom_http"
 	"log"
@@ -13,7 +14,7 @@ import (
 type Middleware struct {
 }
 
-func NewMiddleware(authUseCase auth.UseCase) *Middleware {
+func NewMiddleware() *Middleware {
 	return &Middleware{}
 }
 
@@ -29,15 +30,14 @@ func genRequestNumber(n int) string {
 
 func (m *Middleware) LogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		cw := custom_http.NewCustomResponseWriter(w)
+		sw := custom_http.NewStatusResponseWriter(w)
 
 		requestNumber := genRequestNumber(6)
-		r = r.WithContext(context.WithValue(r.Context(), "requestNumber", requestNumber))
-		next.ServeHTTP(w, r)
+		r = r.WithContext(context.WithValue(r.Context(), "rID", requestNumber))
 
 		log.Printf("#%s: %s %s", requestNumber, r.Method, r.URL)
-		next.ServeHTTP(cw, r)
-		log.Printf("#%s: code %d", requestNumber, cw.StatusCode)
+		next.ServeHTTP(sw, r)
+		log.Printf("#%s: code %d", requestNumber, sw.StatusCode)
 	})
 }
 
@@ -45,9 +45,11 @@ func (m *Middleware) RecoveryMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		defer func() {
+			rID := r.Context().Value("rID").(string)
+
 			err := recover()
 			if err != nil {
-				log.Println(err)
+				golog.Errorf("#%s: %s",  rID, err)
 
 				jsonBody, _ := json.Marshal(map[string]string{
 					"error": "There was an internal haha error",
@@ -72,6 +74,8 @@ func NewAuthMiddleware(authUseCase auth.UseCase) *AuthMiddleware {
 
 func (m *AuthMiddleware) CheckAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		rID := r.Context().Value("rID").(string)
+
 		session, err := r.Cookie("session_id")
 		log.Println("session cookie: ", session)
 		if err != nil {
@@ -81,13 +85,13 @@ func (m *AuthMiddleware) CheckAuth(next http.HandlerFunc) http.HandlerFunc {
 		userID, err := m.auth.SessionExists(session.Value)
 		switch err {
 		case auth.ErrWrongSID:
-			log.Println(err.Error())
+			golog.Errorf("#%s: %s",  rID, err)
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		case nil:
-			log.Println("Success")
+			golog.Infof("#%s: %s",  rID, "success")
 		default:
-			log.Println(err.Error())
+			golog.Errorf("#%s: %s",  rID, err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

@@ -1,8 +1,8 @@
 package models
 
 type Summary struct {
-	UserID uint `json:"author,omitempty"`
-	ID uint `json:"id,omitempty"`
+	ID uint64 `json:"id,omitempty"`
+	UserID uint64 `json:"author,omitempty"`
 	FirstName string `json:"first-name"`
 	LastName string `json:"last-name"`
 	PhoneNumber string `json:"phone-number"`

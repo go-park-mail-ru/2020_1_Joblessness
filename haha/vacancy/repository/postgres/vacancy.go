@@ -18,16 +18,7 @@ type Vacancy struct {
 	Keywords string
 }
 
-type Requirements struct {
-	ID uint64
-	VacancyID uint64
-	DriverLicense string
-	HasCar bool
-	Schedule string
-	Employment string
-}
-
-func toPostgres(v *models.Vacancy) (*Vacancy, *Requirements) {
+func toPostgres(v *models.Vacancy) *Vacancy {
 	return &Vacancy{
 		ID:               v.ID,
 		OrganizationID:   0,
@@ -39,18 +30,10 @@ func toPostgres(v *models.Vacancy) (*Vacancy, *Requirements) {
 		Responsibilities: "",
 		Conditions:       "",
 		Keywords:         "",
-	},
-	&Requirements{
-		ID:            0,
-		VacancyID:     0,
-		DriverLicense: "",
-		HasCar:        false,
-		Schedule:      "",
-		Employment:    "",
 	}
 }
 
-func toModel(v *Vacancy, r *Requirements) *models.Vacancy {
+func toModel(v *Vacancy) *models.Vacancy {
 	return &models.Vacancy{
 		ID:          v.ID,
 		Name:        v.Name,
@@ -71,22 +54,16 @@ func NewVacancyRepository(db *sql.DB) *VacancyRepository {
 }
 
 func (r *VacancyRepository) CreateVacancy(vacancy models.Vacancy) (vacancyID uint64, err error) {
-	vacancyDB, requirementsDB := toPostgres(&vacancy)
+	vacancyDB := toPostgres(&vacancy)
+
+	vacancyDB.OrganizationID = 1
 
 	createVacancy := `INSERT INTO vacancy (organization_id, name, description, salary_from, salary_to, with_tax,
                      					   responsibilities, conditions, keywords)
 					  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;`
-	err = r.db.QueryRow(createVacancy, vacancyDB.OrganizationID, vacancyDB.Name, vacancyDB.Description,
-						vacancyDB.SalaryFrom, vacancyDB.SalaryTo, vacancyDB.WithTax, vacancyDB.Responsibilities,
-						vacancyDB.Conditions, vacancyDB.Keywords).Scan(&vacancyID)
-	if err != nil {
-		return vacancyID, err
-	}
-
-	createRequirements := `INSERT INTO requirement (vacancy_id, driver_license, has_car, schedule, employment)
-						 VALUES ($1, $2, $3, $4, $5, $6);`
-	_, err = r.db.Exec(createRequirements, requirementsDB.VacancyID, requirementsDB.DriverLicense,
-					   requirementsDB.HasCar, requirementsDB.Schedule, requirementsDB.Employment)
+	err = r.db.QueryRow(createVacancy, &vacancyDB.OrganizationID, &vacancyDB.Name, &vacancyDB.Description,
+						&vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
+						&vacancyDB.Conditions, &vacancyDB.Keywords).Scan(&vacancyID)
 	if err != nil {
 		return vacancyID, err
 	}
@@ -103,26 +80,16 @@ func (r *VacancyRepository) GetVacancies() (vacancies []models.Vacancy, err erro
 		return vacancies, err
 	}
 
-	getRequirements := `SELECT id, driver_license, has_car, schedule, employment
-						FROM requirement WHERE vacancy_id = $1;`
-
 	for rows.Next() {
 		var vacancyDB Vacancy
-		err = rows.Scan(&vacancyDB.OrganizationID, &vacancyDB.Name, &vacancyDB.Description, &vacancyDB.SalaryFrom,
-						&vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities, &vacancyDB.Conditions,
-						&vacancyDB.Keywords)
+		err = rows.Scan(&vacancyDB.ID, &vacancyDB.OrganizationID, &vacancyDB.Name, &vacancyDB.Description,
+						&vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
+						&vacancyDB.Conditions, &vacancyDB.Keywords)
 		if err != nil {
 			return vacancies, err
 		}
 
-		var requirementsDB Requirements
-
-		err = r.db.QueryRow(getRequirements, vacancyDB.ID).Scan(&requirementsDB)
-		if err != nil {
-			return vacancies, err
-		}
-
-		vacancies = append(vacancies, *toModel(&vacancyDB, &requirementsDB))
+		vacancies = append(vacancies, *toModel(&vacancyDB))
 	}
 
 	return vacancies, nil
@@ -139,20 +106,11 @@ func (r *VacancyRepository) GetVacancy(vacancyID uint64) (vacancy models.Vacancy
 		return vacancy, err
 	}
 
-	var requirementsDB Requirements
-
-	getRequirements := `SELECT id, driver_license, has_car, schedule, employment
-						FROM requirement WHERE vacancy_id = $1;`
-	err = r.db.QueryRow(getRequirements, vacancyDB.ID).Scan(&requirementsDB)
-	if err != nil {
-		return vacancy, err
-	}
-
-	return *toModel(&vacancyDB, &requirementsDB), nil
+	return *toModel(&vacancyDB), nil
 }
 
 func (r *VacancyRepository) ChangeVacancy(vacancy models.Vacancy) (err error) {
-	vacancyDB, requirementsDB := toPostgres(&vacancy)
+	vacancyDB := toPostgres(&vacancy)
 
 	changeVacancy := `UPDATE vacancy
 					  SET organization_id = $1, name = $2, description = $3, salary_from = $4, salary_to = $5,
@@ -165,15 +123,6 @@ func (r *VacancyRepository) ChangeVacancy(vacancy models.Vacancy) (err error) {
 		return err
 	}
 
-	changeRequirements := `UPDATE requirement
-						   SET driver_license = $1, has_car = $2, schedule = $3, employment = $4
-						   WHERE vacancy_id = $5`
-	_, err = r.db.Exec(changeRequirements, &requirementsDB.DriverLicense, &requirementsDB.HasCar,
-					   &requirementsDB.Schedule, &requirementsDB.Employment, &requirementsDB.VacancyID)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -181,13 +130,6 @@ func (r *VacancyRepository) DeleteVacancy(vacancyID uint64) (err error) {
 	deleteVacancy := `DELETE FROM vacancy
 					  WHERE id = $1`
 	_, err = r.db.Exec(deleteVacancy, vacancyID)
-	if err != nil {
-		return err
-	}
-
-	deleteRequirements := `DELETE FROM requirement
-						   WHERE vacancy_id = $1`
-	_, err = r.db.Exec(deleteRequirements, vacancyID)
 	if err != nil {
 		return err
 	}
