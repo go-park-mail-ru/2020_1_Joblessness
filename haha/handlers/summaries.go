@@ -202,8 +202,8 @@ func (api *SummaryHandler) ChangeSummary(w http.ResponseWriter, r *http.Request)
 
 	api.Mu.Lock()
 	api.Summaries[uint(summaryId)] = &models.Summary{
-		uint(authorId),
-		uint(summaryId),
+		uint64(authorId),
+		uint64(summaryId),
 		data["first-name"],
 		data["last-name"],
 		data["phone-number"],

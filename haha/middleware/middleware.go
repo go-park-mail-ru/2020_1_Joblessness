@@ -11,8 +11,7 @@ import (
 	"net/http"
 )
 
-type Middleware struct {
-}
+type Middleware struct {}
 
 func NewMiddleware() *Middleware {
 	return &Middleware{}
