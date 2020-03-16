@@ -1,6 +1,9 @@
 package auth
 
-import "joblessness/haha/models"
+import (
+	"joblessness/haha/models"
+	"mime/multipart"
+)
 
 type UseCase interface {
 	RegisterPerson(*models.Person) error
@@ -13,4 +16,5 @@ type UseCase interface {
 	GetOrganization(userID uint64) (*models.Organization, error)
 	ChangeOrganization(o models.Organization) error
 	GetListOfOrgs(page int) ([]models.Organization, error)
+	SetAvatar(form *multipart.Form, userID uint64) error
 }

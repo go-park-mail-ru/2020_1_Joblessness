@@ -45,11 +45,15 @@ func (m *Middleware) RecoveryMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		defer func() {
-			rID := r.Context().Value("rID").(string)
+			rID, ok := r.Context().Value("rID").(string)
 
 			err := recover()
 			if err != nil {
-				golog.Errorf("#%s: %s",  rID, err)
+				if ok {
+					golog.Errorf("#%s: %w",  rID, err)
+				} else {
+					golog.Errorf("Panic with no id: %w", err)
+				}
 
 				jsonBody, _ := json.Marshal(map[string]string{
 					"error": "There was an internal haha error",
@@ -85,13 +89,13 @@ func (m *AuthMiddleware) CheckAuth(next http.HandlerFunc) http.HandlerFunc {
 		userID, err := m.auth.SessionExists(session.Value)
 		switch err {
 		case auth.ErrWrongSID:
-			golog.Errorf("#%s: %s",  rID, err)
+			golog.Errorf("#%s: %w",  rID, err)
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		case nil:
 			golog.Infof("#%s: %s",  rID, "success")
 		default:
-			golog.Errorf("#%s: %s",  rID, err)
+			golog.Errorf("#%s: %w",  rID, err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

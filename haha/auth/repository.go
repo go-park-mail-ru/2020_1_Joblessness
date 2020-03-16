@@ -16,4 +16,5 @@ type UserRepository interface {
 	ChangeOrganization(p models.Organization) error
 	DoesUserExists(login string) error
 	GetListOfOrgs(page int) ([]models.Organization, error)
+	SaveAvatarLink(link string, userID uint64) error
 }

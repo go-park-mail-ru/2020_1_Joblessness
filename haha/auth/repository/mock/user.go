@@ -177,6 +177,20 @@ func (mr *MockUserRepositoryMockRecorder) Logout(arg0 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockUserRepository)(nil).Logout), arg0)
 }
 
+// SaveAvatarLink mocks base method
+func (m *MockUserRepository) SaveAvatarLink(arg0 string, arg1 uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SaveAvatarLink", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SaveAvatarLink indicates an expected call of SaveAvatarLink
+func (mr *MockUserRepositoryMockRecorder) SaveAvatarLink(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveAvatarLink", reflect.TypeOf((*MockUserRepository)(nil).SaveAvatarLink), arg0, arg1)
+}
+
 // SessionExists mocks base method
 func (m *MockUserRepository) SessionExists(arg0 string) (uint64, error) {
 	m.ctrl.T.Helper()
