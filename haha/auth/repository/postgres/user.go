@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/kataras/golog"
 	"joblessness/haha/auth"
 	"joblessness/haha/models"
 	"strings"
@@ -151,7 +150,7 @@ func (r UserRepository) CreateUser(login, password, email, phone string, personI
 	} else {
 		return errors.New("inserted id is 0")
 	}
-	golog.Error("personIDSql: %w, %w", personIdSql, orgIdSql)
+
 	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone) 
 					VALUES($1, $2, $3, $4, $5, $6)`
 	_, err = r.db.Exec(insertUser, login, password, orgIdSql, personIdSql, email, phone)
