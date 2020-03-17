@@ -140,17 +140,18 @@ func (r UserRepository) DoesUserExists(login string) (err error) {
 }
 
 func (r UserRepository) CreateUser(login, password, email, phone string, personId, orgId uint64) (err error) {
-	golog.Error("personID: ", personId)
-	personIdSql := sql.NullInt64{Int64: int64(orgId)}
-	orgIdSql := sql.NullInt64{Int64: int64(personId)}
+	var personIdSql sql.NullInt64
+	var orgIdSql sql.NullInt64
 	if personId != 0 {
 		personIdSql.Valid = true
+		personIdSql.Int64 = int64(personId)
 	} else if orgId != 0 {
 		orgIdSql.Valid = true
+		orgIdSql.Int64 = int64(orgId)
 	} else {
 		return errors.New("inserted id is 0")
 	}
-	golog.Error("personIDSql: %w", personIdSql)
+	golog.Error("personIDSql: %w, %w", personIdSql, orgIdSql)
 	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone) 
 					VALUES($1, $2, $3, $4, $5, $6)`
 	_, err = r.db.Exec(insertUser, login, password, orgIdSql, personIdSql, email, phone)
