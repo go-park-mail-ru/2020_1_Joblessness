@@ -171,7 +171,7 @@ func (r UserRepository) CreatePerson(user *models.Person) (err error) {
 
 	var personId uint64
 	err = r.db.QueryRow("INSERT INTO person (name) VALUES($1) RETURNING id", dbPerson.Name).Scan(&personId)
-	golog.Debug(personId)
+	golog.Debug("personID :", personId)
 	if err != nil {
 		return err
 	}
