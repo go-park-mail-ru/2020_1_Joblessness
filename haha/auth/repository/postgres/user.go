@@ -36,84 +36,97 @@ type Organization struct {
 	Site string
 }
 
-func toPostgresPerson(u *models.Person) (*User, *Person) {
-	day, err := time.Parse(time.RFC3339, u.Birthday)
+func toPostgresPerson(p *models.Person) (*User, *Person) {
+	day, err := time.Parse(time.RFC3339, p.Birthday)
 	if err != nil {
 		day = time.Time{}
 	}
 
 	return &User{
-		ID:       u.ID,
-		Login:    u.Login,
-		Password: u.Password,
-		Tag: u.Tag,
-		Email: u.Email,
-		Phone: u.PhoneNumber,
+		ID:             p.ID,
+		Login:          p.Login,
+		Password:       p.Password,
+		OrganizationID: 0,
+		PersonID:       0,
+		Tag:            p.Tag,
+		Email:          p.Email,
+		Phone:          p.Phone,
+		Registered:     time.Time{},
+		Avatar:         p.Avatar,
 	},
-
 	&Person{
-		Name: u.FirstName + " " + u.LastName,
-		Gender: u.Gender,
+		ID:       0,
+		Name:     p.FirstName + "" + p.LastName,
+		Gender:   p.Gender,
 		Birthday: day,
 	}
 }
 
 func toPostgresOrg(o *models.Organization) (*User, *Organization) {
 	return &User{
-			ID: o.ID,
-			Login: o.Login,
-			Password: o.Password,
-			Tag: o.Tag,
-			Email: o.Email,
-			Phone: o.PhoneNumber,
-		},
-
-		&Organization{
-			Name: o.Name,
-			Site: o.Site,
-		}
+		ID:             o.ID,
+		Login:          o.Login,
+		Password:       o.Password,
+		OrganizationID: 0,
+		PersonID:       0,
+		Tag:            o.Tag,
+		Email:          o.Email,
+		Phone:          o.Phone,
+		Registered:     time.Time{},
+		Avatar:         o.Avatar,
+	},
+	&Organization{
+		ID:   0,
+		Name: o.Name,
+		Site: o.Site,
+	}
 }
 
 func toModelPerson(u *User, p *Person) *models.Person {
-	person := &models.Person{
-		ID:          u.ID,
-		Login:       u.Login,
-		Password:    u.Password,
-		FirstName:   p.Name,
-		Tag: u.Tag,
-		Registered: fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n",
-			u.Registered.Year(), u.Registered.Month(), u.Registered.Day(),
-			u.Registered.Hour(), u.Registered.Minute(), u.Registered.Second()),
-		Birthday: fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n",
-			u.Registered.Year(), u.Registered.Month(), u.Registered.Day(),
-			u.Registered.Hour(), u.Registered.Minute(), u.Registered.Second()),
-		Gender: p.Gender,
-		Email:       u.Email,
-		PhoneNumber: u.Phone,
-	}
+	registered := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n", u.Registered.Year(), u.Registered.Month(),
+							  u.Registered.Day(), u.Registered.Hour(), u.Registered.Minute(), u.Registered.Second())
+
+	birthday := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n", u.Registered.Year(), u.Registered.Month(),
+							u.Registered.Day(), u.Registered.Hour(), u.Registered.Minute(), u.Registered.Second())
 
 	name := strings.Split(p.Name, " ")
-	person.FirstName = name[0]
+	firstName := name[0]
+	var lastName string
 	if len(name) > 1 {
-		person.LastName = p.Name[(len(name[0])-len(p.Name)):]
+		lastName = p.Name[(len(name[0]) - len(p.Name)):]
 	}
 
-	return person
+	return &models.Person{
+		ID:         u.ID,
+		Login:      u.Login,
+		Password:   u.Password,
+		Tag:        u.Tag,
+		Email:      u.Email,
+		Phone:      u.Phone,
+		Registered: registered,
+		Avatar:     u.Avatar,
+		FirstName:  firstName,
+		LastName:   lastName,
+		Gender:     p.Gender,
+		Birthday:   birthday,
+	}
 }
 
 func toModelOrganization(u *User, o *Organization) *models.Organization {
+	registered := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n", u.Registered.Year(), u.Registered.Month(),
+							  u.Registered.Day(), u.Registered.Hour(), u.Registered.Minute(), u.Registered.Second())
+
 	return &models.Organization{
-		ID:          u.ID,
-		Login:       u.Login,
-		Password:    u.Password,
-		Tag: u.Tag,
-		Registered: fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n",
-			u.Registered.Year(), u.Registered.Month(), u.Registered.Day(),
-			u.Registered.Hour(), u.Registered.Minute(), u.Registered.Second()),
-		Site: o.Site,
-		Name: o.Name,
-		Email:       u.Email,
-		PhoneNumber: u.Phone,
+		ID:         u.ID,
+		Login:      u.Login,
+		Password:   u.Password,
+		Tag:        u.Tag,
+		Email:      u.Email,
+		Phone:      u.Phone,
+		Registered: registered,
+		Avatar:     u.Avatar,
+		Name:       o.Name,
+		Site:       o.Site,
 	}
 }
 
@@ -200,7 +213,7 @@ func (r UserRepository) CreateOrganization(org *models.Organization) (err error)
 func (r UserRepository) Login(login, password, SID string) (userId uint64, err error) {
 	//TODO user_id, session_id уникальные
 
-	checkUser := "SELECT id FROM users WHERE login = $1 AND password = $2 AND person_id IS NOT NULL"
+	checkUser := "SELECT id FROM users WHERE login = $1 AND password = $2"
 	err = r.db.QueryRow(checkUser, login, password).Scan(&userId)
 	if err != nil {
 		return 0, auth.ErrWrongLogPas
@@ -340,42 +353,43 @@ func (r UserRepository) ChangeOrganization(o models.Organization) error {
 }
 
 func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, err error) {
-	getOrgs := `SELECT users.id, name, site
-FROM users, organization
-WHERE users.organization_id = organization.id
-ORDER BY registered desc
-LIMIT $1 OFFSET $2`
-
-	rows, err := r.db.Query(getOrgs, page*10, 9)
-	defer rows.Close()
-
-	if err != nil {
-		return nil, err
-	}
-
-	var (
-		userId uint64
-		name, site string
-	)
-
-	for rows.Next() {
-		err := rows.Scan(&userId, &name, &site)
-		if err != nil {
-			return nil, err
-		}
-
-		result= append(result, models.Organization{
-			ID:          userId,
-			Login:       "",
-			Password:    "",
-			Name:        name,
-			Site:        site,
-			Email:       "",
-			PhoneNumber: "",
-			Tag:         "",
-			Registered:  "",
-		})
-	}
-
-	return result, rows.Err()
+//	getOrgs := `SELECT users.id, name, site
+//FROM users, organization
+//WHERE users.organization_id = organization.id
+//ORDER BY registered desc
+//LIMIT $1 OFFSET $2`
+//
+//	rows, err := r.db.Query(getOrgs, page*10, 9)
+//	defer rows.Close()
+//
+//	if err != nil {
+//		return nil, err
+//	}
+//
+//	var (
+//		userId uint64
+//		name, site string
+//	)
+//
+//	for rows.Next() {
+//		err := rows.Scan(&userId, &name, &site)
+//		if err != nil {
+//			return nil, err
+//		}
+//
+//		result= append(result, models.Organization{
+//			ID:          userId,
+//			Login:       "",
+//			Password:    "",
+//			Name:        name,
+//			Site:        site,
+//			Email:       "",
+//			PhoneNumber: "",
+//			Tag:         "",
+//			Registered:  "",
+//		})
+//	}
+//
+//	return result, rows.Err()
+	return nil, nil
 }

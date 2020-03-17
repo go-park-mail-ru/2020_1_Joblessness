@@ -13,7 +13,7 @@ func NewVacancyUseCase(vacancyRepo vacancy.VacancyRepository) *VacancyUseCase {
 	return &VacancyUseCase{vacancyRepo}
 }
 
-func (u *VacancyUseCase) CreateVacancy(vacancy models.Vacancy) (vacancyID uint64, err error) {
+func (u *VacancyUseCase) CreateVacancy(vacancy *models.Vacancy) (vacancyID uint64, err error) {
 	return u.vacancyRepo.CreateVacancy(vacancy)
 }
 
@@ -21,11 +21,11 @@ func (u *VacancyUseCase) GetVacancies() ([]models.Vacancy, error) {
 	return u.vacancyRepo.GetVacancies()
 }
 
-func (u *VacancyUseCase) GetVacancy(vacancyID uint64) (models.Vacancy, error) {
+func (u *VacancyUseCase) GetVacancy(vacancyID uint64) (*models.Vacancy, error) {
 	return u.vacancyRepo.GetVacancy(vacancyID)
 }
 
-func (u *VacancyUseCase) ChangeVacancy(vacancy models.Vacancy) error {
+func (u *VacancyUseCase) ChangeVacancy(vacancy *models.Vacancy) error {
 	return u.vacancyRepo.ChangeVacancy(vacancy)
 }
 

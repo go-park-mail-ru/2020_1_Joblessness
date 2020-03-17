@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"github.com/kataras/golog"
 	"joblessness/haha/models"
 	"joblessness/haha/summary"
 )
@@ -14,6 +15,7 @@ func NewSummaryUseCase(summaryRepo summary.SummaryRepository) *SummaryUseCase {
 }
 
 func (u *SummaryUseCase) CreateSummary(summary *models.Summary) (summaryID uint64, err error) {
+	golog.Info("hello")
 	return u.summaryRepo.CreateSummary(summary)
 }
 

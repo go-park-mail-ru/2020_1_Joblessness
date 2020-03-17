@@ -4,30 +4,28 @@ type Person struct {
 	ID uint64 `json:"id,omitempty"`
 	Login string `json:"login,omitempty"`
 	Password string `json:"password,omitempty"`
-	Avatar string `json:"avatar,omitempty"`
-
-	FirstName string `json:"first-name,omitempty"`
-	LastName string `json:"last-name,omitempty"`
-	Gender string `json:"gender,omitempty"`
-	Email string `json:"email,omitempty"`
-	PhoneNumber string `json:"phone-number,omitempty"`
 	Tag string `json:"tag,omitempty"`
-	Birthday string `json:"birth_date,omitempty"`
+	Email string `json:"email,omitempty"`
+	Phone string `json:"phone,omitempty"`
 	Registered string `json:"registered,omitempty"`
+	Avatar string `json:"avatar,omitempty"`
+	FirstName string `json:"first_name,omitempty"`
+	LastName string `json:"last_name,omitempty"`
+	Gender string `json:"gender,omitempty"`
+	Birthday string `json:"birthday,omitempty"`
 }
 
 type Organization struct {
 	ID uint64 `json:"id,omitempty"`
 	Login string `json:"login,omitempty"`
 	Password string `json:"password,omitempty"`
+	Tag string `json:"tag,omitempty"`
+	Email string `json:"email,omitempty"`
+	Phone string `json:"phone,omitempty"`
+	Registered string `json:"registered,omitempty"`
 	Avatar string `json:"avatar,omitempty"`
-
 	Name string `json:"name,omitempty"`
 	Site string `json:"site,omitempty"`
-	Email string `json:"email,omitempty"`
-	PhoneNumber string `json:"phone-number,omitempty"`
-	Tag string `json:"tag,omitempty"`
-	Registered string `json:"registered,omitempty"`
 }
 
 type UserLogin struct {

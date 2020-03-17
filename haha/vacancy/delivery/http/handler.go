@@ -42,9 +42,9 @@ func (h *Handler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//TODO проверять существование контекста
-	newVacancy.UserID =  r.Context().Value("userID").(uint64)
+	newVacancy.Organization.ID =  r.Context().Value("userID").(uint64)
 
-	vacancyID, err := h.useCase.CreateVacancy(newVacancy)
+	vacancyID, err := h.useCase.CreateVacancy(&newVacancy)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -148,7 +148,7 @@ func (h *Handler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 
 	newVacancy.ID = vacancyID
 
-	err = h.useCase.ChangeVacancy(newVacancy)
+	err = h.useCase.ChangeVacancy(&newVacancy)
 	if err != nil {
 		log.Println(err.Error())
 		w.WriteHeader(http.StatusInternalServerError)

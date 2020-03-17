@@ -13,10 +13,10 @@ func SummaryToPdf(w io.Writer, summary models.Summary) error {
 	pdf.SetFont("Helvetica", "", 16)
 	tr := pdf.UnicodeTranslatorFromDescriptor("cp1252")
 
-	name := fmt.Sprintf("Name: %s %s\n", summary.FirstName, summary.LastName)
-	personal := fmt.Sprintf("Birthday: %s\nGender: %s\n", summary.BirthDate, summary.Gender)
-	contacts := fmt.Sprintf("Email: %s\nPhone: %s\n", summary.Email, summary.PhoneNumber)
-	general := fmt.Sprintf("Educatiaon:\n %s\nExpirience:\n %s\n", summary.Education, summary.Experience)
+	name := fmt.Sprintf("Name: %s %s\n", summary.Author.FirstName, summary.Author.LastName)
+	personal := fmt.Sprintf("Birthday: %s\nGender: %s\n", summary.Author.Birthday, summary.Author.Gender)
+	contacts := fmt.Sprintf("Email: %s\nPhone: %s\n", summary.Author.Email, summary.Author.Phone)
+	general := fmt.Sprintf("Educatiaon:\n %s\nExpirience:\n %s\n", summary.Educations, summary.Experiences)
 
 	pdf.CellFormat(190, 7, "SUMMARY", "0", 0, "CM", false, 0, "")
 	pdf.Ln(-1)

@@ -9,7 +9,7 @@ import (
 	usecaseAuth "joblessness/haha/auth/usecase"
 	"joblessness/haha/middleware"
 	"joblessness/haha/summary"
-	httpSummary "joblessness/haha/summary/delivery/http"
+	"joblessness/haha/summary/delivery/http"
 	postgresSummary "joblessness/haha/summary/repository/postgres"
 	usecaseSummary "joblessness/haha/summary/usecase"
 	"joblessness/haha/utils/cors"
@@ -66,13 +66,12 @@ func (app *App) StartRouter() {
 	// users
 	httpAuth.RegisterHTTPEndpoints(router, mAuth, app.authUse)
 
-
 	// vacancies
 	httpVacancy.RegisterHTTPEndpoints(router, mAuth, app.vacancyUse)
 
 	// summaries
-
 	httpSummary.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
+
 	http.Handle("/", router)
 	fmt.Println("Server started")
 	http.ListenAndServe(":8001", router)

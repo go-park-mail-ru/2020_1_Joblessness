@@ -44,7 +44,7 @@ func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//TODO проверять существование контекста
-	newSummary.UserID =  r.Context().Value("userID").(uint64)
+	newSummary.Author.ID =  r.Context().Value("userID").(uint64)
 
 	summaryID, err := h.useCase.CreateSummary(&newSummary)
 	if err != nil {
@@ -129,6 +129,8 @@ func (h *Handler) GetSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	golog.Infof("#%s: %w", rID, summary)
+
 	jsonData, err := json.Marshal(summary)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
@@ -186,7 +188,7 @@ func (h *Handler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 
 	newSummary := models.Summary{
 		ID: summaryID,
-		UserID: r.Context().Value("userID").(uint64),
+		Author: models.Author{ID: r.Context().Value("userID").(uint64)},
 	}
 
 	err = json.Unmarshal(body, &newSummary)
