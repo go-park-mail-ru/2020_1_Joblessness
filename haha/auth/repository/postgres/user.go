@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"github.com/kataras/golog"
 	"joblessness/haha/auth"
 	"joblessness/haha/models"
 	"strings"
@@ -170,6 +171,7 @@ func (r UserRepository) CreatePerson(user *models.Person) (err error) {
 
 	var personId uint64
 	err = r.db.QueryRow("INSERT INTO person (name) VALUES($1) RETURNING id", dbPerson.Name).Scan(&personId)
+	golog.Debug(personId)
 	if err != nil {
 		return err
 	}
@@ -199,9 +201,6 @@ func (r UserRepository) Login(login, password, SID string) (userId uint64, err e
 	checkUser := "SELECT id FROM users WHERE login = $1 AND password = $2 AND person_id IS NOT NULL"
 	err = r.db.QueryRow(checkUser, login, password).Scan(&userId)
 	if err != nil {
-		return 0, err
-	}
-	if userId == 0 {
 		return 0, auth.ErrWrongLogPas
 	}
 
