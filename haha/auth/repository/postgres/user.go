@@ -142,10 +142,12 @@ func (r UserRepository) DoesUserExists(login string) (err error) {
 func (r UserRepository) CreateUser(login, password, email, phone string, personId, orgId uint64) (err error) {
 	personIdSql := sql.NullInt64{Int64: int64(orgId)}
 	orgIdSql := sql.NullInt64{Int64: int64(personId)}
-	if personId == 0 {
+	if personId != 0 {
+		personIdSql.Valid = true
+	} else if orgId != 0 {
 		orgIdSql.Valid = true
 	} else {
-		personIdSql.Valid = true
+		return errors.New("inserted id is 0")
 	}
 
 	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone) 
