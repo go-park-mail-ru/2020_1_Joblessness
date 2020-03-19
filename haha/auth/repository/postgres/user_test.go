@@ -257,3 +257,248 @@ func (suite *userSuite) TestSessionExistsExpired() {
 
 	assert.Equal(suite.T(), err, auth.ErrWrongSID)
 }
+
+func (suite *userSuite) TestGetPerson() {
+	rows := sqlmock.NewRows([]string{"login", "password", "person_id", "email", "phone", "avatar"})
+	rows = rows.AddRow(suite.person.Login, suite.person.Password, suite.person.ID,
+		suite.person.Email, suite.person.Phone, suite.person.Avatar)
+	suite.mock.
+		ExpectQuery("SELECT login, password, person_id, email, phone, avatar").
+		WithArgs(12).
+		WillReturnRows(rows)
+
+	rows = sqlmock.NewRows([]string{"name"})
+	rows = rows.AddRow(suite.person.LastName + " " + suite.person.LastName)
+	suite.mock.
+		ExpectQuery("SELECT name").
+		WithArgs(suite.person.ID).
+		WillReturnRows(rows)
+
+	result, err := suite.rep.GetPerson(uint64(12))
+
+	assert.NoError(suite.T(), err)
+	assert.ObjectsAreEqual(result, suite.person)
+}
+
+func (suite *userSuite) TestGetPersonFailedOne() {
+	rows := sqlmock.NewRows([]string{"login", "password", "person_id", "email", "phone", "avatar"})
+	rows = rows.AddRow(suite.person.Login, suite.person.Password, suite.person.ID,
+		suite.person.Email, suite.person.Phone, suite.person.Avatar)
+	suite.mock.
+		ExpectQuery("SELECT login, password, person_id, email, phone, avatar").
+		WithArgs(12).
+		WillReturnError(errors.New(""))
+
+	_, err := suite.rep.GetPerson(uint64(12))
+
+	assert.Error(suite.T(), err)
+}
+
+func (suite *userSuite) TestGetPersonFailedTwo() {
+	rows := sqlmock.NewRows([]string{"login", "password", "person_id", "email", "phone", "avatar"})
+	rows = rows.AddRow(suite.person.Login, suite.person.Password, suite.person.ID,
+		suite.person.Email, suite.person.Phone, suite.person.Avatar)
+	suite.mock.
+		ExpectQuery("SELECT login, password, person_id, email, phone, avatar").
+		WithArgs(12).
+		WillReturnRows(rows)
+
+	rows = sqlmock.NewRows([]string{"name"})
+	rows = rows.AddRow(suite.person.LastName + " " + suite.person.LastName)
+	suite.mock.
+		ExpectQuery("SELECT name").
+		WithArgs(suite.person.ID).
+		WillReturnError(errors.New(""))
+
+	_, err := suite.rep.GetPerson(uint64(12))
+
+	assert.Error(suite.T(), err)
+}
+
+func (suite *userSuite) TestChangePerson() {
+	rows := sqlmock.NewRows([]string{"person_id"})
+	rows = rows.AddRow(suite.person.ID)
+	suite.mock.
+		ExpectQuery("SELECT person_id").
+		WithArgs(suite.person.ID).
+		WillReturnRows(rows)
+
+	suite.mock.
+		ExpectExec("UPDATE person").
+		WithArgs(suite.person.FirstName + " " + suite.person.LastName, 1).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err := suite.rep.ChangePerson(suite.person)
+
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *userSuite) TestChangePersonFailedOne() {
+	rows := sqlmock.NewRows([]string{"person_id"})
+	rows = rows.AddRow(suite.person.ID)
+	suite.mock.
+		ExpectQuery("SELECT person_id").
+		WithArgs(suite.person.ID).
+		WillReturnError(errors.New(""))
+
+	err := suite.rep.ChangePerson(suite.person)
+
+	assert.Error(suite.T(), err)
+}
+
+func (suite *userSuite) TestChangePersonFailedTwo() {
+	rows := sqlmock.NewRows([]string{"person_id"})
+	rows = rows.AddRow(suite.person.ID)
+	suite.mock.
+		ExpectQuery("SELECT person_id").
+		WithArgs(suite.person.ID).
+		WillReturnRows(rows)
+
+	suite.mock.
+		ExpectExec("UPDATE person").
+		WithArgs(suite.person.FirstName + " " + suite.person.LastName, 12).
+		WillReturnError(errors.New(""))
+
+	err := suite.rep.ChangePerson(suite.person)
+
+	assert.Error(suite.T(), err)
+}
+
+func (suite *userSuite) TestGetOrganization() {
+	rows := sqlmock.NewRows([]string{"login", "password", "organization_id", "email", "phone", "avatar"})
+	rows = rows.AddRow(suite.organization.Login, suite.organization.Password, suite.organization.ID,
+		suite.organization.Email, suite.organization.Phone, suite.organization.Avatar)
+	suite.mock.
+		ExpectQuery("SELECT login, password, organization_id, email, phone, avatar").
+		WithArgs(12).
+		WillReturnRows(rows)
+
+	rows = sqlmock.NewRows([]string{"name"})
+	rows = rows.AddRow(suite.organization.Name)
+	suite.mock.
+		ExpectQuery("SELECT name").
+		WithArgs(suite.organization.ID).
+		WillReturnRows(rows)
+
+	result, err := suite.rep.GetOrganization(uint64(12))
+
+	assert.NoError(suite.T(), err)
+	assert.ObjectsAreEqual(result, suite.organization)
+}
+
+func (suite *userSuite) TestGetOrganizationFailedOne() {
+	rows := sqlmock.NewRows([]string{"login", "password", "organization_id", "email", "phone", "avatar"})
+	rows = rows.AddRow(suite.organization.Login, suite.organization.Password, suite.organization.ID,
+		suite.organization.Email, suite.organization.Phone, suite.organization.Avatar)
+	suite.mock.
+		ExpectQuery("SELECT login, password, organization_id, email, phone, avatar").
+		WithArgs(12).
+		WillReturnError(errors.New(""))
+
+	_, err := suite.rep.GetOrganization(uint64(12))
+
+	assert.Error(suite.T(), err)
+}
+
+func (suite *userSuite) TestGetOrganizationFailedTwo() {
+	rows := sqlmock.NewRows([]string{"login", "password", "organization_id", "email", "phone", "avatar"})
+	rows = rows.AddRow(suite.organization.Login, suite.organization.Password, suite.organization.ID,
+		suite.organization.Email, suite.organization.Phone, suite.organization.Avatar)
+	suite.mock.
+		ExpectQuery("SELECT login, password, organization_id, email, phone, avatar").
+		WithArgs(12).
+		WillReturnRows(rows)
+
+	rows = sqlmock.NewRows([]string{"name"})
+	rows = rows.AddRow(suite.organization.Name)
+	suite.mock.
+		ExpectQuery("SELECT name").
+		WithArgs(suite.organization.ID).
+		WillReturnError(errors.New(""))
+
+	_, err := suite.rep.GetOrganization(uint64(12))
+
+	assert.Error(suite.T(), err)
+}
+
+func (suite *userSuite) TestChangeOrganization() {
+	rows := sqlmock.NewRows([]string{"organization_id"})
+	rows = rows.AddRow(suite.organization.ID)
+	suite.mock.
+		ExpectQuery("SELECT organization_id").
+		WithArgs(suite.organization.ID).
+		WillReturnRows(rows)
+
+	suite.mock.
+		ExpectExec("UPDATE organization").
+		WithArgs(suite.organization.Name, 1).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	err := suite.rep.ChangeOrganization(suite.organization)
+
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *userSuite) TestChangeOrganizationFailedOne() {
+	rows := sqlmock.NewRows([]string{"organization_id"})
+	rows = rows.AddRow(suite.organization.ID)
+	suite.mock.
+		ExpectQuery("SELECT organization_id").
+		WithArgs(suite.organization.ID).
+		WillReturnError(errors.New(""))
+
+	err := suite.rep.ChangeOrganization(suite.organization)
+
+	assert.Error(suite.T(), err)
+}
+
+func (suite *userSuite) TestChangeOrganizationFailedTwo() {
+	rows := sqlmock.NewRows([]string{"organization_id"})
+	rows = rows.AddRow(suite.organization.ID)
+	suite.mock.
+		ExpectQuery("SELECT organization_id").
+		WithArgs(suite.organization.ID).
+		WillReturnRows(rows)
+
+	suite.mock.
+		ExpectExec("UPDATE organization").
+		WithArgs(suite.organization.Name, 12).
+		WillReturnError(errors.New(""))
+
+	err := suite.rep.ChangeOrganization(suite.organization)
+
+	assert.Error(suite.T(), err)
+}
+
+func (suite *userSuite) TestGetOrgList() {
+	rows := sqlmock.NewRows([]string{"userId", "name", "site"})
+	for i := 1; i < 5; i++ {
+		rows = rows.AddRow(uint64(i), suite.organization.Name, suite.organization.Site)
+	}
+
+	suite.mock.
+		ExpectQuery("SELECT users.id as userId, name, site").
+		WithArgs(0, 9).
+		WillReturnRows(rows)
+
+	result, err := suite.rep.GetListOfOrgs(1)
+
+	assert.Equal(suite.T(), len(result), 4)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *userSuite) TestGetOrgListFailed() {
+	rows := sqlmock.NewRows([]string{"userId", "name", "site"})
+	for i := 1; i < 5; i++ {
+		rows = rows.AddRow(uint64(i), suite.organization.Name, suite.organization.Site)
+	}
+
+	suite.mock.
+		ExpectQuery("SELECT users.id as userId, name, site").
+		WithArgs(0, 9).
+		WillReturnError(errors.New(""))
+
+	_, err := suite.rep.GetListOfOrgs(1)
+
+	assert.Error(suite.T(), err)
+}

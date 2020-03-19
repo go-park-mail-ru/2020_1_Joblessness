@@ -94,7 +94,7 @@ func toModelPerson(u *User, p *Person) *models.Person {
 	firstName := name[0]
 	var lastName string
 	if len(name) > 1 {
-		lastName = p.Name[(len(name[0]) - len(p.Name)):]
+		lastName = p.Name[(len(p.Name)) -len(name[0]):]
 	}
 
 	return &models.Person{
@@ -274,10 +274,6 @@ func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	err := r.db.QueryRow(getUser, userID).
 		Scan(&user.Login, &user.Password, &user.PersonID, &user.Email, &user.Phone, &user.Avatar)
 	if err != nil {
-		return nil, err
-	}
-
-	if user.PersonID == 0 {
 		return nil, auth.ErrUserNotPerson
 	}
 
@@ -293,20 +289,16 @@ func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 }
 
 func (r UserRepository) ChangePerson(p models.Person) error {
-	user := User{ID: p.ID}
+	user, dbPerson := toPostgresPerson(&p)
 
 	getUser := "SELECT person_id FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, user.ID).Scan(&user.PersonID)
 	if err != nil {
-		return err
-	}
-
-	if user.PersonID == 0 {
 		return auth.ErrUserNotPerson
 	}
 
 	changePerson := "UPDATE person SET name = $1 WHERE id = $2;"
-	_, err = r.db.Exec(changePerson, p.FirstName, user.PersonID)
+	_, err = r.db.Exec(changePerson, dbPerson.Name, user.PersonID)
 	if err != nil {
 		return err
 	}
@@ -341,20 +333,16 @@ func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, er
 }
 
 func (r UserRepository) ChangeOrganization(o models.Organization) error {
-	user := User{ID: o.ID}
+	user, dbOrg := toPostgresOrg(&o)
 
-	getUser := "SELECT person_id FROM users WHERE id = $1;"
-	err := r.db.QueryRow(getUser, user.ID).Scan(&user.PersonID)
+	getUser := "SELECT organization_id FROM users WHERE id = $1;"
+	err := r.db.QueryRow(getUser, user.ID).Scan(&user.OrganizationID)
 	if err != nil {
-		return err
-	}
-
-	if user.OrganizationID == 0 {
 		return auth.ErrUserNotOrg
 	}
 
 	changePerson := "UPDATE organization SET name = $1 WHERE id = $2;"
-	_, err = r.db.Exec(changePerson, o.Name, user.PersonID)
+	_, err = r.db.Exec(changePerson, dbOrg.Name, user.OrganizationID)
 	if err != nil {
 		return err
 	}
@@ -363,18 +351,18 @@ func (r UserRepository) ChangeOrganization(o models.Organization) error {
 }
 
 func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, err error) {
-	getOrgs := `SELECT users.id, name, site
+	getOrgs := `SELECT users.id as userId, name, site
 FROM users, organization
 WHERE users.organization_id = organization.id
 ORDER BY registered desc
 LIMIT $1 OFFSET $2`
 
-	rows, err := r.db.Query(getOrgs, page*10, 9)
-	defer rows.Close()
+	rows, err := r.db.Query(getOrgs, (page - 1)*10, 9)
 
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	var (
 		userId uint64
