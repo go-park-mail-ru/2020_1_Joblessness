@@ -6,7 +6,6 @@ import (
 	"github.com/kataras/golog"
 	"joblessness/haha/auth"
 	"joblessness/haha/utils/custom_http"
-	"log"
 	"math/rand"
 	"net/http"
 )
@@ -34,15 +33,14 @@ func (m *Middleware) LogMiddleware(next http.Handler) http.Handler {
 		requestNumber := genRequestNumber(6)
 		r = r.WithContext(context.WithValue(r.Context(), "rID", requestNumber))
 
-		log.Printf("#%s: %s %s", requestNumber, r.Method, r.URL)
+		golog.Infof("#%s: %s %s", requestNumber, r.Method, r.URL)
 		next.ServeHTTP(sw, r)
-		log.Printf("#%s: code %d", requestNumber, sw.StatusCode)
+		golog.Infof("#%s: code %d", requestNumber, sw.StatusCode)
 	})
 }
 
 func (m *Middleware) RecoveryMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 		defer func() {
 			rID, ok := r.Context().Value("rID").(string)
 
@@ -77,14 +75,18 @@ func NewAuthMiddleware(authUseCase auth.AuthUseCase) *AuthMiddleware {
 
 func (m *AuthMiddleware) CheckAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rID := r.Context().Value("rID").(string)
+		rID, ok := r.Context().Value("rID").(string)
+		if !ok {
+			rID = "no request id"
+		}
 
 		session, err := r.Cookie("session_id")
-		log.Println("session cookie: ", session)
 		if err != nil {
+			golog.Infof("#%s: %s",  rID, "No cookie")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
+		golog.Infof("#%s: %s",  rID, session.Value)
 		userID, err := m.auth.SessionExists(session.Value)
 		switch err {
 		case auth.ErrWrongSID:

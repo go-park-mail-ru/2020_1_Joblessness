@@ -51,6 +51,7 @@ func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(1024 * 1024 * 5) //5mb
 	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
 		return
 	}
@@ -413,6 +414,6 @@ func (h *Handler) GetListOfOrgs(w http.ResponseWriter, r *http.Request) {
 		listOrgs,
 	})
 
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }

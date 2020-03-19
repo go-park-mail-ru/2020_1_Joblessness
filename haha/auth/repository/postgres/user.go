@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"joblessness/haha/auth"
 	"joblessness/haha/models"
+	"joblessness/haha/utils/salt"
 	"strings"
 	"time"
 )
@@ -56,7 +57,7 @@ func toPostgresPerson(p *models.Person) (*User, *Person) {
 	},
 	&Person{
 		ID:       0,
-		Name:     p.FirstName + "" + p.LastName,
+		Name:     p.FirstName + " " + p.LastName,
 		Gender:   p.Gender,
 		Birthday: day,
 	}
@@ -145,6 +146,10 @@ func (r UserRepository) DoesUserExists(login string) (err error) {
 	checkUser := "SELECT count(*) FROM users WHERE login = $1"
 	err = r.db.QueryRow(checkUser, login).Scan(&columnCount)
 
+	if err != nil {
+		return err
+	}
+
 	if columnCount != 0 {
 		return auth.ErrUserAlreadyExists
 	}
@@ -163,6 +168,8 @@ func (r UserRepository) CreateUser(login, password, email, phone string, personI
 	} else {
 		return errors.New("inserted id is 0")
 	}
+
+	password, err = salt.HashAndSalt(password)
 
 	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone) 
 					VALUES($1, $2, $3, $4, $5, $6)`
@@ -200,7 +207,7 @@ func (r UserRepository) CreateOrganization(org *models.Organization) (err error)
 	dbUser, dbOrg := toPostgresOrg(org)
 
 	var orgId uint64
-	err = r.db.QueryRow("INSERT INTO organization (name) VALUES($1) RETURNING id", dbOrg.Name).Scan(orgId)
+	err = r.db.QueryRow("INSERT INTO organization (name) VALUES($1) RETURNING id", dbOrg.Name).Scan(&orgId)
 	if err != nil {
 		return err
 	}
@@ -213,9 +220,11 @@ func (r UserRepository) CreateOrganization(org *models.Organization) (err error)
 func (r UserRepository) Login(login, password, SID string) (userId uint64, err error) {
 	//TODO user_id, session_id уникальные
 
-	checkUser := "SELECT id FROM users WHERE login = $1 AND password = $2"
-	err = r.db.QueryRow(checkUser, login, password).Scan(&userId)
-	if err != nil {
+	checkUser := "SELECT id, password FROM users WHERE login = $1"
+	var hashedPwd string
+	rows := r.db.QueryRow(checkUser, login)
+	err = rows.Scan(&userId, &hashedPwd)
+	if err != nil || !salt.ComparePasswords(hashedPwd, password) {
 		return 0, auth.ErrWrongLogPas
 	}
 
@@ -242,16 +251,17 @@ func (r UserRepository) SessionExists(sessionId string) (userId uint64, err erro
 	var expires time.Time
 	err = r.db.QueryRow(checkUser, sessionId).Scan(&userId,  &expires)
 	if err != nil {
-		return 0, err
-	}
-	if userId == 0 {
 		return 0, auth.ErrWrongSID
 	}
 
 	if expires.Before(time.Now()) {
 		deleteRow := "DELETE FROM session WHERE session_id = $1;"
 		_, err = r.db.Exec(deleteRow, sessionId)
+		if err != nil {
+			return 0, err
+		}
 		userId = 0
+		return userId, auth.ErrWrongSID
 	}
 
 	return userId, err
@@ -353,43 +363,42 @@ func (r UserRepository) ChangeOrganization(o models.Organization) error {
 }
 
 func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, err error) {
-//	getOrgs := `SELECT users.id, name, site
-//FROM users, organization
-//WHERE users.organization_id = organization.id
-//ORDER BY registered desc
-//LIMIT $1 OFFSET $2`
-//
-//	rows, err := r.db.Query(getOrgs, page*10, 9)
-//	defer rows.Close()
-//
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	var (
-//		userId uint64
-//		name, site string
-//	)
-//
-//	for rows.Next() {
-//		err := rows.Scan(&userId, &name, &site)
-//		if err != nil {
-//			return nil, err
-//		}
-//
-//		result= append(result, models.Organization{
-//			ID:          userId,
-//			Login:       "",
-//			Password:    "",
-//			Name:        name,
-//			Site:        site,
-//			Email:       "",
-//			PhoneNumber: "",
-//			Tag:         "",
-//			Registered:  "",
-//		})
-//	}
-//
-//	return result, rows.Err()
-	return nil, nil
+	getOrgs := `SELECT users.id, name, site
+FROM users, organization
+WHERE users.organization_id = organization.id
+ORDER BY registered desc
+LIMIT $1 OFFSET $2`
+
+	rows, err := r.db.Query(getOrgs, page*10, 9)
+	defer rows.Close()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		userId uint64
+		name, site string
+	)
+
+	for rows.Next() {
+		err := rows.Scan(&userId, &name, &site)
+		if err != nil {
+			return nil, err
+		}
+
+		result= append(result, models.Organization{
+			ID:          userId,
+			Login:       "",
+			Password:    "",
+			Name:        name,
+			Site:        site,
+			Email:       "",
+			Phone: "",
+			Tag:         "",
+			Registered:  "",
+		})
+	}
+
+	return result, rows.Err()
 }

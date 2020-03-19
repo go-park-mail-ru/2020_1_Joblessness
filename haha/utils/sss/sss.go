@@ -31,6 +31,9 @@ func UploadAvatar(form *multipart.Form, userID uint64) (link string, err error) 
 
 	file, err := fileHeaders[0].Open()
 	defer file.Close()
+	if err != nil {
+		return "", err
+	}
 
 	var buf bytes.Buffer
 	io.Copy(&buf, file)

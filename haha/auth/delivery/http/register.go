@@ -18,6 +18,6 @@ func RegisterHTTPEndpoints(router *mux.Router, m *middleware.AuthMiddleware, uc 
 	router.HandleFunc("/users/{user_id:[0-9]+}", m.CheckAuth(h.ChangePerson)).Methods("PUT")
 	router.HandleFunc("/organizations/{user_id:[0-9]+}", h.GetOrganization).Methods("GET")
 	router.HandleFunc("/organizations/{user_id:[0-9]+}", m.CheckAuth(h.ChangeOrganization)).Methods("PUT")
-	router.HandleFunc("/organizations/}", h.GetListOfOrgs).Queries("page", "{[0-9]+}").Methods("GET")
+	router.HandleFunc("/organizations/", h.GetListOfOrgs).Methods("GET")
 	router.HandleFunc("/users/{user_id:[0-9]+}/avatar", m.CheckAuth(h.SetAvatar)).Methods("POST")
 }
