@@ -596,7 +596,7 @@ func (suite *userSuite) TestListOrgs() {
 		Return([]models.Organization{}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations/?page=1", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/organizations?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -609,7 +609,7 @@ func (suite *userSuite) TestListOrgsFailed() {
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations/?page=1", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/organizations?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 

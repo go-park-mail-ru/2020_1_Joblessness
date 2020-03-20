@@ -34,7 +34,7 @@ func (m *MockVacancyUseCase) EXPECT() *MockVacancyUseCaseMockRecorder {
 }
 
 // ChangeVacancy mocks base method
-func (m *MockVacancyUseCase) ChangeVacancy(arg0 models.Vacancy) error {
+func (m *MockVacancyUseCase) ChangeVacancy(arg0 *models.Vacancy) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangeVacancy", arg0)
 	ret0, _ := ret[0].(error)
@@ -48,7 +48,7 @@ func (mr *MockVacancyUseCaseMockRecorder) ChangeVacancy(arg0 interface{}) *gomoc
 }
 
 // CreateVacancy mocks base method
-func (m *MockVacancyUseCase) CreateVacancy(arg0 models.Vacancy) (uint64, error) {
+func (m *MockVacancyUseCase) CreateVacancy(arg0 *models.Vacancy) (uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateVacancy", arg0)
 	ret0, _ := ret[0].(uint64)
@@ -92,10 +92,10 @@ func (mr *MockVacancyUseCaseMockRecorder) GetVacancies() *gomock.Call {
 }
 
 // GetVacancy mocks base method
-func (m *MockVacancyUseCase) GetVacancy(arg0 uint64) (models.Vacancy, error) {
+func (m *MockVacancyUseCase) GetVacancy(arg0 uint64) (*models.Vacancy, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVacancy", arg0)
-	ret0, _ := ret[0].(models.Vacancy)
+	ret0, _ := ret[0].(*models.Vacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -34,7 +34,7 @@ func (m *MockVacancyRepository) EXPECT() *MockVacancyRepositoryMockRecorder {
 }
 
 // ChangeVacancy mocks base method
-func (m *MockVacancyRepository) ChangeVacancy(arg0 models.Vacancy) error {
+func (m *MockVacancyRepository) ChangeVacancy(arg0 *models.Vacancy) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangeVacancy", arg0)
 	ret0, _ := ret[0].(error)
@@ -48,7 +48,7 @@ func (mr *MockVacancyRepositoryMockRecorder) ChangeVacancy(arg0 interface{}) *go
 }
 
 // CreateVacancy mocks base method
-func (m *MockVacancyRepository) CreateVacancy(arg0 models.Vacancy) (uint64, error) {
+func (m *MockVacancyRepository) CreateVacancy(arg0 *models.Vacancy) (uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateVacancy", arg0)
 	ret0, _ := ret[0].(uint64)
@@ -92,10 +92,10 @@ func (mr *MockVacancyRepositoryMockRecorder) GetVacancies() *gomock.Call {
 }
 
 // GetVacancy mocks base method
-func (m *MockVacancyRepository) GetVacancy(arg0 uint64) (models.Vacancy, error) {
+func (m *MockVacancyRepository) GetVacancy(arg0 uint64) (*models.Vacancy, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVacancy", arg0)
-	ret0, _ := ret[0].(models.Vacancy)
+	ret0, _ := ret[0].(*models.Vacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
