@@ -17,4 +17,6 @@ type AuthUseCase interface {
 	ChangeOrganization(o models.Organization) error
 	GetListOfOrgs(page int) ([]models.Organization, error)
 	SetAvatar(form *multipart.Form, userID uint64) error
+	HasPersons() (has bool, err error)
+	HasOrganizations() (has bool, err error)
 }

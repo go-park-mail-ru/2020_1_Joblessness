@@ -3,8 +3,12 @@ package postgres
 import (
 	"database/sql"
 	"fmt"
+	"github.com/kataras/golog"
 	"joblessness/haha/models"
+	"log"
+	"math"
 	"strings"
+	"time"
 )
 
 type Summary struct {
@@ -26,8 +30,8 @@ type Experience struct {
 	CompanyName sql.NullString
 	Role sql.NullString
 	Responsibilities sql.NullString
-	Start sql.NullString
-	Stop sql.NullString
+	Start sql.NullTime
+	Stop sql.NullTime
 }
 
 type User struct {
@@ -54,27 +58,36 @@ func toPostgres(s *models.Summary) (summary *Summary, educations []Education, ex
 	summary = &Summary{
 		ID:       s.ID,
 		AuthorID: s.Author.ID,
-		Keywords: sql.NullString{String: s.Keywords},
+		Keywords: sql.NullString{String: s.Keywords, Valid: true},
 	}
 
 	for _, education := range s.Educations {
 		educations = append(educations, Education{
 			SummaryID:   summary.ID,
-			Institution: sql.NullString{String: education.Institution},
-			Speciality:  sql.NullString{String: education.Speciality},
-			Graduated:   sql.NullString{String: education.Graduated},
-			Type:        sql.NullString{String: education.Type},
+			Institution: sql.NullString{String: education.Institution, Valid: true},
+			Speciality:  sql.NullString{String: education.Speciality, Valid: true},
+			Graduated:   sql.NullString{String: education.Graduated, Valid: true},
+			Type:        sql.NullString{String: education.Type, Valid: true},
 		})
 	}
 
 	for _, experience := range s.Experiences {
+		start, err := time.Parse(time.RFC3339, experience.Start)
+		if err != nil {
+			log.Println(err.Error())
+		}
+		stop, err := time.Parse(time.RFC3339, experience.Stop)
+		if err != nil {
+			log.Println(err.Error())
+		}
+
 		experiences = append(experiences, Experience{
 			SummaryID:        summary.ID,
-			CompanyName:      sql.NullString{String: experience.CompanyName},
-			Role:             sql.NullString{String: experience.Role},
-			Responsibilities: sql.NullString{String: experience.Responsibilities},
-			Start:            sql.NullString{String: experience.Start},
-			Stop:             sql.NullString{String: experience.Stop},
+			CompanyName:      sql.NullString{String: experience.CompanyName, Valid: true},
+			Role:             sql.NullString{String: experience.Role, Valid: true},
+			Responsibilities: sql.NullString{String: experience.Responsibilities, Valid: true},
+			Start:            sql.NullTime{Time: start, Valid: true},
+			Stop:             sql.NullTime{Time: stop, Valid: true},
 		})
 	}
 
@@ -96,12 +109,17 @@ func toModel(s *Summary, eds []Education, exs []Experience, u *User, p *Person) 
 	var experiences []models.Experience
 
 	for _, ex := range exs {
+		start := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n", ex.Start.Time.Year(), ex.Start.Time.Month(),
+			ex.Start.Time.Day(), ex.Start.Time.Hour(), ex.Start.Time.Minute(), ex.Start.Time.Second())
+		stop := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n", ex.Start.Time.Year(), ex.Start.Time.Month(),
+			ex.Start.Time.Day(), ex.Start.Time.Hour(), ex.Start.Time.Minute(), ex.Start.Time.Second())
+
 		experiences = append(experiences, models.Experience{
 			CompanyName:      ex.CompanyName.String,
 			Role:             ex.Role.String,
 			Responsibilities: ex.Responsibilities.String,
-			Start:            ex.Start.String,
-			Stop:             ex.Stop.String,
+			Start:            start,
+			Stop:             stop,
 		})
 	}
 
@@ -137,7 +155,9 @@ func toModel(s *Summary, eds []Education, exs []Experience, u *User, p *Person) 
 }
 
 type GetOptions struct {
-	userID uint64
+	UserID     uint64
+	PageNumber uint64
+	PageSize   uint64
 }
 
 type SummaryRepository struct {
@@ -150,6 +170,8 @@ func NewSummaryRepository(db *sql.DB) *SummaryRepository {
 
 func (r *SummaryRepository) CreateSummary(summary *models.Summary) (summaryID uint64, err error) {
 	summaryDB, educationDBs, experienceDBs := toPostgres(summary)
+
+	golog.Infof("%s %s %s", summaryDB, educationDBs, experienceDBs)
 
 	createSummary := `INSERT INTO summary (author, keywords)
 					  VALUES ($1, $2) RETURNING id;`
@@ -257,63 +279,105 @@ func (r *SummaryRepository) GetSummaryAuthor(authorID uint64) (*User, *Person, e
 	return &user, &person, nil
 }
 
-func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, error) {
-	var rows *sql.Rows
-	var err error
+func (r *SummaryRepository) GetSummaries(opt *GetOptions) (summaries []models.Summary, pageCount uint64,
+														   hasPrev, hasNext bool, err error) {
+	var summaryCount uint64
 
-	if opt.userID == 0 {
-		getSummaries := `SELECT id, author, keywords
-					 	 FROM summary;`
-		rows, err = r.db.Query(getSummaries)
+	getSummaryCount := `SELECT COUNT(*) FROM summary;`
+	err = r.db.QueryRow(getSummaryCount).Scan(&summaryCount)
+	if err != nil {
+		return summaries, pageCount, hasPrev, hasNext, err
+	}
+
+	pageCount = uint64(math.Ceil(float64(summaryCount) / float64(opt.PageSize)))
+
+	if opt.PageNumber > 1 {
+		hasPrev = true
+	}
+	if opt.PageNumber < pageCount {
+		hasNext = true
+	}
+
+	var rows *sql.Rows
+
+	var pageNumber uint64 = 0
+	if opt.PageNumber != 0 {
+		pageNumber = opt.PageNumber
+	}
+	if pageNumber > pageCount {
+		pageNumber = pageCount
+	}
+
+	var pageSize uint64 = 10
+	if opt.PageSize != 0 {
+		pageSize = opt.PageSize
+	}
+
+	if opt.UserID == 0 {
+		getSummaries := `SELECT summary.id, summary.author, summary.keywords
+					 	 FROM summary
+					 	 JOIN (SELECT id FROM summary ORDER BY id LIMIT $1 OFFSET $2) AS s
+					 	 ON summary.id = s.id;`
+		rows, err = r.db.Query(getSummaries, pageSize, (pageNumber - 1) * pageSize)
 		if err != nil {
-			return nil, err
+			return summaries, pageCount, hasPrev, hasNext, err
 		}
 	} else {
 		getSummaries := `SELECT id, author, keywords
-					 	 FROM summary WHERE author = $1;`
-		rows, err = r.db.Query(getSummaries, opt.userID)
+					 	 FROM summary
+					 	 JOIN (SELECT id FROM summary WHERE author = $1 ORDER BY id LIMIT $2 OFFSET $3) AS s
+					 	 ON summary.id = s.id`
+		rows, err = r.db.Query(getSummaries, opt.UserID, pageSize, (pageNumber - 1) * pageSize)
 		if err != nil {
-			return nil, err
+			return summaries, pageCount, hasPrev, hasNext, err
 		}
 	}
-
-	var summaries []models.Summary
 
 	for rows.Next() {
 		var summaryDB Summary
 
 		err = rows.Scan(&summaryDB.ID, &summaryDB.AuthorID, &summaryDB.Keywords)
 		if err != nil {
-			return nil, err
+			return summaries, pageCount, hasPrev, hasNext, err
 		}
 
 		educationDBs, err := r.GetEducationsBySummaryID(summaryDB.ID)
 		if err != nil {
-			return nil, err
+			return summaries, pageCount, hasPrev, hasNext, err
 		}
 
 		experienceDBs, err := r.GetExperiencesBySummaryID(summaryDB.ID)
 		if err != nil {
-			return nil, err
+			return summaries, pageCount, hasPrev, hasNext, err
 		}
 
 		userDB, personDB, err := r.GetSummaryAuthor(summaryDB.AuthorID)
 		if err != nil {
-			return nil, err
+			return summaries, pageCount, hasPrev, hasNext, err
 		}
 
 		summaries = append(summaries, *toModel(&summaryDB, educationDBs, experienceDBs, userDB, personDB))
 	}
 
-	return summaries, nil
+	return summaries, pageCount, hasPrev, hasNext, err
 }
 
-func (r *SummaryRepository) GetAllSummaries() (summaries []models.Summary, err error) {
-	return r.GetSummaries(&GetOptions{})
+func (r *SummaryRepository) GetAllSummaries(pageNumber uint64) (summaries []models.Summary, pageCount uint64,
+																hasPrev, hasNext bool, err error) {
+	return r.GetSummaries(&GetOptions{
+		PageNumber: pageNumber,
+		PageSize: 10,
+	})
 }
 
-func (r *SummaryRepository) GetUserSummaries(userID uint64) (summaries []models.Summary, err error) {
-	return r.GetSummaries(&GetOptions{userID})
+func (r *SummaryRepository) GetUserSummaries(userID uint64, pageNumber uint64) (summaries []models.Summary,
+																				pageCount uint64, hasPrev, hasNext bool,
+																				err error) {
+	return r.GetSummaries(&GetOptions{
+		UserID: userID,
+		PageNumber: pageNumber,
+		PageSize: 10,
+	})
 }
 
 func (r *SummaryRepository) GetSummary(summaryID uint64) (*models.Summary, error) {

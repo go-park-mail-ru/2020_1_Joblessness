@@ -201,3 +201,18 @@ func (r *VacancyRepository) DeleteVacancy(vacancyID uint64) (err error) {
 
 	return nil
 }
+
+func (r *VacancyRepository) HasVacancies() (has bool, err error) {
+	var vacancyCount int
+
+	getVacancyCount := `SELECT COUNT(*) FROM vacancy`
+	err = r.db.QueryRow(getVacancyCount).Scan(&vacancyCount)
+	if err != nil {
+		return has, err
+	}
+
+	if vacancyCount > 0 {
+		return true, nil
+	}
+	return false, nil
+}

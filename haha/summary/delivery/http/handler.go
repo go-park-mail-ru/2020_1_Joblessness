@@ -20,8 +20,15 @@ func NewHandler(useCase summary.SummaryUseCase) *Handler {
 	return &Handler{useCase}
 }
 
-type Response struct {
+type CreateSummaryResponse struct {
 	ID uint64 `json:"id"`
+}
+
+type GetSummariesResponse struct {
+	Summaries []models.Summary `json:"summaries"`
+	PageCount uint64 `json:"page_count"`
+	HasPrev bool `json:"has_prev"`
+	HasNext bool `json:"has_next"`
 }
 
 func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +60,7 @@ func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(Response{summaryID})
+	jsonData, err := json.Marshal(CreateSummaryResponse{summaryID})
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -67,14 +74,32 @@ func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetSummaries(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
-	summaries, err := h.useCase.GetAllSummaries()
+	var pageNumber uint64 = 1
+
+	page := r.URL.Query().Get("page")
+	if page != "" {
+		var err error
+		pageNumber, err = strconv.ParseUint(page, 10, 64)
+		if err != nil {
+			golog.Errorf("#%s: %w",  rID, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	summaries, pageCount, hasPrev, hasNext, err := h.useCase.GetAllSummaries(pageNumber)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	jsonData, err := json.Marshal(summaries)
+	jsonData, err := json.Marshal(GetSummariesResponse{
+		Summaries: summaries,
+		PageCount: pageCount,
+		HasPrev:   hasPrev,
+		HasNext:   hasNext,
+	})
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -152,14 +177,32 @@ func (h *Handler) GetUserSummaries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	summaries, err := h.useCase.GetUserSummaries(userID)
+	var pageNumber uint64 = 1
+
+	page := r.URL.Query().Get("page")
+	if page != "" {
+		var err error
+		pageNumber, err = strconv.ParseUint(page, 10, 64)
+		if err != nil {
+			golog.Errorf("#%s: %w",  rID, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	summaries, pageCount, hasPrev, hasNext, err := h.useCase.GetUserSummaries(userID, pageNumber)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	jsonData, err := json.Marshal(summaries)
+	jsonData, err := json.Marshal(GetSummariesResponse{
+		Summaries: summaries,
+		PageCount: pageCount,
+		HasPrev:   hasPrev,
+		HasNext:   hasNext,
+	})
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)

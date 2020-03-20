@@ -32,3 +32,7 @@ func (u *VacancyUseCase) ChangeVacancy(vacancy *models.Vacancy) error {
 func (u *VacancyUseCase) DeleteVacancy(vacancyID uint64) error {
 	return u.vacancyRepo.DeleteVacancy(vacancyID)
 }
+
+func (u *VacancyUseCase) HasVacancies() (has bool, err error) {
+	return u.vacancyRepo.HasVacancies()
+}

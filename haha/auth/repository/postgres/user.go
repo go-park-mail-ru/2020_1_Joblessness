@@ -165,7 +165,7 @@ func (r UserRepository) CreateUser(login, password, email, phone string, personI
 	}
 
 	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone) 
-					VALUES($1, $2, $3, $4, $5, $6)`
+					VALUES($1, $2, $3, $4, $5, $6) RETURNING id`
 	_, err = r.db.Exec(insertUser, login, password, orgIdSql, personIdSql, email, phone)
 
 	return err
@@ -186,7 +186,7 @@ func (r UserRepository) CreatePerson(user *models.Person) (err error) {
 	dbUser, dbPerson := toPostgresPerson(user)
 
 	var personId uint64
-	err = r.db.QueryRow("INSERT INTO person (name) VALUES($1) RETURNING id", dbPerson.Name).Scan(&personId)
+	err = r.db.QueryRow("INSERT INTO person (name, gender, birthday) VALUES($1, $2, $3) RETURNING id", &dbPerson.Name, &dbPerson.Gender, &dbPerson.Birthday).Scan(&personId)
 	if err != nil {
 		return err
 	}
@@ -200,7 +200,7 @@ func (r UserRepository) CreateOrganization(org *models.Organization) (err error)
 	dbUser, dbOrg := toPostgresOrg(org)
 
 	var orgId uint64
-	err = r.db.QueryRow("INSERT INTO organization (name) VALUES($1) RETURNING id", dbOrg.Name).Scan(orgId)
+	err = r.db.QueryRow("INSERT INTO organization (name) VALUES($1) RETURNING id", dbOrg.Name).Scan(&orgId)
 	if err != nil {
 		return err
 	}
@@ -392,4 +392,34 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 //
 //	return result, rows.Err()
 	return nil, nil
+}
+
+func (r *UserRepository) HasPersons() (has bool, err error) {
+	var personCount int
+
+	getPersonCount := `SELECT COUNT(*) FROM person`
+	err = r.db.QueryRow(getPersonCount).Scan(&personCount)
+	if err != nil {
+		return has, err
+	}
+
+	if personCount > 0 {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (r *UserRepository) HasOrganizations() (has bool, err error) {
+	var organizationCount int
+
+	getOrganizationCount := `SELECT COUNT(*) FROM organization`
+	err = r.db.QueryRow(getOrganizationCount).Scan(&organizationCount)
+	if err != nil {
+		return has, err
+	}
+
+	if organizationCount > 0 {
+		return true, nil
+	}
+	return false, nil
 }

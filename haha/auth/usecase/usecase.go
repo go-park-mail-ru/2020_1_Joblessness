@@ -89,3 +89,11 @@ func (a *AuthUseCase) SetAvatar(form *multipart.Form, userID uint64) (err error)
 
 	return a.userRepo.SaveAvatarLink(link, userID)
 }
+
+func (a *AuthUseCase) HasPersons() (has bool, err error) {
+	return a.userRepo.HasPersons()
+}
+
+func (a *AuthUseCase) HasOrganizations() (has bool, err error) {
+	return a.userRepo.HasOrganizations()
+}

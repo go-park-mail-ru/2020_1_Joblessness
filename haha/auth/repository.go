@@ -17,4 +17,6 @@ type UserRepository interface {
 	DoesUserExists(login string) error
 	GetListOfOrgs(page int) ([]models.Organization, error)
 	SaveAvatarLink(link string, userID uint64) error
+	HasPersons() (has bool, err error)
+	HasOrganizations() (has bool, err error)
 }

@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/kataras/golog"
 	"joblessness/haha/auth"
 	"joblessness/haha/auth/delivery/http"
 	postgresAuth "joblessness/haha/auth/repository/postgres"
@@ -14,6 +15,7 @@ import (
 	usecaseSummary "joblessness/haha/summary/usecase"
 	"joblessness/haha/utils/cors"
 	"joblessness/haha/utils/database"
+	"joblessness/haha/utils/seed"
 	"joblessness/haha/vacancy"
 	"joblessness/haha/vacancy/delivery/http"
 	postgresVacancy "joblessness/haha/vacancy/repository/postgres"
@@ -38,7 +40,6 @@ func NewApp(c *cors.CorsHandler) *App {
 		return nil
 	}
 	db := database.GetDatabase()
-
 
 	userRepo := postgresAuth.NewUserRepository(db)
 	vacancyRepo := postgresVacancy.NewVacancyRepository(db)
@@ -71,6 +72,12 @@ func (app *App) StartRouter() {
 
 	// summaries
 	httpSummary.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
+
+	seeder := seed.NewSeeder(&app.authUse)
+	err := seeder.Seed()
+	if err != nil {
+		golog.Error(err.Error())
+	}
 
 	http.Handle("/", router)
 	fmt.Println("Server started")
