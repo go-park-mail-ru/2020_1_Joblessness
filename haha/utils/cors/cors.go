@@ -50,7 +50,6 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 		(*w).Header().Set("Content-Type", "application/json")
 	} else {
 		golog.Info("Not Allowed")
-
 	}
 	return result
 }

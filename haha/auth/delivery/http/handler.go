@@ -51,10 +51,10 @@ func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseMultipartForm(1024 * 1024 * 5) //5mb
 	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusRequestedRangeNotSatisfiable)
 		return
 	}
-
 	form := r.MultipartForm
 
 	//TODO перенести в юзкейс
@@ -72,7 +72,6 @@ func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
 	w.WriteHeader(http.StatusCreated)
 }
 
@@ -293,7 +292,6 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var person models.Person
-
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
@@ -309,7 +307,6 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	person.ID = userID
-
 	err = h.useCase.ChangePerson(person)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
@@ -376,7 +373,6 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 	}
 
 	org.ID = userID
-
 	err = h.useCase.ChangeOrganization(org)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
@@ -413,6 +409,6 @@ func (h *Handler) GetListOfOrgs(w http.ResponseWriter, r *http.Request) {
 		listOrgs,
 	})
 
-	w.WriteHeader(http.StatusNoContent)
+	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
