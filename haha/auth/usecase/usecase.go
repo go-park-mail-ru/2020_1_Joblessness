@@ -1,7 +1,7 @@
-package usecase
+package authUseCase
 
 import (
-	"joblessness/haha/auth"
+	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/models"
 	"joblessness/haha/utils/sss"
 	"math/rand"
@@ -9,10 +9,10 @@ import (
 )
 
 type AuthUseCase struct {
-	userRepo auth.UserRepository
+	userRepo authInterfaces.UserRepository
 }
 
-func NewAuthUseCase(userRepo auth.UserRepository) *AuthUseCase {
+func NewAuthUseCase(userRepo authInterfaces.UserRepository) *AuthUseCase {
 	return &AuthUseCase{
 		userRepo:userRepo,
 	}

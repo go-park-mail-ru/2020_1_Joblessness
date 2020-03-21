@@ -2,7 +2,7 @@
 // Source: joblessness/haha/summary (interfaces: SummaryUseCase)
 
 // Package mock is a generated GoMock package.
-package mock
+package summaryUseCaseMock
 
 import (
 	gomock "github.com/golang/mock/gomock"
@@ -10,7 +10,7 @@ import (
 	reflect "reflect"
 )
 
-// MockSummaryUseCase is a mock of SummaryUseCase interface
+// MockSummaryUseCase is a mock of SummaryUseCase interfaces
 type MockSummaryUseCase struct {
 	ctrl     *gomock.Controller
 	recorder *MockSummaryUseCaseMockRecorder

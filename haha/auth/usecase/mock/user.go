@@ -2,7 +2,7 @@
 // Source: joblessness/haha/auth (interfaces: AuthUseCase)
 
 // Package mock is a generated GoMock package.
-package mock
+package authUseCaseMock
 
 import (
 	gomock "github.com/golang/mock/gomock"
@@ -11,7 +11,7 @@ import (
 	reflect "reflect"
 )
 
-// MockAuthUseCase is a mock of AuthUseCase interface
+// MockAuthUseCase is a mock of AuthUseCase interfaces
 type MockAuthUseCase struct {
 	ctrl     *gomock.Controller
 	recorder *MockAuthUseCaseMockRecorder

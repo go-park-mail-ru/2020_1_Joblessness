@@ -1,4 +1,4 @@
-package postgres
+package summaryRepoPostgres
 
 import (
 	"database/sql"

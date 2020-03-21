@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/auth"
+	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
 	"joblessness/haha/models"
@@ -25,7 +25,7 @@ type userSuite struct {
 	mainMiddleware *middleware.Middleware
 	authMiddleware *middleware.AuthMiddleware
 	controller *gomock.Controller
-	uc *mock.MockAuthUseCase
+	uc *authUseCaseMock.MockAuthUseCase
 	person models.Person
 	personByte *bytes.Buffer
 	organization models.Organization
@@ -38,7 +38,7 @@ func (suite *userSuite) SetupTest() {
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())
-	suite.uc = mock.NewMockAuthUseCase(suite.controller)
+	suite.uc = authUseCaseMock.NewMockAuthUseCase(suite.controller)
 	suite.authMiddleware = middleware.NewAuthMiddleware(suite.uc)
 
 	suite.person = models.Person{
@@ -197,7 +197,7 @@ func (suite *userSuite) TestRegistrationPerson() {
 func (suite *userSuite) TestFailedRegistrationPerson() {
 	suite.uc.EXPECT().
 		RegisterPerson(&suite.person).
-		Return(auth.ErrUserAlreadyExists).
+		Return(authInterfaces.ErrUserAlreadyExists).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users", suite.personByte)
@@ -223,7 +223,7 @@ func (suite *userSuite) TestRegistrationOrganization() {
 func (suite *userSuite) TestFailedRegistrationOrganization() {
 	suite.uc.EXPECT().
 		RegisterOrganization(&suite.organization).
-		Return(auth.ErrUserAlreadyExists).
+		Return(authInterfaces.ErrUserAlreadyExists).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/organizations", suite.organizationByte)
@@ -266,7 +266,7 @@ func (suite *userSuite) TestFailedLoginNotFound() {
 
 	suite.uc.EXPECT().
 		Login(userLogin.Login, userLogin.Password).
-		Return(uint64(0), "", auth.ErrWrongLogPas).
+		Return(uint64(0), "", authInterfaces.ErrWrongLogPas).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(userJSON))
@@ -376,7 +376,7 @@ func (suite *userSuite) TestCheckWrongSid() {
 
 	suite.uc.EXPECT().
 		SessionExists(cookie.Value).
-		Return(uint64(0), auth.ErrWrongSID).
+		Return(uint64(0), authInterfaces.ErrWrongSID).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))

@@ -2,7 +2,7 @@
 // Source: joblessness/haha/auth (interfaces: UserRepository)
 
 // Package mock is a generated GoMock package.
-package mock
+package authRepoMock
 
 import (
 	gomock "github.com/golang/mock/gomock"
@@ -10,7 +10,7 @@ import (
 	reflect "reflect"
 )
 
-// MockUserRepository is a mock of UserRepository interface
+// MockUserRepository is a mock of UserRepository interfaces
 type MockUserRepository struct {
 	ctrl     *gomock.Controller
 	recorder *MockUserRepositoryMockRecorder

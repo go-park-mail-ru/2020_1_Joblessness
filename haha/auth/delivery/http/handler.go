@@ -6,7 +6,7 @@ import (
 	"github.com/juju/loggo"
 	"github.com/kataras/golog"
 	"io/ioutil"
-	"joblessness/haha/auth"
+	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/models"
 	"net/http"
 	"strconv"
@@ -14,11 +14,11 @@ import (
 )
 
 type Handler struct {
-	useCase auth.AuthUseCase
+	useCase authInterfaces.AuthUseCase
 	logger  *loggo.Logger
 }
 
-func NewHandler(useCase auth.AuthUseCase) *Handler {
+func NewHandler(useCase authInterfaces.AuthUseCase) *Handler {
 	return &Handler{
 		useCase: useCase,
 	}
@@ -61,7 +61,7 @@ func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	err = h.useCase.SetAvatar(form, userID)
 
 	switch err {
-	case auth.ErrUploadAvatar:
+	case authInterfaces.ErrUploadAvatar:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusFailedDependency)
 		return
@@ -101,7 +101,7 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 
 	err = h.useCase.RegisterPerson(&user)
 	switch err {
-	case auth.ErrUserAlreadyExists:
+	case authInterfaces.ErrUserAlreadyExists:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -143,7 +143,7 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 
 	err = h.useCase.RegisterOrganization(&org)
 	switch err {
-	case auth.ErrUserAlreadyExists:
+	case authInterfaces.ErrUserAlreadyExists:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -184,7 +184,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	userId, sessionId, err := h.useCase.Login(user.Login, user.Password)
 	switch err {
-	case auth.ErrWrongLogPas:
+	case authInterfaces.ErrWrongLogPas:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return

@@ -1,10 +1,10 @@
-package postgres
+package authRepoPostgres
 
 import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"joblessness/haha/auth"
+	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/models"
 	"joblessness/haha/utils/salt"
 	"strings"
@@ -151,7 +151,7 @@ func (r UserRepository) DoesUserExists(login string) (err error) {
 	}
 
 	if columnCount != 0 {
-		return auth.ErrUserAlreadyExists
+		return authInterfaces.ErrUserAlreadyExists
 	}
 	return nil
 }
@@ -225,7 +225,7 @@ func (r UserRepository) Login(login, password, SID string) (userId uint64, err e
 	rows := r.db.QueryRow(checkUser, login)
 	err = rows.Scan(&userId, &hashedPwd)
 	if err != nil || !salt.ComparePasswords(hashedPwd, password) {
-		return 0, auth.ErrWrongLogPas
+		return 0, authInterfaces.ErrWrongLogPas
 	}
 
 	insertSession := `INSERT INTO session (user_id, session_id, expires) 
@@ -251,7 +251,7 @@ func (r UserRepository) SessionExists(sessionId string) (userId uint64, err erro
 	var expires time.Time
 	err = r.db.QueryRow(checkUser, sessionId).Scan(&userId,  &expires)
 	if err != nil {
-		return 0, auth.ErrWrongSID
+		return 0, authInterfaces.ErrWrongSID
 	}
 
 	if expires.Before(time.Now()) {
@@ -261,7 +261,7 @@ func (r UserRepository) SessionExists(sessionId string) (userId uint64, err erro
 			return 0, err
 		}
 		userId = 0
-		return userId, auth.ErrWrongSID
+		return userId, authInterfaces.ErrWrongSID
 	}
 
 	return userId, err
@@ -274,7 +274,7 @@ func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	err := r.db.QueryRow(getUser, userID).
 		Scan(&user.Login, &user.Password, &user.PersonID, &user.Email, &user.Phone, &user.Avatar)
 	if err != nil {
-		return nil, auth.ErrUserNotPerson
+		return nil, authInterfaces.ErrUserNotPerson
 	}
 
 	var person Person
@@ -294,7 +294,7 @@ func (r UserRepository) ChangePerson(p models.Person) error {
 	getUser := "SELECT person_id FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, user.ID).Scan(&user.PersonID)
 	if err != nil {
-		return auth.ErrUserNotPerson
+		return authInterfaces.ErrUserNotPerson
 	}
 
 	changePerson := "UPDATE person SET name = $1 WHERE id = $2;"
@@ -318,7 +318,7 @@ func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, er
 	}
 
 	if user.OrganizationID == 0 {
-		return nil, auth.ErrUserNotOrg
+		return nil, authInterfaces.ErrUserNotOrg
 	}
 
 	var org Organization
@@ -338,7 +338,7 @@ func (r UserRepository) ChangeOrganization(o models.Organization) error {
 	getUser := "SELECT organization_id FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, user.ID).Scan(&user.OrganizationID)
 	if err != nil {
-		return auth.ErrUserNotOrg
+		return authInterfaces.ErrUserNotOrg
 	}
 
 	changePerson := "UPDATE organization SET name = $1 WHERE id = $2;"

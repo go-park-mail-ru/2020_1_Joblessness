@@ -2,7 +2,7 @@
 // Source: joblessness/haha/vacancy (interfaces: VacancyRepository)
 
 // Package mock is a generated GoMock package.
-package mock
+package vacancyRepoMock
 
 import (
 	gomock "github.com/golang/mock/gomock"
@@ -10,7 +10,7 @@ import (
 	reflect "reflect"
 )
 
-// MockVacancyRepository is a mock of VacancyRepository interface
+// MockVacancyRepository is a mock of VacancyRepository interfaces
 type MockVacancyRepository struct {
 	ctrl     *gomock.Controller
 	recorder *MockVacancyRepositoryMockRecorder

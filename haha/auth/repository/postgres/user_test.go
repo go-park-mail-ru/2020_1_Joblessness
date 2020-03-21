@@ -1,4 +1,4 @@
-package postgres
+package authRepoPostgres
 
 import (
 	"database/sql"
@@ -6,7 +6,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/auth"
+	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/models"
 	"joblessness/haha/utils/salt"
 	"testing"
@@ -76,7 +76,7 @@ func (suite *userSuite) TestDoesExists() {
 		WillReturnRows(rows)
 
 	err := suite.rep.DoesUserExists("name")
-	assert.Equal(suite.T(), err, auth.ErrUserAlreadyExists)
+	assert.Equal(suite.T(), err, authInterfaces.ErrUserAlreadyExists)
 }
 
 func (suite *userSuite) TestDoesExistsErr() {
@@ -255,7 +255,7 @@ func (suite *userSuite) TestSessionExistsExpired() {
 
 	_, err := suite.rep.SessionExists("sid")
 
-	assert.Equal(suite.T(), err, auth.ErrWrongSID)
+	assert.Equal(suite.T(), err, authInterfaces.ErrWrongSID)
 }
 
 func (suite *userSuite) TestGetPerson() {

@@ -1,15 +1,15 @@
-package usecase
+package vacancyUseCase
 
 import (
 	"joblessness/haha/models"
-	"joblessness/haha/vacancy"
+	"joblessness/haha/vacancy/interfaces"
 )
 
 type VacancyUseCase struct {
-	vacancyRepo vacancy.VacancyRepository
+	vacancyRepo vacancyInterfaces.VacancyRepository
 }
 
-func NewVacancyUseCase(vacancyRepo vacancy.VacancyRepository) *VacancyUseCase {
+func NewVacancyUseCase(vacancyRepo vacancyInterfaces.VacancyRepository) *VacancyUseCase {
 	return &VacancyUseCase{vacancyRepo}
 }
 

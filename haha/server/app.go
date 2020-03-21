@@ -3,19 +3,19 @@ package server
 import (
 	"fmt"
 	"github.com/gorilla/mux"
-	"joblessness/haha/auth"
 	"joblessness/haha/auth/delivery/http"
+	"joblessness/haha/auth/interfaces"
 	postgresAuth "joblessness/haha/auth/repository/postgres"
 	usecaseAuth "joblessness/haha/auth/usecase"
 	"joblessness/haha/middleware"
-	"joblessness/haha/summary"
 	"joblessness/haha/summary/delivery/http"
+	interfaces3 "joblessness/haha/summary/interfaces"
 	postgresSummary "joblessness/haha/summary/repository/postgres"
 	usecaseSummary "joblessness/haha/summary/usecase"
 	"joblessness/haha/utils/cors"
 	"joblessness/haha/utils/database"
-	"joblessness/haha/vacancy"
 	"joblessness/haha/vacancy/delivery/http"
+	interfaces2 "joblessness/haha/vacancy/interfaces"
 	postgresVacancy "joblessness/haha/vacancy/repository/postgres"
 	usecaseVacancy "joblessness/haha/vacancy/usecase"
 	"log"
@@ -24,10 +24,10 @@ import (
 )
 
 type App struct {
-	httpServer *http.Server
-	authUse auth.AuthUseCase
-	vacancyUse vacancy.VacancyUseCase
-	summaryUse summary.SummaryUseCase
+	httpServer  *http.Server
+	authUse     authInterfaces.AuthUseCase
+	vacancyUse  interfaces2.VacancyUseCase
+	summaryUse  interfaces3.SummaryUseCase
 	corsHandler *cors.CorsHandler
 }
 

@@ -3,10 +3,10 @@ package httpVacancy
 import (
 	"github.com/gorilla/mux"
 	"joblessness/haha/middleware"
-	"joblessness/haha/vacancy"
+	"joblessness/haha/vacancy/interfaces"
 )
 
-func RegisterHTTPEndpoints(router *mux.Router, m *middleware.AuthMiddleware, uc vacancy.VacancyUseCase) {
+func RegisterHTTPEndpoints(router *mux.Router, m *middleware.AuthMiddleware, uc vacancyInterfaces.VacancyUseCase) {
 	h := NewHandler(uc)
 
 	router.HandleFunc("/vacancies", m.CheckAuth(h.CreateVacancy)).Methods("POST")

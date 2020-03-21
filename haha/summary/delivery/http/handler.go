@@ -4,19 +4,18 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
-	"io/ioutil"
 	"joblessness/haha/models"
-	"joblessness/haha/summary"
+	"joblessness/haha/summary/interfaces"
 	"joblessness/haha/utils/pdf"
 	"net/http"
 	"strconv"
 )
 
 type Handler struct {
-	useCase summary.SummaryUseCase
+	useCase summaryInterfaces.SummaryUseCase
 }
 
-func NewHandler(useCase summary.SummaryUseCase) *Handler {
+func NewHandler(useCase summaryInterfaces.SummaryUseCase) *Handler {
 	return &Handler{useCase}
 }
 
@@ -27,16 +26,8 @@ type Response struct {
 func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
 	var newSummary models.Summary
-
-	err = json.Unmarshal(body, &newSummary)
+	err := json.NewDecoder(r.Body).Decode(&newSummary)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -179,24 +170,16 @@ func (h *Handler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	body, err := ioutil.ReadAll(r.Body)
+	var newSummary models.Summary
+	err = json.NewDecoder(r.Body).Decode(&newSummary)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	newSummary := models.Summary{
-		ID: summaryID,
-		Author: models.Author{ID: r.Context().Value("userID").(uint64)},
-	}
-
-	err = json.Unmarshal(body, &newSummary)
-	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	newSummary.ID = summaryID
+	newSummary.Author.ID = r.Context().Value("userID").(uint64)
 
 	err = h.useCase.ChangeSummary(&newSummary)
 	if err != nil {

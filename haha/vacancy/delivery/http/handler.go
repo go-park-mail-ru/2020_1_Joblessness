@@ -5,16 +5,16 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 	"joblessness/haha/models"
-	"joblessness/haha/vacancy"
+	"joblessness/haha/vacancy/interfaces"
 	"net/http"
 	"strconv"
 )
 
 type Handler struct {
-	useCase vacancy.VacancyUseCase
+	useCase vacancyInterfaces.VacancyUseCase
 }
 
-func NewHandler(useCase vacancy.VacancyUseCase) *Handler {
+func NewHandler(useCase vacancyInterfaces.VacancyUseCase) *Handler {
 	return &Handler{useCase}
 }
 

@@ -3,10 +3,10 @@ package httpSummary
 import (
 	"github.com/gorilla/mux"
 	"joblessness/haha/middleware"
-	"joblessness/haha/summary"
+	"joblessness/haha/summary/interfaces"
 )
 
-func RegisterHTTPEndpoints(router *mux.Router, m *middleware.AuthMiddleware, uc summary.SummaryUseCase) {
+func RegisterHTTPEndpoints(router *mux.Router, m *middleware.AuthMiddleware, uc summaryInterfaces.SummaryUseCase) {
 	h := NewHandler(uc)
 
 	router.HandleFunc("/summaries", m.CheckAuth(h.CreateSummary)).Methods("POST")

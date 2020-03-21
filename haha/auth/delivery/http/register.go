@@ -2,11 +2,11 @@ package httpAuth
 
 import (
 	"github.com/gorilla/mux"
-	"joblessness/haha/auth"
+	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/middleware"
 )
 
-func RegisterHTTPEndpoints(router *mux.Router, m *middleware.AuthMiddleware, uc auth.AuthUseCase) {
+func RegisterHTTPEndpoints(router *mux.Router, m *middleware.AuthMiddleware, uc authInterfaces.AuthUseCase) {
 	h := NewHandler(uc)
 
 	router.HandleFunc("/users/login", h.Login).Methods("POST")

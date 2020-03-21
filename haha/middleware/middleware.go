@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/kataras/golog"
-	"joblessness/haha/auth"
+	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/utils/custom_http"
 	"math/rand"
 	"net/http"
@@ -66,10 +66,10 @@ func (m *Middleware) RecoveryMiddleware(next http.Handler) http.Handler {
 }
 
 type AuthMiddleware struct {
-	auth auth.AuthUseCase
+	auth authInterfaces.AuthUseCase
 }
 
-func NewAuthMiddleware(authUseCase auth.AuthUseCase) *AuthMiddleware {
+func NewAuthMiddleware(authUseCase authInterfaces.AuthUseCase) *AuthMiddleware {
 	return &AuthMiddleware{auth: authUseCase}
 }
 
@@ -89,7 +89,7 @@ func (m *AuthMiddleware) CheckAuth(next http.HandlerFunc) http.HandlerFunc {
 		golog.Infof("#%s: %s",  rID, session.Value)
 		userID, err := m.auth.SessionExists(session.Value)
 		switch err {
-		case auth.ErrWrongSID:
+		case authInterfaces.ErrWrongSID:
 			golog.Errorf("#%s: %w",  rID, err)
 			w.WriteHeader(http.StatusUnauthorized)
 			return

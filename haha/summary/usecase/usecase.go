@@ -1,16 +1,16 @@
-package usecase
+package summaryUseCase
 
 import (
 	"github.com/kataras/golog"
 	"joblessness/haha/models"
-	"joblessness/haha/summary"
+	"joblessness/haha/summary/interfaces"
 )
 
 type SummaryUseCase struct {
-	summaryRepo summary.SummaryRepository
+	summaryRepo summaryInterfaces.SummaryRepository
 }
 
-func NewSummaryUseCase(summaryRepo summary.SummaryRepository) *SummaryUseCase {
+func NewSummaryUseCase(summaryRepo summaryInterfaces.SummaryRepository) *SummaryUseCase {
 	return &SummaryUseCase{summaryRepo}
 }
 

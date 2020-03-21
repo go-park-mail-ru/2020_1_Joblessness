@@ -2,7 +2,7 @@
 // Source: joblessness/haha/summary (interfaces: SummaryRepository)
 
 // Package mock is a generated GoMock package.
-package mock
+package summaryRepoMock
 
 import (
 	gomock "github.com/golang/mock/gomock"
@@ -10,7 +10,7 @@ import (
 	reflect "reflect"
 )
 
-// MockSummaryRepository is a mock of SummaryRepository interface
+// MockSummaryRepository is a mock of SummaryRepository interfaces
 type MockSummaryRepository struct {
 	ctrl     *gomock.Controller
 	recorder *MockSummaryRepositoryMockRecorder

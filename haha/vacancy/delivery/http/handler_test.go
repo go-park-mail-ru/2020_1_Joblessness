@@ -25,7 +25,7 @@ type userSuite struct {
 	authMiddleware *middleware.AuthMiddleware
 	controller *gomock.Controller
 	authUseCase *mockAuth.MockAuthUseCase
-	uc *mock.MockVacancyUseCase
+	uc *vacancyUseCaseMock.MockVacancyUseCase
 	vacancy models.Vacancy
 	vacancyByte *bytes.Buffer
 	cookie *http.Cookie
@@ -37,7 +37,7 @@ func (suite *userSuite) SetupTest() {
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())
-	suite.uc = mock.NewMockVacancyUseCase(suite.controller)
+	suite.uc = vacancyUseCaseMock.NewMockVacancyUseCase(suite.controller)
 	suite.authUseCase = mockAuth.NewMockAuthUseCase(suite.controller)
 	suite.authMiddleware = middleware.NewAuthMiddleware(suite.authUseCase)
 

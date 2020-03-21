@@ -1,4 +1,4 @@
-package usecase
+package authUseCase
 
 import (
 	"github.com/golang/mock/gomock"
@@ -13,7 +13,7 @@ func TestAuthPersonFlow(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := mock.NewMockUserRepository(controller)
+	repo := authRepoMock.NewMockUserRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	login := "user"
@@ -71,7 +71,7 @@ func TestAuthOrganizationFlow(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := mock.NewMockUserRepository(controller)
+	repo := authRepoMock.NewMockUserRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	login := "user"
@@ -110,7 +110,7 @@ func TestSetAvatarNoFile(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := mock.NewMockUserRepository(controller)
+	repo := authRepoMock.NewMockUserRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	link := "link"
@@ -126,7 +126,7 @@ func TestListOrgs(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := mock.NewMockUserRepository(controller)
+	repo := authRepoMock.NewMockUserRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	repo.EXPECT().GetListOfOrgs(1).Return([]models.Organization{}, nil).Times(1)
