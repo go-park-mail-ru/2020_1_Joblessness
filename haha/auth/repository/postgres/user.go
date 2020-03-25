@@ -208,7 +208,7 @@ func (r UserRepository) Login(login, password, SID string) (userId uint64, err e
 	rows := r.db.QueryRow(checkUser, login)
 	err = rows.Scan(&userId, &hashedPwd)
 	if err != nil || !salt.ComparePasswords(hashedPwd, password) {
-		golog.Error("DB err - "err)
+		golog.Error("DB err - ", err)
 		return 0, authInterfaces.ErrWrongLogPas
 	}
 
