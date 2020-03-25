@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type Person struct {
 	ID uint64 `json:"id,omitempty"`
 	Login string `json:"login,omitempty"`
@@ -7,12 +9,12 @@ type Person struct {
 	Tag string `json:"tag,omitempty"`
 	Email string `json:"email,omitempty"`
 	Phone string `json:"phone,omitempty"`
-	Registered string `json:"registered,omitempty"`
+	Registered time.Time `json:"registered,omitempty"`
 	Avatar string `json:"avatar,omitempty"`
 	FirstName string `json:"first_name,omitempty"`
 	LastName string `json:"last_name,omitempty"`
 	Gender string `json:"gender,omitempty"`
-	Birthday string `json:"birthday,omitempty"`
+	Birthday time.Time `json:"birthday,omitempty"`
 }
 
 type Organization struct {
@@ -22,7 +24,7 @@ type Organization struct {
 	Tag string `json:"tag,omitempty"`
 	Email string `json:"email,omitempty"`
 	Phone string `json:"phone,omitempty"`
-	Registered string `json:"registered,omitempty"`
+	Registered time.Time `json:"registered,omitempty"`
 	Avatar string `json:"avatar,omitempty"`
 	Name string `json:"name,omitempty"`
 	Site string `json:"site,omitempty"`

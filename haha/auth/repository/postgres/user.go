@@ -3,7 +3,7 @@ package authRepoPostgres
 import (
 	"database/sql"
 	"errors"
-	"fmt"
+	"github.com/kataras/golog"
 	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/models"
 	"joblessness/haha/utils/salt"
@@ -38,28 +38,22 @@ type Organization struct {
 }
 
 func toPostgresPerson(p *models.Person) (*User, *Person) {
-	day, err := time.Parse(time.RFC3339, p.Birthday)
-	if err != nil {
-		day = time.Time{}
-	}
+	name := p.FirstName + " " + p.LastName
 
 	return &User{
 		ID:             p.ID,
 		Login:          p.Login,
 		Password:       p.Password,
-		OrganizationID: 0,
-		PersonID:       0,
 		Tag:            p.Tag,
 		Email:          p.Email,
 		Phone:          p.Phone,
-		Registered:     time.Time{},
+		Registered:     p.Registered,
 		Avatar:         p.Avatar,
 	},
 	&Person{
-		ID:       0,
-		Name:     p.FirstName + " " + p.LastName,
+		Name:     name,
 		Gender:   p.Gender,
-		Birthday: day,
+		Birthday: p.Birthday,
 	}
 }
 
@@ -68,28 +62,19 @@ func toPostgresOrg(o *models.Organization) (*User, *Organization) {
 		ID:             o.ID,
 		Login:          o.Login,
 		Password:       o.Password,
-		OrganizationID: 0,
-		PersonID:       0,
 		Tag:            o.Tag,
 		Email:          o.Email,
 		Phone:          o.Phone,
-		Registered:     time.Time{},
+		Registered:     o.Registered,
 		Avatar:         o.Avatar,
 	},
 	&Organization{
-		ID:   0,
 		Name: o.Name,
 		Site: o.Site,
 	}
 }
 
 func toModelPerson(u *User, p *Person) *models.Person {
-	registered := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n", u.Registered.Year(), u.Registered.Month(),
-							  u.Registered.Day(), u.Registered.Hour(), u.Registered.Minute(), u.Registered.Second())
-
-	birthday := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n", u.Registered.Year(), u.Registered.Month(),
-							u.Registered.Day(), u.Registered.Hour(), u.Registered.Minute(), u.Registered.Second())
-
 	name := strings.Split(p.Name, " ")
 	firstName := name[0]
 	var lastName string
@@ -104,19 +89,16 @@ func toModelPerson(u *User, p *Person) *models.Person {
 		Tag:        u.Tag,
 		Email:      u.Email,
 		Phone:      u.Phone,
-		Registered: registered,
+		Registered: u.Registered,
 		Avatar:     u.Avatar,
 		FirstName:  firstName,
 		LastName:   lastName,
 		Gender:     p.Gender,
-		Birthday:   birthday,
+		Birthday:   p.Birthday,
 	}
 }
 
 func toModelOrganization(u *User, o *Organization) *models.Organization {
-	registered := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n", u.Registered.Year(), u.Registered.Month(),
-							  u.Registered.Day(), u.Registered.Hour(), u.Registered.Minute(), u.Registered.Second())
-
 	return &models.Organization{
 		ID:         u.ID,
 		Login:      u.Login,
@@ -124,7 +106,7 @@ func toModelOrganization(u *User, o *Organization) *models.Organization {
 		Tag:        u.Tag,
 		Email:      u.Email,
 		Phone:      u.Phone,
-		Registered: registered,
+		Registered: u.Registered,
 		Avatar:     u.Avatar,
 		Name:       o.Name,
 		Site:       o.Site,
@@ -156,24 +138,24 @@ func (r UserRepository) DoesUserExists(login string) (err error) {
 	return nil
 }
 
-func (r UserRepository) CreateUser(login, password, email, phone string, personId, orgId uint64) (err error) {
+func (r UserRepository) CreateUser(user *User) (err error) {
 	var personIdSql sql.NullInt64
 	var orgIdSql sql.NullInt64
-	if personId != 0 {
+	if user.PersonID != 0 {
 		personIdSql.Valid = true
-		personIdSql.Int64 = int64(personId)
-	} else if orgId != 0 {
+		personIdSql.Int64 = int64(user.PersonID)
+	} else if user.OrganizationID != 0 {
 		orgIdSql.Valid = true
-		orgIdSql.Int64 = int64(orgId)
+		orgIdSql.Int64 = int64(user.OrganizationID)
 	} else {
 		return errors.New("inserted id is 0")
 	}
 
-	password, err = salt.HashAndSalt(password)
+	user.Password, err = salt.HashAndSalt(user.Password)
 
 	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone) 
-					VALUES($1, $2, $3, $4, $5, $6)`
-	_, err = r.db.Exec(insertUser, login, password, orgIdSql, personIdSql, email, phone)
+					VALUES(NULLIF($1, ''), NULLIF($2, ''), NULLIF($3, 0), NULLIF($4, 0), $5, $6)`
+	_, err = r.db.Exec(insertUser, user.Login, user.Password, user.OrganizationID, user.PersonID, user.Email, user.Phone)
 
 	return err
 }
@@ -192,13 +174,14 @@ func (r UserRepository) SaveAvatarLink(link string, userID uint64) (err error) {
 func (r UserRepository) CreatePerson(user *models.Person) (err error) {
 	dbUser, dbPerson := toPostgresPerson(user)
 
-	var personId uint64
-	err = r.db.QueryRow("INSERT INTO person (name) VALUES($1) RETURNING id", dbPerson.Name).Scan(&personId)
+	err = r.db.QueryRow("INSERT INTO person (name, gender, birthday) VALUES($1, $2, $3) RETURNING id",
+		dbPerson.Name, dbPerson.Gender, dbPerson.Birthday).
+		Scan(&dbUser.PersonID)
 	if err != nil {
 		return err
 	}
 	//TODO исполнять как единая транзация
-	err = r.CreateUser(dbUser.Login, dbUser.Password, dbUser.Email, dbUser.Phone, personId, 0)
+	err = r.CreateUser(dbUser)
 
 	return err
 }
@@ -206,13 +189,13 @@ func (r UserRepository) CreatePerson(user *models.Person) (err error) {
 func (r UserRepository) CreateOrganization(org *models.Organization) (err error) {
 	dbUser, dbOrg := toPostgresOrg(org)
 
-	var orgId uint64
-	err = r.db.QueryRow("INSERT INTO organization (name) VALUES($1) RETURNING id", dbOrg.Name).Scan(&orgId)
+	err = r.db.QueryRow("INSERT INTO organization (name, site) VALUES($1) RETURNING id", dbOrg.Name, dbOrg.Site).
+		Scan(&dbUser.OrganizationID)
 	if err != nil {
 		return err
 	}
 	//TODO исполнять как единая транзация
-	err = r.CreateUser(dbUser.Login, dbUser.Password, dbUser.Email, dbUser.Phone, 0, orgId)
+	err = r.CreateUser(dbUser)
 
 	return err
 }
@@ -225,6 +208,7 @@ func (r UserRepository) Login(login, password, SID string) (userId uint64, err e
 	rows := r.db.QueryRow(checkUser, login)
 	err = rows.Scan(&userId, &hashedPwd)
 	if err != nil || !salt.ComparePasswords(hashedPwd, password) {
+		golog.Error("DB err - "err)
 		return 0, authInterfaces.ErrWrongLogPas
 	}
 
@@ -270,22 +254,34 @@ func (r UserRepository) SessionExists(sessionId string) (userId uint64, err erro
 func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	user := User{ID: userID}
 
-	getUser := "SELECT login, password, person_id, email, phone, avatar FROM users WHERE id = $1;"
+	getUser := "SELECT login, person_id, email, phone, avatar, tag FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, userID).
-		Scan(&user.Login, &user.Password, &user.PersonID, &user.Email, &user.Phone, &user.Avatar)
+		Scan(&user.Login, &user.PersonID, &user.Email, &user.Phone, &user.Avatar, &user.Tag)
 	if err != nil {
 		return nil, authInterfaces.ErrUserNotPerson
 	}
 
 	var person Person
 
-	getPerson := "SELECT name FROM person WHERE id = $1;"
-	err = r.db.QueryRow(getPerson, user.PersonID).Scan(&person.Name)
+	getPerson := "SELECT name, gender, birthday FROM person WHERE id = $1;"
+	err = r.db.QueryRow(getPerson, user.PersonID).Scan(&person.Name, &person.Gender, &person.Birthday)
 	if err != nil {
 		return nil, err
 	}
 
 	return toModelPerson(&user, &person), nil
+}
+
+func (r UserRepository) changeUser(user *User) error {
+	changeUser := `UPDATE users 
+					SET password = COALESCE(NULLIF($1, ''), password), 
+					    tag = COALESCE(NULLIF($2, ''), tag), 
+					    email = COALESCE(NULLIF($3, ''), email),
+					    phone = COALESCE(NULLIF($4, ''), phone)
+					WHERE id = $5;`
+	_, err := r.db.Exec(changeUser, user.Password, user.Tag, user.Email, user.Phone, user.ID)
+
+	return err
 }
 
 func (r UserRepository) ChangePerson(p models.Person) error {
@@ -297,13 +293,26 @@ func (r UserRepository) ChangePerson(p models.Person) error {
 		return authInterfaces.ErrUserNotPerson
 	}
 
-	changePerson := "UPDATE person SET name = $1 WHERE id = $2;"
-	_, err = r.db.Exec(changePerson, dbPerson.Name, user.PersonID)
+	var birthday sql.NullTime
+	if p.Birthday.IsZero() {
+		birthday.Valid = false
+	} else {
+		birthday.Time = p.Birthday
+		birthday.Valid = true
+	}
+
+	changePerson := `UPDATE person 
+					SET name = COALESCE(NULLIF($1, ''), name), 
+					    gender = COALESCE(NULLIF($2, ''), gender), 
+					    birthday = COALESCE($3, birthday) 
+					WHERE id = $4;`
+	_, err = r.db.Exec(changePerson, dbPerson.Name, dbPerson.Gender, birthday, user.PersonID)
 	if err != nil {
 		return err
 	}
+	err = r.changeUser(user)
 
-	return nil
+	return err
 }
 
 
@@ -341,21 +350,25 @@ func (r UserRepository) ChangeOrganization(o models.Organization) error {
 		return authInterfaces.ErrUserNotOrg
 	}
 
-	changePerson := "UPDATE organization SET name = $1 WHERE id = $2;"
-	_, err = r.db.Exec(changePerson, dbOrg.Name, user.OrganizationID)
+	changeOrg := `UPDATE organization 
+					SET name = COALESCE(NULLIF($1, ''), name),
+					    site = COALESCE(NULLIF($2, ''), site)
+					WHERE id = $3;`
+	_, err = r.db.Exec(changeOrg, dbOrg.Name, dbOrg.Site, user.OrganizationID)
 	if err != nil {
 		return err
 	}
+	err = r.changeUser(user)
 
-	return nil
+	return err
 }
 
 func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, err error) {
 	getOrgs := `SELECT users.id as userId, name, site
-FROM users, organization
-WHERE users.organization_id = organization.id
-ORDER BY registered desc
-LIMIT $1 OFFSET $2`
+				FROM users, organization
+				WHERE users.organization_id = organization.id
+				ORDER BY registered desc
+				LIMIT $1 OFFSET $2`
 
 	rows, err := r.db.Query(getOrgs, (page - 1)*10, 9)
 
@@ -384,7 +397,7 @@ LIMIT $1 OFFSET $2`
 			Email:       "",
 			Phone: "",
 			Tag:         "",
-			Registered:  "",
+			Registered:  time.Time{},
 		})
 	}
 

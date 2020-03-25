@@ -147,6 +147,7 @@ func (r *VacancyRepository) GetVacancies() (vacancies []models.Vacancy, err erro
 	if err != nil {
 		return vacancies, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var vacancyDB Vacancy

@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/kataras/golog"
 	"joblessness/haha/auth/delivery/http"
 	"joblessness/haha/auth/interfaces"
 	postgresAuth "joblessness/haha/auth/repository/postgres"
@@ -18,9 +19,7 @@ import (
 	interfaces2 "joblessness/haha/vacancy/interfaces"
 	postgresVacancy "joblessness/haha/vacancy/repository/postgres"
 	usecaseVacancy "joblessness/haha/vacancy/usecase"
-	"log"
 	"net/http"
-	"os"
 )
 
 type App struct {
@@ -32,13 +31,11 @@ type App struct {
 }
 
 func NewApp(c *cors.CorsHandler) *App {
-	database.InitDatabase(os.Getenv("HAHA_DB_USER"), os.Getenv("HAHA_DB_PASSWORD"), os.Getenv("HAHA_DB_NAME"))
-	if err := database.OpenDatabase(); err != nil {
-		log.Println(err.Error())
+	db, err := database.OpenDatabase()
+	if err != nil {
+		golog.Error(err.Error())
 		return nil
 	}
-	db := database.GetDatabase()
-
 
 	userRepo := postgresAuth.NewUserRepository(db)
 	vacancyRepo := postgresVacancy.NewVacancyRepository(db)

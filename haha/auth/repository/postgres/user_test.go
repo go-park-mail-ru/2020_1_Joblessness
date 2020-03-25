@@ -90,8 +90,8 @@ func (suite *userSuite) TestDoesExistsErr() {
 }
 
 func (suite *userSuite) TestCreateUserNoId() {
-	err := suite.rep.CreateUser(suite.person.Login, suite.person.Password, suite.person.Email,
-		suite.person.Phone, 0, 0)
+	user, _ := toPostgresPerson(&suite.person)
+	err := suite.rep.CreateUser(user)
 
 	assert.Error(suite.T(), err)
 }
@@ -119,11 +119,11 @@ func (suite *userSuite) TestCreatePerson() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO person ").
-		WithArgs(suite.person.FirstName + " " + suite.person.LastName).
+		WithArgs(suite.person.FirstName + " " + suite.person.LastName, suite.person.Gender, suite.person.Birthday).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
-		WithArgs("login", sqlmock.AnyArg(), sql.NullInt64{Valid: false}, 1, "email", "phone").
+		WithArgs("login", sqlmock.AnyArg(), 0, 1, "email", "phone").
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err := suite.rep.CreatePerson(&suite.person)
@@ -147,11 +147,11 @@ func (suite *userSuite) TestCreateOrg() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO organization").
-		WithArgs(suite.organization.Name).
+		WithArgs(suite.organization.Name, suite.organization.Site).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
-		WithArgs("login", sqlmock.AnyArg(), 1, sql.NullInt64{Valid: false}, "email", "phone").
+		WithArgs("login", sqlmock.AnyArg(), 1, 0, "email", "phone").
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err := suite.rep.CreateOrganization(&suite.organization)
@@ -259,25 +259,24 @@ func (suite *userSuite) TestSessionExistsExpired() {
 }
 
 func (suite *userSuite) TestGetPerson() {
-	rows := sqlmock.NewRows([]string{"login", "password", "person_id", "email", "phone", "avatar"})
-	rows = rows.AddRow(suite.person.Login, suite.person.Password, suite.person.ID,
-		suite.person.Email, suite.person.Phone, suite.person.Avatar)
+	rows := sqlmock.NewRows([]string{"login", "person_id", "email", "phone", "avatar", "tag"})
+	rows = rows.AddRow(suite.person.Login, suite.person.ID,
+		suite.person.Email, suite.person.Phone, suite.person.Avatar, suite.person.Tag)
 	suite.mock.
-		ExpectQuery("SELECT login, password, person_id, email, phone, avatar").
-		WithArgs(12).
+		ExpectQuery("SELECT login, person_id,").
+		WithArgs(1).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"name"})
-	rows = rows.AddRow(suite.person.LastName + " " + suite.person.LastName)
+	rows = sqlmock.NewRows([]string{"name", "gender", "birthday"})
+	rows = rows.AddRow(suite.person.LastName + " " + suite.person.LastName, suite.person.Gender, suite.person.Birthday)
 	suite.mock.
 		ExpectQuery("SELECT name").
 		WithArgs(suite.person.ID).
 		WillReturnRows(rows)
 
-	result, err := suite.rep.GetPerson(uint64(12))
+	_, err := suite.rep.GetPerson(uint64(1))
 
 	assert.NoError(suite.T(), err)
-	assert.ObjectsAreEqual(result, suite.person)
 }
 
 func (suite *userSuite) TestGetPersonFailedOne() {
@@ -325,7 +324,11 @@ func (suite *userSuite) TestChangePerson() {
 
 	suite.mock.
 		ExpectExec("UPDATE person").
-		WithArgs(suite.person.FirstName + " " + suite.person.LastName, 1).
+		WithArgs(suite.person.FirstName + " " + suite.person.LastName, suite.person.Gender, nil, 1).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	suite.mock.
+		ExpectExec("UPDATE user").
+		WithArgs(suite.person.Password, suite.person.Tag, suite.person.Email, suite.person.Phone, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err := suite.rep.ChangePerson(suite.person)
@@ -431,7 +434,11 @@ func (suite *userSuite) TestChangeOrganization() {
 
 	suite.mock.
 		ExpectExec("UPDATE organization").
-		WithArgs(suite.organization.Name, 1).
+		WithArgs(suite.organization.Name, suite.organization.Site, 1).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	suite.mock.
+		ExpectExec("UPDATE user").
+		WithArgs(suite.organization.Password, suite.organization.Tag, suite.organization.Email, suite.organization.Phone, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err := suite.rep.ChangeOrganization(suite.organization)
