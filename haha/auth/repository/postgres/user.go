@@ -258,6 +258,7 @@ func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	err := r.db.QueryRow(getUser, userID).
 		Scan(&user.Login, &user.PersonID, &user.Email, &user.Phone, &user.Avatar, &user.Tag)
 	if err != nil {
+		golog.Error(err)
 		return nil, authInterfaces.ErrUserNotPerson
 	}
 
