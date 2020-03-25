@@ -53,5 +53,7 @@ func UploadAvatar(form *multipart.Form, userID uint64) (link string, err error) 
 		return "", authInterfaces.ErrUploadAvatar
 	}
 
+	link = "https://hb.bizmrg.com/imgs-hh/" + link
+
 	return link, nil
 }
