@@ -153,9 +153,10 @@ func (r UserRepository) CreateUser(user *User) (err error) {
 
 	user.Password, err = salt.HashAndSalt(user.Password)
 
-	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone) 
-					VALUES(NULLIF($1, ''), NULLIF($2, ''), NULLIF($3, 0), NULLIF($4, 0), $5, $6)`
-	_, err = r.db.Exec(insertUser, user.Login, user.Password, user.OrganizationID, user.PersonID, user.Email, user.Phone)
+	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone, tag) 
+					VALUES(NULLIF($1, ''), NULLIF($2, ''), NULLIF($3, 0), NULLIF($4, 0), $5, $6, $7)`
+	_, err = r.db.Exec(insertUser, user.Login, user.Password, user.OrganizationID,
+		user.PersonID, user.Email, user.Phone, user.Tag)
 
 	return err
 }

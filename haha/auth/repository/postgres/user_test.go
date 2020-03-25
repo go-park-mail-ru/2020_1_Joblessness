@@ -36,6 +36,7 @@ func (suite *userSuite) SetupTest() {
 		LastName:    "name",
 		Email:       "email",
 		Phone: "phone",
+		Tag: "tag",
 	}
 
 	suite.organization = models.Organization{
@@ -46,6 +47,7 @@ func (suite *userSuite) SetupTest() {
 		Site:    "site",
 		Email:       "email",
 		Phone: "phone",
+		Tag: "tag",
 	}
 }
 
@@ -123,7 +125,7 @@ func (suite *userSuite) TestCreatePerson() {
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
-		WithArgs("login", sqlmock.AnyArg(), 0, 1, "email", "phone").
+		WithArgs("login", sqlmock.AnyArg(), 0, 1, "email", "phone", "tag").
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err := suite.rep.CreatePerson(&suite.person)
@@ -151,7 +153,7 @@ func (suite *userSuite) TestCreateOrg() {
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
-		WithArgs("login", sqlmock.AnyArg(), 1, 0, "email", "phone").
+		WithArgs("login", sqlmock.AnyArg(), 1, 0, "email", "phone", "tag").
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err := suite.rep.CreateOrganization(&suite.organization)
