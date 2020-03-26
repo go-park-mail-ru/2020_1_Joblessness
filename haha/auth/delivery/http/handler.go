@@ -243,13 +243,12 @@ func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Response struct {
-		User models.UserInfo `json:"user"`
+		User models.Person `json:"user"`
 		Summaries []models.UserSummary `json:"summaries"`
 	}
 
 	jsonData, _ := json.Marshal(Response{
-		models.UserInfo{user.FirstName, user.LastName, "", ""},
-		[]models.UserSummary{},
+		*user, []models.UserSummary{},
 	})
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
@@ -303,12 +302,10 @@ func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Response struct {
-		User models.OrganizationInfo `json:"user"`
+		User models.Organization `json:"user"`
 	}
 
-	jsonData, _ := json.Marshal(Response{
-		models.OrganizationInfo{user.Name, user.Site, "", ""},
-	})
+	jsonData, _ := json.Marshal(Response{*user})
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
