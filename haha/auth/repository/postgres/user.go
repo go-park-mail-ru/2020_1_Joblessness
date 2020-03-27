@@ -404,3 +404,54 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 
 	return result, rows.Err()
 }
+
+func (r UserRepository) SetOrDeleteLike(userID, favoriteID uint64) (res bool, err error) {
+	setLike := `INSERT INTO favorite (user_id, favorite_id)
+				VALUES ($1, $2)
+				ON CONFLICT DO NOTHING;`
+	rows, err := r.db.Exec(setLike, userID, favoriteID)
+	if err != nil {
+		return false, err
+	}
+	if rowsAf, err := rows.RowsAffected(); rowsAf != 0 {
+		return true, err
+	}
+
+	deleteLike := `DELETE FROM favorite 
+				WHERE user_id = $1 AND favorite_id = $2;`
+	_, err = r.db.Exec(deleteLike, userID, favoriteID)
+
+	return false, err
+}
+
+func (r UserRepository) GetUserFavorite(userID uint64) (res models.Favorites, err error) {
+	getFavorite := `SELECT u.id, u.tag, u.person_id
+				FROM favorite f, users u 
+				WHERE f.favorite_id = u.id
+				AND f.user_id = $1;`
+	rows, err := r.db.Query(getFavorite, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var (
+		personID sql.NullInt64
+	)
+	for rows.Next() {
+		var favorite models.Favorite
+		err := rows.Scan(&favorite.ID, &favorite.Tag, &personID)
+		if err != nil {
+			return nil, err
+		}
+
+		if personID.Valid {
+			favorite.IsPerson = true
+		} else {
+			favorite.IsPerson = false
+		}
+		res = append(res, &favorite)
+	}
+
+	return res, err
+}

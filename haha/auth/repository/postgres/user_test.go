@@ -511,3 +511,95 @@ func (suite *userSuite) TestGetOrgListFailed() {
 
 	assert.Error(suite.T(), err)
 }
+
+func (suite *userSuite) TestLikeUserLike() {
+	suite.mock.
+		ExpectExec("INSERT INTO favorite").
+		WithArgs(suite.person.ID, suite.person.ID).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	res, err := suite.rep.SetOrDeleteLike(suite.person.ID, suite.person.ID)
+
+	assert.NoError(suite.T(), err)
+	assert.True(suite.T(), res)
+}
+
+func (suite *userSuite) TestLikeUserLikeFailed() {
+	suite.mock.
+		ExpectExec("INSERT INTO favorite").
+		WithArgs(suite.person.ID, suite.person.ID).
+		WillReturnError(errors.New(""))
+
+	_, err := suite.rep.SetOrDeleteLike(suite.person.ID, suite.person.ID)
+
+	assert.Error(suite.T(), err)
+}
+
+func (suite *userSuite) TestLikeUserDis() {
+	suite.mock.
+		ExpectExec("INSERT INTO favorite").
+		WithArgs(suite.person.ID, suite.person.ID).
+		WillReturnResult(sqlmock.NewResult(1, 0))
+	suite.mock.
+		ExpectExec("DELETE FROM favorite").
+		WithArgs(suite.person.ID, suite.person.ID).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+
+	res, err := suite.rep.SetOrDeleteLike(suite.person.ID, suite.person.ID)
+
+	assert.NoError(suite.T(), err)
+	assert.False(suite.T(), res)
+}
+
+func (suite *userSuite) TestLikeUserDisFailed() {
+	suite.mock.
+		ExpectExec("INSERT INTO favorite").
+		WithArgs(suite.person.ID, suite.person.ID).
+		WillReturnResult(sqlmock.NewResult(1, 0))
+	suite.mock.
+		ExpectExec("DELETE FROM favorite").
+		WithArgs(suite.person.ID, suite.person.ID).
+		WillReturnError(errors.New(""))
+	_, err := suite.rep.SetOrDeleteLike(suite.person.ID, suite.person.ID)
+
+	assert.Error(suite.T(), err)
+}
+
+func (suite *userSuite) TestFavoritePer() {
+	rows := sqlmock.NewRows([]string{"userId", "tag", "person_id"})
+	rows = rows.AddRow(uint64(1), "tag", uint64(2))
+	suite.mock.
+		ExpectQuery("SELECT u.id, u.tag, u.person_id").
+		WithArgs(suite.person.ID).
+		WillReturnRows(rows)
+
+	res, err := suite.rep.GetUserFavorite(suite.person.ID)
+
+	assert.NoError(suite.T(), err)
+	assert.True(suite.T(), res[0].IsPerson)
+}
+
+func (suite *userSuite) TestFavoriteOrg() {
+	rows := sqlmock.NewRows([]string{"userId", "tag", "person_id"})
+	rows = rows.AddRow(uint64(1), "tag", nil)
+	suite.mock.
+		ExpectQuery("SELECT u.id, u.tag, u.person_id").
+		WithArgs(suite.person.ID).
+		WillReturnRows(rows)
+
+	res, err := suite.rep.GetUserFavorite(suite.person.ID)
+
+	assert.NoError(suite.T(), err)
+	assert.False(suite.T(), res[0].IsPerson)
+}
+
+func (suite *userSuite) TestFavoriteFailed() {
+	suite.mock.
+		ExpectQuery("SELECT u.id, u.tag, u.person_id").
+		WithArgs(suite.person.ID).
+		WillReturnError(errors.New(""))
+
+	_, err := suite.rep.GetUserFavorite(suite.person.ID)
+
+	assert.Error(suite.T(), err)
+}

@@ -89,3 +89,11 @@ func (a *AuthUseCase) SetAvatar(form *multipart.Form, userID uint64) (err error)
 
 	return a.userRepo.SaveAvatarLink(link, userID)
 }
+
+func (a *AuthUseCase) LikeUser(userID, favoriteID uint64) (bool, error) {
+	return a.userRepo.SetOrDeleteLike(userID, favoriteID)
+}
+
+func (a *AuthUseCase) GetUserFavorite(userID uint64) (models.Favorites, error) {
+	return a.userRepo.GetUserFavorite(userID)
+}

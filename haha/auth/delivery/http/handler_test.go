@@ -25,7 +25,7 @@ type userSuite struct {
 	mainMiddleware *middleware.Middleware
 	authMiddleware *middleware.AuthMiddleware
 	controller *gomock.Controller
-	uc *authUseCaseMock.MockAuthUseCase
+	uc *mock.MockAuthUseCase
 	person models.Person
 	personByte *bytes.Buffer
 	organization models.Organization
@@ -38,7 +38,7 @@ func (suite *userSuite) SetupTest() {
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())
-	suite.uc = authUseCaseMock.NewMockAuthUseCase(suite.controller)
+	suite.uc = mock.NewMockAuthUseCase(suite.controller)
 	suite.authMiddleware = middleware.NewAuthMiddleware(suite.uc)
 
 	suite.person = models.Person{
@@ -610,6 +610,148 @@ func (suite *userSuite) TestListOrgsFailed() {
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/organizations?page=1", bytes.NewBuffer([]byte{}))
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+}
+
+func (suite *userSuite) TestLikeUser() {
+	suite.uc.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+	suite.uc.EXPECT().
+		LikeUser(uint64(12), uint64(1)).
+		Return(false, nil).
+		Times(1)
+
+	cookie := &http.Cookie {
+		Name: "session_id",
+		Value: "username",
+		Expires: time.Now().Add(time.Hour),
+	}
+
+	r, _ := http.NewRequest("POST", "/api/users/1/like",  bytes.NewBuffer([]byte{}))
+	r.AddCookie(cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
+
+func (suite *userSuite) TestLikeUserNoSession() {
+	suite.uc.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("POST", "/api/users/1/like",  bytes.NewBuffer([]byte{}))
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 401, w.Code, "Status is not 401")
+}
+
+func (suite *userSuite) TestLikeUserFailed() {
+	suite.uc.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+	suite.uc.EXPECT().
+		LikeUser(uint64(12), uint64(1)).
+		Return(false, errors.New("")).
+		Times(1)
+
+	cookie := &http.Cookie {
+		Name: "session_id",
+		Value: "username",
+		Expires: time.Now().Add(time.Hour),
+	}
+
+	r, _ := http.NewRequest("POST", "/api/users/1/like",  bytes.NewBuffer([]byte{}))
+	r.AddCookie(cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+}
+
+func (suite *userSuite) TestGetFavorite() {
+	suite.uc.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+	suite.uc.EXPECT().
+		GetUserFavorite(uint64(12)).
+		Return(models.Favorites{}, nil).
+		Times(1)
+
+	cookie := &http.Cookie {
+		Name: "session_id",
+		Value: "username",
+		Expires: time.Now().Add(time.Hour),
+	}
+
+	r, _ := http.NewRequest("GET", "/api/users/12/favorite",  bytes.NewBuffer([]byte{}))
+	r.AddCookie(cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
+
+func (suite *userSuite) TestGetFavoriteNoSession() {
+	suite.uc.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("GET", "/api/users/12/favorite",  bytes.NewBuffer([]byte{}))
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 401, w.Code, "Status is not 401")
+}
+
+func (suite *userSuite) TestGetFavoriteWrongId() {
+	suite.uc.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	cookie := &http.Cookie {
+		Name: "session_id",
+		Value: "username",
+		Expires: time.Now().Add(time.Hour),
+	}
+
+	r, _ := http.NewRequest("GET", "/api/users/13/favorite",  bytes.NewBuffer([]byte{}))
+	r.AddCookie(cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 403, w.Code, "Status is not 403")
+}
+
+func (suite *userSuite) TestGetFavoriteFailed() {
+	suite.uc.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+	suite.uc.EXPECT().
+		GetUserFavorite(uint64(12)).
+		Return(nil, errors.New("")).
+		Times(1)
+
+	cookie := &http.Cookie {
+		Name: "session_id",
+		Value: "username",
+		Expires: time.Now().Add(time.Hour),
+	}
+
+	r, _ := http.NewRequest("GET", "/api/users/12/favorite",  bytes.NewBuffer([]byte{}))
+	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 

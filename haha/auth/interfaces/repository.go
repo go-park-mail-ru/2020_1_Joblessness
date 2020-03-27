@@ -17,4 +17,6 @@ type UserRepository interface {
 	DoesUserExists(login string) error
 	GetListOfOrgs(page int) ([]models.Organization, error)
 	SaveAvatarLink(link string, userID uint64) error
+	SetOrDeleteLike(userID, favoriteID uint64) (bool, error)
+	GetUserFavorite(userID uint64) (models.Favorites, error)
 }

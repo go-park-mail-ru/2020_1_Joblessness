@@ -13,7 +13,7 @@ func TestAuthPersonFlow(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := authRepoMock.NewMockUserRepository(controller)
+	repo := mock.NewMockUserRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	login := "user"
@@ -71,7 +71,7 @@ func TestAuthOrganizationFlow(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := authRepoMock.NewMockUserRepository(controller)
+	repo := mock.NewMockUserRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	login := "user"
@@ -110,7 +110,7 @@ func TestSetAvatarNoFile(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := authRepoMock.NewMockUserRepository(controller)
+	repo := mock.NewMockUserRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	link := "link"
@@ -126,10 +126,26 @@ func TestListOrgs(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := authRepoMock.NewMockUserRepository(controller)
+	repo := mock.NewMockUserRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	repo.EXPECT().GetListOfOrgs(1).Return([]models.Organization{}, nil).Times(1)
 	_, err := uc.GetListOfOrgs(1)
+	assert.NoError(t, err)
+}
+
+func TestLike(t *testing.T) {
+	controller := gomock.NewController(t)
+	defer controller.Finish()
+
+	repo := mock.NewMockUserRepository(controller)
+	uc := NewAuthUseCase(repo)
+
+	repo.EXPECT().SetOrDeleteLike(uint64(1), uint64(5)).Return(true, nil).Times(1)
+	_, err := uc.LikeUser(uint64(1), uint64(5))
+	assert.NoError(t, err)
+
+	repo.EXPECT().GetUserFavorite(uint64(5)).Return(models.Favorites{}, nil).Times(1)
+	_, err = uc.GetUserFavorite(uint64(5))
 	assert.NoError(t, err)
 }

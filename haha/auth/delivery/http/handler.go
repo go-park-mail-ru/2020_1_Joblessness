@@ -375,3 +375,61 @@ func (h *Handler) GetListOfOrgs(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
+
+func (h *Handler) LikeUser(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
+	userID, ok := r.Context().Value("userID").(uint64)
+	if !ok {
+		golog.Errorf("#%s: %s",  rID, "no cookie")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var favoriteID uint64
+	favoriteID, _ = strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
+
+	likeSet, err := h.useCase.LikeUser(userID, favoriteID)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	type Response struct {
+		Like bool `json:"like"`
+	}
+	jsonData, _ := json.Marshal(Response{
+		likeSet,
+	})
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}
+
+func (h *Handler) GetUserFavorite(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
+	userID, ok := r.Context().Value("userID").(uint64)
+	if !ok {
+		golog.Errorf("#%s: %s",  rID, "no cookie")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if favoriteID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); favoriteID != userID {
+		golog.Errorf("#%s: %s",  rID, "user requested and session user doesnt match")
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	favorites, err := h.useCase.GetUserFavorite(userID)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	jsonData, _ := json.Marshal(favorites)
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}

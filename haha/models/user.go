@@ -35,6 +35,14 @@ type UserLogin struct {
 	Password string `json:"password"`
 }
 
+type Favorite struct {
+	ID uint64 `json:"id"`
+	Tag string `json:"tag"`
+	IsPerson bool `json:"is_person"`
+}
+
+type Favorites []*Favorite
+
 type Response struct {
 	ID uint64 `json:"id"`
 }
