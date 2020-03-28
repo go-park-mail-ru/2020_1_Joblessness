@@ -9,4 +9,7 @@ type SummaryUseCase interface {
 	GetSummary(summaryID uint64) (summary *models.Summary, err error)
 	ChangeSummary(summary *models.Summary) (err error)
 	DeleteSummary(summaryID uint64) (err error)
+	SendSummary(sendSummary *models.SendSummary) (err error)
+	ResponseSummary(sendSummary *models.SendSummary) (err error)
+	GetOrgSummaries(userID uint64) (summaries models.OrgSummaries, err error)
 }

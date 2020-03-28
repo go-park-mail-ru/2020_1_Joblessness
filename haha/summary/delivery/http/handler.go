@@ -210,3 +210,101 @@ func (h *Handler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *Handler) SendSummary(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
+	var sendSummary models.SendSummary
+	err := json.NewDecoder(r.Body).Decode(&sendSummary)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	sendSummary.VacancyID, err = strconv.ParseUint(mux.Vars(r)["vacancy_id"], 10, 64)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	sendSummary.UserID =  r.Context().Value("userID").(uint64)
+
+	err = h.useCase.SendSummary(&sendSummary)
+	switch err {
+	case summaryInterfaces.ErrPersonIsNotOwner:
+		w.WriteHeader(http.StatusForbidden)
+	case summaryInterfaces.ErrNoSummaryToRefresh:
+		w.WriteHeader(http.StatusNotFound)
+	case nil:
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	golog.Errorf("#%s: %w",  rID, err)
+}
+
+func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
+	var sendSummary models.SendSummary
+	err := json.NewDecoder(r.Body).Decode(&sendSummary)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	sendSummary.SummaryID, err = strconv.ParseUint(mux.Vars(r)["summary_id"], 10, 64)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	sendSummary.OrganizationID =  r.Context().Value("userID").(uint64)
+
+	err = h.useCase.ResponseSummary(&sendSummary)
+	switch err {
+	case summaryInterfaces.ErrOrgIsNotOwner:
+		w.WriteHeader(http.StatusForbidden)
+	case summaryInterfaces.ErrNoSummaryToRefresh:
+		w.WriteHeader(http.StatusNotFound)
+	case nil:
+		w.WriteHeader(http.StatusOK)
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	golog.Errorf("#%s: %w",  rID, err)
+}
+
+
+func (h *Handler) GetOrgSummaries(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
+	userID, err := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	summaries, err := h.useCase.GetOrgSummaries(userID)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	jsonData, err := json.Marshal(summaries)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}

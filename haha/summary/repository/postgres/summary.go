@@ -3,6 +3,7 @@ package summaryRepoPostgres
 import (
 	"database/sql"
 	"joblessness/haha/models"
+	summaryInterfaces "joblessness/haha/summary/interfaces"
 	"strings"
 	"time"
 )
@@ -407,4 +408,121 @@ func (r *SummaryRepository) DeleteSummary(summaryID uint64) (err error) {
 	}
 
 	return nil
+}
+
+func (r *SummaryRepository) IsPersonSummary(summaryID, userID uint64) (res bool, err error) {
+	findSummary := `SELECT u.id
+				FROM users u 
+				JOIN summary s on u.id = s.author
+				WHERE s.id = $1
+				AND s.author = $2`
+	rows, err := r.db.Query(findSummary, summaryID, userID)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (r *SummaryRepository) SendSummary(sendSummary *models.SendSummary) (err error) {
+	setLike := `INSERT INTO response (summary_id, vacancy_id)
+				VALUES ($1, $2)
+				ON CONFLICT DO NOTHING;`
+	rows, err := r.db.Exec(setLike, sendSummary.SummaryID, sendSummary.VacancyID)
+	if err != nil {
+		return err
+	}
+	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
+		return summaryInterfaces.ErrSummaryAlreadySend
+	}
+
+	return nil
+}
+
+func (r *SummaryRepository) RefreshSummary(summaryID, vacancyID uint64) (err error) {
+	setLike := `UPDATE response 
+				SET date = CURRENT_TIMESTAMP,
+				    approved = false,
+				    rejected = false
+				WHERE summary_id = $1
+				AND vacancy_id = $2;`
+	rows, err := r.db.Exec(setLike, summaryID, vacancyID)
+	if err != nil {
+		return err
+	}
+	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
+		return summaryInterfaces.ErrNoSummaryToRefresh
+	}
+
+	return nil
+}
+
+func (r *SummaryRepository) IsOrganizationVacancy(vacancyID, userID uint64) (res bool, err error) {
+	findSummary := `SELECT u.id
+				FROM users u 
+				JOIN vacancy v on u.id = v.organization_id
+				WHERE v.id = $1
+				AND v.organization_id = $2`
+	rows, err := r.db.Query(findSummary, vacancyID, userID)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (r *SummaryRepository) ResponseSummary(sendSummary *models.SendSummary)  (err error) {
+	response := `UPDATE response 
+				SET date = CURRENT_TIMESTAMP,
+				    approved = $1,
+				    rejected = $2
+				WHERE summary_id = $3
+				AND vacancy_id = $4;`
+	rows, err := r.db.Exec(response, sendSummary.Accepted, sendSummary.Denied, sendSummary.SummaryID, sendSummary.VacancyID)
+	if err != nil {
+		return err
+	}
+	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
+		return summaryInterfaces.ErrNoSummaryToRefresh
+	}
+
+	return nil
+}
+
+func (r *SummaryRepository) GetOrgSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
+	getSummary := `SELECT u.id, u.tag, v.id, s.id, s.keywords
+				   FROM vacancy v 
+				   JOIN response r on v.id = r.vacancy_id
+				       AND r.approved = false
+				       AND r.rejected = false
+				   JOIN summary s on r.summary_id = s.id
+				   JOIN users u on s.author = u.id
+				   WHERE v.organization_id = $1
+				   order by r.date desc`
+
+	rows, err := r.db.Query(getSummary, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var vacancyDB models.VacancyResponse
+
+		err = rows.Scan(&vacancyDB.UserID, &vacancyDB.Tag, &vacancyDB.VacancyID, &vacancyDB.SummaryID, &vacancyDB.Keywords)
+		if err != nil {
+			return nil, err
+		}
+
+		summaries = append(summaries, &vacancyDB)
+	}
+	return summaries, nil
 }

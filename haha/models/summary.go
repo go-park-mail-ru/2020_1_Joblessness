@@ -36,3 +36,23 @@ type Summary struct {
 	Educations []Education `json:"educations,omitempty"`
 	Experiences []Experience `json:"experiences,omitempty"`
 }
+
+type SendSummary struct {
+	VacancyID uint64 `json:"vacancy_id"`
+	SummaryID uint64 `json:"summary_id"`
+	UserID uint64 `json:"user_id,omitempty"`
+	OrganizationID uint64 `json:"organization_id,omitempty"`
+	Accepted bool `json:"accepted,omitempty"`
+	Denied bool `json:"denied,omitempty"`
+}
+
+type VacancyResponse struct {
+	UserID uint64 `json:"user_id,omitempty"`
+	Tag string `json:"tag,omitempty"`
+	VacancyID uint64 `json:"vacancy_id"`
+	SummaryID uint64 `json:"summary_id"`
+
+	Keywords  string `json:"keywords,omitempty"`
+}
+
+type OrgSummaries []*VacancyResponse

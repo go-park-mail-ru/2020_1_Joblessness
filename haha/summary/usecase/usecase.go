@@ -1,7 +1,6 @@
 package summaryUseCase
 
 import (
-	"github.com/kataras/golog"
 	"joblessness/haha/models"
 	"joblessness/haha/summary/interfaces"
 )
@@ -15,7 +14,6 @@ func NewSummaryUseCase(summaryRepo summaryInterfaces.SummaryRepository) *Summary
 }
 
 func (u *SummaryUseCase) CreateSummary(summary *models.Summary) (summaryID uint64, err error) {
-	golog.Info("hello")
 	return u.summaryRepo.CreateSummary(summary)
 }
 
@@ -37,4 +35,36 @@ func (u *SummaryUseCase) ChangeSummary(summary *models.Summary) (err error) {
 
 func (u *SummaryUseCase) DeleteSummary(summaryID uint64) (err error) {
 	return u.summaryRepo.DeleteSummary(summaryID)
+}
+
+func (u *SummaryUseCase) SendSummary(sendSummary *models.SendSummary) (err error) {
+	res, err := u.summaryRepo.IsPersonSummary(sendSummary.SummaryID, sendSummary.UserID)
+	if err != nil {
+		return err
+	} else if !res {
+		return summaryInterfaces.ErrPersonIsNotOwner
+	}
+
+	err = u.summaryRepo.SendSummary(sendSummary)
+	if err == summaryInterfaces.ErrSummaryAlreadySend {
+		err = u.summaryRepo.RefreshSummary(sendSummary.SummaryID, sendSummary.VacancyID)
+	}
+
+	return err
+}
+
+func (u *SummaryUseCase) ResponseSummary(sendSummary *models.SendSummary)  (err error) {
+	res, err := u.summaryRepo.IsOrganizationVacancy(sendSummary.VacancyID, sendSummary.OrganizationID)
+	if err != nil {
+		return err
+	} else if !res {
+		return summaryInterfaces.ErrOrgIsNotOwner
+	}
+	err = u.summaryRepo.ResponseSummary(sendSummary)
+
+	return err
+}
+
+func (u *SummaryUseCase) GetOrgSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
+	return u.summaryRepo.GetOrgSummaries(userID)
 }
