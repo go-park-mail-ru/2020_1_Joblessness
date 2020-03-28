@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"joblessness/haha/models"
 	"testing"
+	"time"
 )
 
 type summarySuite struct {
@@ -38,14 +39,12 @@ func (suite *summarySuite) SetupTest() {
 			FirstName: "first",
 			LastName:  "name",
 			Gender:    "gender",
-			Birthday:  "birth",
 		},
 		Keywords:    "key",
 		Educations:  []models.Education{
 			models.Education{
 				Institution: "was",
 				Speciality:  "is",
-				Graduated:   "yes",
 				Type:        "none",
 			},
 		},
@@ -54,8 +53,8 @@ func (suite *summarySuite) SetupTest() {
 				CompanyName:      "comp",
 				Role:             "role",
 				Responsibilities: "response",
-				Start:            "start",
-				Stop:             "stop",
+				Start:            time.Now(),
+				Stop:             time.Now().AddDate(1, 1, 1),
 			},
 		},
 	}
@@ -63,19 +62,19 @@ func (suite *summarySuite) SetupTest() {
 	suite.user = User{
 		ID:             12,
 		OrganizationID: 0,
-		PersonID:       5,
-		Tag:            sql.NullString{},
-		Email:          sql.NullString{},
-		Phone:          sql.NullString{},
-		Registered:     sql.NullTime{},
-		Avatar:         sql.NullString{},
+		PersonID:       1,
+		Tag:            "tag",
+		Email:          "email",
+		Phone:          "phone",
+		Registered:     time.Now(),
+		Avatar:         "avatar",
 	}
 
 	suite.person = Person{
-		ID:       sql.NullString{},
-		Name:     sql.NullString{},
-		Gender:   sql.NullString{},
-		Birthday: sql.NullTime{},
+		ID:       uint64(1),
+		Name:     "name",
+		Gender:   "gender",
+		Birthday: time.Now(),
 	}
 }
 

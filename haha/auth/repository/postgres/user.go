@@ -75,11 +75,13 @@ func toPostgresOrg(o *models.Organization) (*User, *Organization) {
 }
 
 func toModelPerson(u *User, p *Person) *models.Person {
-	name := strings.Split(p.Name, " ")
-	firstName := name[0]
-	var lastName string
-	if len(name) > 1 {
-		lastName = p.Name[(len(p.Name)) -len(name[0]):]
+	var lastName, firstName string
+	index := strings.Index(p.Name, " ")
+	if index > -1 {
+		lastName = p.Name[index+1:]
+		firstName = p.Name[:index]
+	} else {
+		firstName = p.Name
 	}
 
 	return &models.Person{

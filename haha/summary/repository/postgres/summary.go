@@ -45,7 +45,7 @@ type User struct {
 }
 
 type Person struct {
-	ID       string
+	ID       uint64
 	Name     string
 	Gender   string
 	Birthday time.Time

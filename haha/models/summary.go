@@ -51,7 +51,6 @@ type VacancyResponse struct {
 	Tag string `json:"tag,omitempty"`
 	VacancyID uint64 `json:"vacancy_id"`
 	SummaryID uint64 `json:"summary_id"`
-
 	Keywords  string `json:"keywords,omitempty"`
 }
 

@@ -52,14 +52,14 @@ func (suite *userSuite) SetupTest() {
 			FirstName: "first",
 			LastName:  "name",
 			Gender:    "gender",
-			Birthday:  "birth",
+			Birthday:  time.Now(),
 		},
 		Keywords:    "key",
 		Educations:  []models.Education{
 			models.Education{
 				Institution: "was",
 				Speciality:  "is",
-				Graduated:   "yes",
+				Graduated:   time.Now(),
 				Type:        "none",
 			},
 		},
@@ -68,8 +68,8 @@ func (suite *userSuite) SetupTest() {
 				CompanyName:      "comp",
 				Role:             "role",
 				Responsibilities: "response",
-				Start:            "start",
-				Stop:             "stop",
+				Start:            time.Now(),
+				Stop:             time.Now().AddDate(1, 1, 1),
 			},
 		},
 	}

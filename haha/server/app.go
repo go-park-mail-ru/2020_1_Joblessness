@@ -9,24 +9,29 @@ import (
 	postgresAuth "joblessness/haha/auth/repository/postgres"
 	usecaseAuth "joblessness/haha/auth/usecase"
 	"joblessness/haha/middleware"
+	httpSearch "joblessness/haha/search/delivery/http"
+	searchInterfaces "joblessness/haha/search/interfaces"
+	postgresSearch "joblessness/haha/search/repository/postgres"
+	usecaseSearch "joblessness/haha/search/usecase"
 	"joblessness/haha/summary/delivery/http"
-	interfaces3 "joblessness/haha/summary/interfaces"
+	summaryInterfaces "joblessness/haha/summary/interfaces"
 	postgresSummary "joblessness/haha/summary/repository/postgres"
 	usecaseSummary "joblessness/haha/summary/usecase"
 	"joblessness/haha/utils/cors"
 	"joblessness/haha/utils/database"
 	"joblessness/haha/vacancy/delivery/http"
-	interfaces2 "joblessness/haha/vacancy/interfaces"
+	vacancyInterfaces "joblessness/haha/vacancy/interfaces"
 	postgresVacancy "joblessness/haha/vacancy/repository/postgres"
 	usecaseVacancy "joblessness/haha/vacancy/usecase"
 	"net/http"
 )
 
 type App struct {
-	httpServer  *http.Server
-	authUse     authInterfaces.AuthUseCase
-	vacancyUse  interfaces2.VacancyUseCase
-	summaryUse  interfaces3.SummaryUseCase
+	httpServer *http.Server
+	authUse    authInterfaces.AuthUseCase
+	vacancyUse vacancyInterfaces.VacancyUseCase
+	summaryUse summaryInterfaces.SummaryUseCase
+	searchUse  searchInterfaces.SearchUseCase
 	corsHandler *cors.CorsHandler
 }
 
@@ -40,11 +45,13 @@ func NewApp(c *cors.CorsHandler) *App {
 	userRepo := postgresAuth.NewUserRepository(db)
 	vacancyRepo := postgresVacancy.NewVacancyRepository(db)
 	summaryRepo := postgresSummary.NewSummaryRepository(db)
+	searchRepo := postgresSearch.NewAuthRepository(db)
 
 	return &App{
 		authUse: usecaseAuth.NewAuthUseCase(userRepo),
 		vacancyUse: usecaseVacancy.NewVacancyUseCase(vacancyRepo),
 		summaryUse: usecaseSummary.NewSummaryUseCase(summaryRepo),
+		searchUse: usecaseSearch.NewSearchUseCase(searchRepo),
 		corsHandler: c,
 	}
 }
@@ -68,6 +75,9 @@ func (app *App) StartRouter() {
 
 	// summaries
 	httpSummary.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
+
+	// search
+	httpSearch.RegisterHTTPEndpoints(router, app.searchUse)
 
 	http.Handle("/", router)
 	fmt.Println("Server started")
