@@ -9,14 +9,14 @@ import (
 type Vacancy struct {
 	ID uint64
 	OrganizationID uint64
-	Name sql.NullString
-	Description sql.NullString
+	Name string
+	Description string
 	SalaryFrom int
 	SalaryTo int
 	WithTax bool
-	Responsibilities sql.NullString
-	Conditions sql.NullString
-	Keywords sql.NullString
+	Responsibilities string
+	Conditions string
+	Keywords string
 }
 
 type User struct {
@@ -40,14 +40,14 @@ func toPostgres(v *models.Vacancy) *Vacancy {
 	return &Vacancy{
 		ID:               v.ID,
 		OrganizationID:   v.Organization.ID,
-		Name:             sql.NullString{String: v.Name, Valid: true},
-		Description:      sql.NullString{String: v.Description, Valid: true},
+		Name:             v.Name,
+		Description:      v.Description,
 		SalaryFrom:       v.SalaryFrom,
 		SalaryTo:         v.SalaryTo,
 		WithTax:          v.WithTax,
-		Responsibilities: sql.NullString{String: v.Responsibilities, Valid: true},
-		Conditions:       sql.NullString{String: v.Conditions, Valid: true},
-		Keywords:         sql.NullString{String: v.Keywords, Valid: true},
+		Responsibilities: v.Responsibilities,
+		Conditions:       v.Conditions,
+		Keywords:         v.Keywords,
 	}
 }
 
@@ -65,14 +65,14 @@ func toModel(v *Vacancy, u *User, o *Organization) *models.Vacancy {
 	return &models.Vacancy{
 		ID:               v.ID,
 		Organization:     organization,
-		Name:             v.Name.String,
-		Description:      v.Description.String,
+		Name:             v.Name,
+		Description:      v.Description,
 		SalaryFrom:       v.SalaryFrom,
 		SalaryTo:         v.SalaryTo,
 		WithTax:          v.WithTax,
-		Responsibilities: v.Responsibilities.String,
-		Conditions:       v.Conditions.String,
-		Keywords:         v.Keywords.String,
+		Responsibilities: v.Responsibilities,
+		Conditions:       v.Conditions,
+		Keywords:         v.Keywords,
 	}
 }
 

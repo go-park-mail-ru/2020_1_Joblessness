@@ -235,24 +235,16 @@ func (r *SummaryRepository) GetExperiencesBySummaryID(summaryID uint64) ([]Exper
 
 func (r *SummaryRepository) GetSummaryAuthor(authorID uint64) (*User, *Person, error) {
 	user := User{ID: authorID}
-
-	getUser := `SELECT person_id, tag, email, phone, avatar
-				FROM users WHERE id = $1`
-	err := r.db.QueryRow(getUser, user.ID).Scan(&user.PersonID, &user.Tag, &user.Email, &user.Phone, &user.Avatar)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	var person Person
 
-	getPerson := `SELECT name, gender, birthday
-				  FROM person WHERE id = $1`
-	err = r.db.QueryRow(getPerson, user.PersonID).Scan(&person.Name, &person.Gender, &person.Birthday)
-	if err != nil {
-		return nil, nil ,err
-	}
+	getUser := `SELECT tag, email, phone, avatar, name, gender, birthday
+				FROM users 
+				JOIN person p on users.person_id = p.id
+				WHERE users.id = $1`
+	err := r.db.QueryRow(getUser, user.ID).Scan(&user.Tag, &user.Email, &user.Phone, &user.Avatar,
+		&person.Name, &person.Gender, &person.Birthday)
 
-	return &user, &person, nil
+	return &user, &person, err
 }
 
 func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, error) {
@@ -336,7 +328,7 @@ func (r *SummaryRepository) GetSummary(summaryID uint64) (*models.Summary, error
 
 	userDB, personDB, err := r.GetSummaryAuthor(summaryDB.AuthorID)
 
-	return toModel(&summaryDB, educationDBs, experienceDBs, userDB, personDB), nil
+	return toModel(&summaryDB, educationDBs, experienceDBs, userDB, personDB), err
 }
 
 func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
@@ -359,7 +351,7 @@ func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 
 	for _, educationDB := range educationDBs {
 		_, err = r.db.Exec(changeEducation, &educationDB.Institution, &educationDB.Speciality, &educationDB.Graduated,
-						   &educationDB.Type, educationDB.SummaryID)
+						   &educationDB.Type, &educationDB.SummaryID)
 		if err != nil {
 			return err
 		}
@@ -393,20 +385,7 @@ func (r *SummaryRepository) DeleteSummary(summaryID uint64) (err error) {
 		return err
 	}
 
-	deleteEducations := `DELETE FROM education
-						 WHERE summary_id = $1`
-	_, err = r.db.Exec(deleteEducations, summaryID)
-	if err != nil {
-		return err
-	}
-
-	deleteExperiences := `DELETE FROM experience
-						  WHERE summary_id = $1`
-	_, err = r.db.Exec(deleteExperiences, summaryID)
-	if err != nil {
-		return err
-	}
-
+	//TODO Убрал удаление связанных строк CASCADE есть в бд
 	return nil
 }
 
