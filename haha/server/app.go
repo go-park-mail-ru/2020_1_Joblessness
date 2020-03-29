@@ -1,7 +1,6 @@
 package server
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 	"joblessness/haha/auth/delivery/http"
@@ -80,6 +79,9 @@ func (app *App) StartRouter() {
 	httpSearch.RegisterHTTPEndpoints(router, app.searchUse)
 
 	http.Handle("/", router)
-	fmt.Println("Server started")
-	http.ListenAndServe(":8001", router)
+	golog.Info("Server started")
+	err := http.ListenAndServe(":8001", router)
+	if err != nil {
+		golog.Error("Server failed")
+	}
 }
