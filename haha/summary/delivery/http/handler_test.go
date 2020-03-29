@@ -11,6 +11,7 @@ import (
 	mockAuth "joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
 	"joblessness/haha/models"
+	summaryInterfaces "joblessness/haha/summary/interfaces"
 	summaryUseCaseMock "joblessness/haha/summary/usecase/mock"
 	"net/http"
 	"net/http/httptest"
@@ -29,6 +30,10 @@ type userSuite struct {
 	summary models.Summary
 	summaryByte *bytes.Buffer
 	cookie *http.Cookie
+	response models.VacancyResponse
+	sendSum models.SendSummary
+	responseByte *bytes.Buffer
+	sendSumByte *bytes.Buffer
 }
 
 func (suite *userSuite) SetupTest() {
@@ -52,14 +57,12 @@ func (suite *userSuite) SetupTest() {
 			FirstName: "first",
 			LastName:  "name",
 			Gender:    "gender",
-			Birthday:  time.Now(),
 		},
 		Keywords:    "key",
 		Educations:  []models.Education{
 			models.Education{
 				Institution: "was",
 				Speciality:  "is",
-				Graduated:   time.Now(),
 				Type:        "none",
 			},
 		},
@@ -68,8 +71,6 @@ func (suite *userSuite) SetupTest() {
 				CompanyName:      "comp",
 				Role:             "role",
 				Responsibilities: "response",
-				Start:            time.Now(),
-				Stop:             time.Now().AddDate(1, 1, 1),
 			},
 		},
 	}
@@ -83,6 +84,29 @@ func (suite *userSuite) SetupTest() {
 		Value: "username",
 		Expires: time.Now().Add(time.Hour),
 	}
+
+	suite.response = models.VacancyResponse{
+		UserID:    suite.summary.Author.ID,
+		Tag:       suite.summary.Author.Tag,
+		VacancyID: uint64(7),
+		SummaryID: suite.summary.ID,
+		Keywords:  suite.summary.Keywords,
+	}
+	responseJSON, err := json.Marshal(suite.response)
+	suite.responseByte = bytes.NewBuffer(responseJSON)
+	assert.NoError(suite.T(), err)
+
+	suite.sendSum = models.SendSummary{
+		VacancyID:      uint64(7),
+		SummaryID:      suite.summary.ID,
+		UserID:    		suite.summary.Author.ID,
+		OrganizationID: uint64(13),
+		Accepted:       true,
+		Denied:         false,
+	}
+	sendSumJSON, err := json.Marshal(suite.sendSum)
+	suite.sendSumByte = bytes.NewBuffer(sendSumJSON)
+	assert.NoError(suite.T(), err)
 
 	RegisterHTTPEndpoints(suite.router,suite.authMiddleware, suite.uc)
 }
@@ -288,7 +312,7 @@ func (suite *userSuite) TestGetUserSummariesFailed() {
 	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
 }
 
-func (suite *userSuite) TestChangeVacancy() {
+func (suite *userSuite) TestChangeSummary() {
 	suite.uc.EXPECT().
 		ChangeSummary(&suite.summary).
 		Return(nil).
@@ -306,7 +330,7 @@ func (suite *userSuite) TestChangeVacancy() {
 	assert.Equal(suite.T(), 204, w.Code, "Status is not 204")
 }
 
-func (suite *userSuite) TestChangeVacancyWrongUrl() {
+func (suite *userSuite) TestChangeSummaryWrongUrl() {
 	suite.uc.EXPECT().
 		ChangeSummary(&suite.summary).
 		Return(nil).
@@ -324,7 +348,7 @@ func (suite *userSuite) TestChangeVacancyWrongUrl() {
 	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
 }
 
-func (suite *userSuite) TestChangeVacancyWrongJson() {
+func (suite *userSuite) TestChangeSummaryWrongJson() {
 	suite.uc.EXPECT().
 		ChangeSummary(&suite.summary).
 		Return(nil).
@@ -342,7 +366,7 @@ func (suite *userSuite) TestChangeVacancyWrongJson() {
 	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
 }
 
-func (suite *userSuite) TestChangeVacancyFailed() {
+func (suite *userSuite) TestChangeSummaryFailed() {
 	suite.uc.EXPECT().
 		ChangeSummary(&suite.summary).
 		Return(errors.New("")).
@@ -360,7 +384,7 @@ func (suite *userSuite) TestChangeVacancyFailed() {
 	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
 }
 
-func (suite *userSuite) TestDeleteVacancy() {
+func (suite *userSuite) TestDeleteSummary() {
 	suite.uc.EXPECT().
 		DeleteSummary(uint64(3)).
 		Return(nil).
@@ -378,7 +402,7 @@ func (suite *userSuite) TestDeleteVacancy() {
 	assert.Equal(suite.T(), 204, w.Code, "Status is not 204")
 }
 
-func (suite *userSuite) TestDeleteVacancyWrongUrl() {
+func (suite *userSuite) TestDeleteSummaryWrongUrl() {
 	suite.uc.EXPECT().
 		DeleteSummary(uint64(3)).
 		Return(nil).
@@ -396,7 +420,7 @@ func (suite *userSuite) TestDeleteVacancyWrongUrl() {
 	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
 }
 
-func (suite *userSuite) TestDeleteVacancyFailed() {
+func (suite *userSuite) TestDeleteSummaryFailed() {
 	suite.uc.EXPECT().
 		DeleteSummary(uint64(3)).
 		Return(errors.New("")).
@@ -407,6 +431,263 @@ func (suite *userSuite) TestDeleteVacancyFailed() {
 		Times(1)
 
 	r, _ := http.NewRequest("DELETE", "/api/summaries/3", bytes.NewBuffer([]byte{}))
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+}
+
+func (suite *userSuite) TestSendSummary() {
+	suite.uc.EXPECT().
+		SendSummary(&suite.sendSum).
+		Return(nil).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("POST", "/api/summaries/7/response", suite.sendSumByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
+
+func (suite *userSuite) TestSendSummaryNotOwner() {
+	suite.uc.EXPECT().
+		SendSummary(&suite.sendSum).
+		Return(summaryInterfaces.ErrPersonIsNotOwner).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("POST", "/api/summaries/7/response", suite.sendSumByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 403, w.Code, "Status is not 403")
+}
+
+func (suite *userSuite) TestSendSummaryNoSummary() {
+	suite.uc.EXPECT().
+		SendSummary(&suite.sendSum).
+		Return(summaryInterfaces.ErrNoSummaryToRefresh).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("POST", "/api/summaries/7/response", suite.sendSumByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
+}
+
+func (suite *userSuite) TestSendSummaryDefaultErr() {
+	suite.uc.EXPECT().
+		SendSummary(&suite.sendSum).
+		Return(errors.New("")).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("POST", "/api/summaries/7/response", suite.sendSumByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+}
+
+func (suite *userSuite) TestSendSummaryWrongJson() {
+	suite.uc.EXPECT().
+		SendSummary(&suite.sendSum).
+		Return(summaryInterfaces.ErrNoSummaryToRefresh).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("POST", "/api/summaries/7/response", bytes.NewBuffer([]byte{}))
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+}
+
+func (suite *userSuite) TestSendSummaryWrongUrl() {
+	suite.uc.EXPECT().
+		SendSummary(&suite.sendSum).
+		Return(summaryInterfaces.ErrNoSummaryToRefresh).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("POST", "/api/summaries/7a/response", suite.sendSumByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+}
+
+func (suite *userSuite) TestResponseSummary() {
+	suite.uc.EXPECT().
+		ResponseSummary(&suite.sendSum).
+		Return(nil).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		SessionExists("username").
+		Return(uint64(13), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("PUT", "/api/summaries/3/response", suite.sendSumByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
+
+func (suite *userSuite) TestResponseSummaryWrongJSON() {
+	suite.uc.EXPECT().
+		ResponseSummary(&suite.sendSum).
+		Return(nil).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		SessionExists("username").
+		Return(uint64(13), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("PUT", "/api/summaries/3/response", bytes.NewBuffer([]byte{}))
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+}
+
+func (suite *userSuite) TestResponseSummaryWrongURL() {
+	suite.uc.EXPECT().
+		ResponseSummary(&suite.sendSum).
+		Return(nil).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		SessionExists("username").
+		Return(uint64(13), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("PUT", "/api/summaries/3a/response", suite.sendSumByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+}
+
+func (suite *userSuite) TestResponseSummaryNotOwner() {
+	suite.uc.EXPECT().
+		ResponseSummary(&suite.sendSum).
+		Return(summaryInterfaces.ErrOrgIsNotOwner).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		SessionExists("username").
+		Return(uint64(13), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("PUT", "/api/summaries/3/response", suite.sendSumByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 403, w.Code, "Status is not 403")
+}
+
+func (suite *userSuite) TestResponseSummaryNoSummary() {
+	suite.uc.EXPECT().
+		ResponseSummary(&suite.sendSum).
+		Return(summaryInterfaces.ErrNoSummaryToRefresh).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		SessionExists("username").
+		Return(uint64(13), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("PUT", "/api/summaries/3/response", suite.sendSumByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
+}
+
+func (suite *userSuite) TestResponseSummaryDefaultErr() {
+	suite.uc.EXPECT().
+		ResponseSummary(&suite.sendSum).
+		Return(errors.New("")).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		SessionExists("username").
+		Return(uint64(13), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("PUT", "/api/summaries/3/response", suite.sendSumByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+}
+
+func (suite *userSuite) TestGetOrgSummaries() {
+	suite.uc.EXPECT().
+		GetOrgSummaries(suite.sendSum.UserID).
+		Return([]*models.VacancyResponse{&suite.response}, nil).
+		Times(1)
+
+	r, _ := http.NewRequest("GET", "/api/organizations/12/summaries", bytes.NewBuffer([]byte{}))
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
+
+func (suite *userSuite) TestGetOrgSummariesWrongURL() {
+	suite.uc.EXPECT().
+		GetOrgSummaries(suite.sendSum.UserID).
+		Times(0)
+
+	r, _ := http.NewRequest("GET", "/api/organizations/12a/summaries", bytes.NewBuffer([]byte{}))
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+}
+
+func (suite *userSuite) TestGetOrgSummariesFailed() {
+	suite.uc.EXPECT().
+		GetOrgSummaries(suite.sendSum.UserID).
+		Return([]*models.VacancyResponse{}, errors.New("")).
+		Times(1)
+
+	r, _ := http.NewRequest("GET", "/api/organizations/12/summaries", bytes.NewBuffer([]byte{}))
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)

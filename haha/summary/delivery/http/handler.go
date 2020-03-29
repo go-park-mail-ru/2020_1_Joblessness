@@ -234,16 +234,18 @@ func (h *Handler) SendSummary(w http.ResponseWriter, r *http.Request) {
 	err = h.useCase.SendSummary(&sendSummary)
 	switch err {
 	case summaryInterfaces.ErrPersonIsNotOwner:
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusForbidden)
 	case summaryInterfaces.ErrNoSummaryToRefresh:
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 	case nil:
 		w.WriteHeader(http.StatusOK)
 	default:
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	golog.Errorf("#%s: %w",  rID, err)
 }
 
 func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
@@ -269,18 +271,18 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 	err = h.useCase.ResponseSummary(&sendSummary)
 	switch err {
 	case summaryInterfaces.ErrOrgIsNotOwner:
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusForbidden)
 	case summaryInterfaces.ErrNoSummaryToRefresh:
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 	case nil:
 		w.WriteHeader(http.StatusOK)
 	default:
+		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-
-	golog.Errorf("#%s: %w",  rID, err)
 }
-
 
 func (h *Handler) GetOrgSummaries(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)

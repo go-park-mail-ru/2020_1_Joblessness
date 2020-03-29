@@ -1,20 +1,23 @@
-FROM golang:1.11-stretch AS build
+FROM golang AS build
 
 ADD ./ /opt/build/2020_1_Joblessness/
 WORKDIR /opt/build/2020_1_Joblessness/
-RUN go mod tidy && go build main.go
+RUN go mod tidy && go build cmd/api/main.go
 
 FROM ubuntu:18.04 AS release
 
 ENV PGVER 10
 RUN apt -y update && apt install -y postgresql-$PGVER
 USER postgres
-ENV PGPASSWORD 'password'
+ENV PGPASSWORD 'postgres'
+ENV HAHA_DB_USER 'postgres'
+ENV HAHA_DB_PASSWORD 'postgres'
+ENV HAHA_DB_NAME 'base'
 
 WORKDIR /opt/build/2020_1_Joblessness/
 COPY --from=build /opt/build/2020_1_Joblessness/ ./
 RUN /etc/init.d/postgresql start &&\
-    psql --command "ALTER USER postgres WITH SUPERUSER PASSWORD 'password';" &&\
+    psql --command "ALTER USER postgres WITH SUPERUSER PASSWORD 'postgres';" &&\
     createdb -E utf8 -T template0 -O postgres base  &&\
     /etc/init.d/postgresql stop
 
@@ -29,7 +32,7 @@ EXPOSE 5432
 
 VOLUME  ["/etc/postgresql", "/var/log/postgresql", "/var/lib/postgresql"]
 
-EXPOSE 5000
+EXPOSE 8001
 
 CMD service postgresql start &&\
      ./main
