@@ -35,7 +35,6 @@ func (s *XssHandler) SanitizeMiddleware(next http.Handler) http.Handler {
 			d.UseNumber()
 			err := d.Decode(&jsonBod)
 			if err == nil {
-				golog.Error(err)
 				xmj := jsonBod.(map[string]interface{})
 				var sbuff bytes.Buffer
 				buff := s.ConstructJson(xmj, sbuff)
@@ -44,6 +43,8 @@ func (s *XssHandler) SanitizeMiddleware(next http.Handler) http.Handler {
 				enc := json.NewEncoder(ioutil.Discard)
 				err = enc.Encode(&bodOut)
 				r.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(bodOut)))
+			} else {
+				golog.Error(err)
 			}
 		}
 

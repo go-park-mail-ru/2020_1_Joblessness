@@ -22,6 +22,18 @@ type testStruct struct {
 	Avatar string `json:"avatar,omitempty"`
 	Name string `json:"name,omitempty"`
 	Site string `json:"site,omitempty"`
+	Experiences []nestedArray `json:"experiences,omitempty"`
+}
+
+type nestedArray struct {
+	ID uint64 `json:"id,omitempty"`
+	Author nestedStruct `json:"author,omitempty"`
+	Keywords string `json:"keywords,omitempty"`
+}
+
+type nestedStruct struct {
+	ID uint64 `json:"id,omitempty"`
+	Tag string `json:"tag,omitempty"`
 }
 
 type resStruct struct {
@@ -35,6 +47,7 @@ type resStruct struct {
 	Avatar string `json:"avatar,omitempty"`
 	Name string `json:"name,omitempty"`
 	Site string `json:"site,omitempty"`
+	Experiences []nestedArray `json:"experiences,omitempty"`
 }
 
 
@@ -59,6 +72,16 @@ func (suite *userSuite) SetupTest() {
 		Email:       "new email",
 		Phone: "new phone number",
 		Registered: "2006-01-02T15:04:05.999999999Z",
+		Experiences:  []nestedArray{
+			{
+				ID:       1,
+				Author:   nestedStruct{
+					ID:  14,
+					Tag: "czx",
+				},
+				Keywords: "awd",
+			},
+		},
 	}
 	organizationJSON, err := json.Marshal(organization)
 	organizationByte := bytes.NewBuffer(organizationJSON)
@@ -68,6 +91,7 @@ func (suite *userSuite) SetupTest() {
 	suite.organizationByte = bytes.NewBuffer(organizationJSON)
 
 	organization.Site = `<a href="javascript:alert('XSS1')" onmouseover="alert('XSS2')">new site<a>`
+	organization.Experiences[0].Author.Tag = `<a href="javascript:alert('XSS1')" onmouseover="alert('XSS2')">czx<a>`
 	organizationJSON, err = json.Marshal(organization)
 	suite.wrongOrganizationByte = bytes.NewBuffer(organizationJSON)
 }
