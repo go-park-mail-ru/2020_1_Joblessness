@@ -373,7 +373,7 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 				ORDER BY registered desc
 				LIMIT $1 OFFSET $2`
 
-	rows, err := r.db.Query(getOrgs, (page - 1)*10, 9)
+	rows, err := r.db.Query(getOrgs, page*10, 9)
 
 	if err != nil {
 		return nil, err

@@ -88,17 +88,12 @@ func (h *Handler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetVacancies(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
+	page := r.FormValue("page")
 
-	vacancies, err := h.useCase.GetVacancies()
+	vacancies, err := h.useCase.GetVacancies(page)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	if len(vacancies) == 0 {
-		golog.Errorf("#%s: %s",  rID, "no vacancies")
-		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 

@@ -77,18 +77,18 @@ func (mr *MockSummaryUseCaseMockRecorder) DeleteSummary(arg0 interface{}) *gomoc
 }
 
 // GetAllSummaries mocks base method
-func (m *MockSummaryUseCase) GetAllSummaries() ([]models.Summary, error) {
+func (m *MockSummaryUseCase) GetAllSummaries(arg0 string) ([]models.Summary, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetAllSummaries")
+	ret := m.ctrl.Call(m, "GetAllSummaries", arg0)
 	ret0, _ := ret[0].([]models.Summary)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetAllSummaries indicates an expected call of GetAllSummaries
-func (mr *MockSummaryUseCaseMockRecorder) GetAllSummaries() *gomock.Call {
+func (mr *MockSummaryUseCaseMockRecorder) GetAllSummaries(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllSummaries", reflect.TypeOf((*MockSummaryUseCase)(nil).GetAllSummaries))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllSummaries", reflect.TypeOf((*MockSummaryUseCase)(nil).GetAllSummaries), arg0)
 }
 
 // GetOrgSummaries mocks base method

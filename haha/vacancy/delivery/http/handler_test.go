@@ -12,7 +12,7 @@ import (
 	"joblessness/haha/middleware"
 	"joblessness/haha/middleware/xss"
 	"joblessness/haha/models"
-	"joblessness/haha/vacancy/usecase/mock"
+	vacancyUseCaseMock "joblessness/haha/vacancy/usecase/mock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -203,11 +203,11 @@ func (suite *userSuite) TestGetVacancyWrongUrl() {
 
 func (suite *userSuite) TestGetVacancies() {
 	suite.uc.EXPECT().
-		GetVacancies().
+		GetVacancies("1").
 		Return([]models.Vacancy{suite.vacancy}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/vacancies", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/vacancies?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -216,24 +216,24 @@ func (suite *userSuite) TestGetVacancies() {
 
 func (suite *userSuite) TestGetVacanciesEmpty() {
 	suite.uc.EXPECT().
-		GetVacancies().
+		GetVacancies("1").
 		Return([]models.Vacancy{}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/vacancies", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/vacancies?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 204, w.Code, "Status is not 204")
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
 }
 
 func (suite *userSuite) TestGetVacanciesFailed() {
 	suite.uc.EXPECT().
-		GetVacancies().
+		GetVacancies("1").
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/vacancies", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/vacancies?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 

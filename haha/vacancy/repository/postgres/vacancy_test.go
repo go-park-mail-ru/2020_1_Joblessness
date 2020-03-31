@@ -166,6 +166,7 @@ func (suite *vacancySuite) TestGetVacancies() {
 			suite.vacancy.Conditions, suite.vacancy.Keywords)
 	suite.mock.
 		ExpectQuery("SELECT id, organization_id, name, description, salary_from, salary_to, with_tax").
+		WithArgs(10, 9).
 		WillReturnRows(rows)
 
 	rows = sqlmock.NewRows([]string{"organization_id", "tag", "email", "phone", "avatar", "name", "site"}).
@@ -176,7 +177,7 @@ func (suite *vacancySuite) TestGetVacancies() {
 		WithArgs(suite.user.ID).
 		WillReturnRows(rows)
 
-	vacancy, err := suite.rep.GetVacancies()
+	vacancy, err := suite.rep.GetVacancies(1)
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), suite.vacancy, vacancy[0])
 }
@@ -186,15 +187,7 @@ func (suite *vacancySuite) TestGetVacanciesFailedOne() {
 		ExpectQuery("SELECT id, organization_id, name, description, salary_from, salary_to, with_tax").
 		WillReturnError(errors.New(""))
 
-	rows := sqlmock.NewRows([]string{"organization_id", "tag", "email", "phone", "avatar", "name", "site"}).
-		AddRow(suite.user.OrganizationID, suite.user.Tag, suite.user.Email, suite.user.Phone, suite.user.Avatar,
-			suite.organization.Name, suite.organization.Site)
-	suite.mock.
-		ExpectQuery("SELECT organization_id, tag, email, phone, avatar, name, site").
-		WithArgs(suite.user.ID).
-		WillReturnRows(rows)
-
-	_, err := suite.rep.GetVacancies()
+	_, err := suite.rep.GetVacancies(1)
 	assert.Error(suite.T(), err)
 }
 
@@ -206,6 +199,7 @@ func (suite *vacancySuite) TestGetVacanciesFailedTwo() {
 			suite.vacancy.Conditions, suite.vacancy.Keywords)
 	suite.mock.
 		ExpectQuery("SELECT id, organization_id, name, description, salary_from, salary_to, with_tax").
+		WithArgs(10, 9).
 		WillReturnRows(rows)
 
 	suite.mock.
@@ -213,7 +207,7 @@ func (suite *vacancySuite) TestGetVacanciesFailedTwo() {
 		WithArgs(suite.user.ID).
 		WillReturnError(errors.New(""))
 
-	_, err := suite.rep.GetVacancies()
+	_, err := suite.rep.GetVacancies(1)
 	assert.Error(suite.T(), err)
 }
 

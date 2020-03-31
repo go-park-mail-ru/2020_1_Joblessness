@@ -214,7 +214,7 @@ func (suite *userSuite) TestGetSummaryWrongUrl() {
 
 func (suite *userSuite) TestGetSummaries() {
 	suite.uc.EXPECT().
-		GetAllSummaries().
+		GetAllSummaries("").
 		Return([]models.Summary{suite.summary}, nil).
 		Times(1)
 
@@ -227,11 +227,11 @@ func (suite *userSuite) TestGetSummaries() {
 
 func (suite *userSuite) TestGetSummariesFailed() {
 	suite.uc.EXPECT().
-		GetAllSummaries().
+		GetAllSummaries("1").
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/summaries", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/summaries?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 

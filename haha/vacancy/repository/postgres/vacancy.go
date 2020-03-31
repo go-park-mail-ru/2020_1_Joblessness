@@ -139,11 +139,12 @@ func (r *VacancyRepository) GetVacancy(vacancyID uint64) (vacancy *models.Vacanc
 	return toModel(&vacancyDB, userDB, organizationDB), nil
 }
 
-func (r *VacancyRepository) GetVacancies() (vacancies []models.Vacancy, err error) {
+func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, err error) {
 	getVacancies := `SELECT id, organization_id, name, description, salary_from, salary_to, with_tax, responsibilities,
        						conditions, keywords
-					 FROM vacancy;`
-	rows, err := r.db.Query(getVacancies)
+					 FROM vacancy
+					LIMIT $1 OFFSET $2;`
+	rows, err := r.db.Query(getVacancies, page*10, 9)
 	if err != nil {
 		return vacancies, err
 	}

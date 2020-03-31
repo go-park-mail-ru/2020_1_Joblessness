@@ -3,6 +3,7 @@ package summaryUseCase
 import (
 	"joblessness/haha/models"
 	"joblessness/haha/summary/interfaces"
+	"strconv"
 )
 
 type SummaryUseCase struct {
@@ -17,8 +18,9 @@ func (u *SummaryUseCase) CreateSummary(summary *models.Summary) (summaryID uint6
 	return u.summaryRepo.CreateSummary(summary)
 }
 
-func (u *SummaryUseCase) GetAllSummaries() (summaries []models.Summary, err error) {
-	return u.summaryRepo.GetAllSummaries()
+func (u *SummaryUseCase) GetAllSummaries(page string) (summaries []models.Summary, err error) {
+	pageInt, _ := strconv.Atoi(page)
+	return u.summaryRepo.GetAllSummaries(pageInt)
 }
 
 func (u *SummaryUseCase) GetUserSummaries(userID uint64) (summaries []models.Summary, err error) {
