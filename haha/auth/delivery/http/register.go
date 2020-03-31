@@ -6,7 +6,7 @@ import (
 	"joblessness/haha/middleware"
 )
 
-func RegisterHTTPEndpoints(router *mux.Router, m *middleware.AuthMiddleware, uc authInterfaces.AuthUseCase) {
+func RegisterHTTPEndpoints(router *mux.Router, m *middleware.SessionHandler, uc authInterfaces.AuthUseCase) {
 	h := NewHandler(uc)
 
 	router.HandleFunc("/users/login", h.Login).Methods("POST")

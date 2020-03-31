@@ -1,12 +1,12 @@
 package main
 
 import (
+	"joblessness/haha/middleware"
 	"joblessness/haha/server"
-	"joblessness/haha/utils/cors"
 )
 
 func main() {
-	corsHandler := cors.NewCorsHandler()
+	corsHandler := middleware.NewCorsHandler()
 
 	corsHandler.AddOrigin("https://91.210.170.6:8000")
 	corsHandler.AddOrigin("http://91.210.170.6:8000")
