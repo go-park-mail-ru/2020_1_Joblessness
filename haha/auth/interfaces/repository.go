@@ -4,12 +4,14 @@ import (
 	"joblessness/haha/models"
 )
 
-type UserRepository interface {
+type AuthRepository interface {
 	CreatePerson(user *models.Person) error
 	CreateOrganization(org *models.Organization) error
 	Login(login, password, SID string) (uint64, error)
 	Logout(sessionId string) error
 	SessionExists(sessionId string) (uint64, error)
+	IsPerson(userID uint64) (bool, error)
+	IsOrganization(userID uint64) (bool, error)
 	GetPerson(userID uint64) (*models.Person, error)
 	ChangePerson(p models.Person) error
 	GetOrganization(userID uint64) (*models.Organization, error)

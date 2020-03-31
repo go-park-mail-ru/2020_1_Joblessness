@@ -167,6 +167,36 @@ func (mr *MockAuthUseCaseMockRecorder) Logout(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockAuthUseCase)(nil).Logout), arg0)
 }
 
+// OrganizationSession mocks base method
+func (m *MockAuthUseCase) OrganizationSession(arg0 string) (uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OrganizationSession", arg0)
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OrganizationSession indicates an expected call of OrganizationSession
+func (mr *MockAuthUseCaseMockRecorder) OrganizationSession(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OrganizationSession", reflect.TypeOf((*MockAuthUseCase)(nil).OrganizationSession), arg0)
+}
+
+// PersonSession mocks base method
+func (m *MockAuthUseCase) PersonSession(arg0 string) (uint64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PersonSession", arg0)
+	ret0, _ := ret[0].(uint64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PersonSession indicates an expected call of PersonSession
+func (mr *MockAuthUseCaseMockRecorder) PersonSession(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PersonSession", reflect.TypeOf((*MockAuthUseCase)(nil).PersonSession), arg0)
+}
+
 // RegisterOrganization mocks base method
 func (m *MockAuthUseCase) RegisterOrganization(arg0 *models.Organization) error {
 	m.ctrl.T.Helper()

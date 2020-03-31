@@ -253,6 +253,32 @@ func (r UserRepository) SessionExists(sessionId string) (userId uint64, err erro
 	return userId, err
 }
 
+func (r UserRepository) IsPerson(userID uint64) (res bool, err error) {
+	checkUser := "SELECT count(*) FROM users WHERE id = $1 AND person_id IS NOT NULL;"
+	rows, err := r.db.Query(checkUser, userID)
+	if err != nil {
+		return false, err
+	}
+
+	if rows.Next() {
+		return true, nil
+	}
+	return false, nil
+}
+
+func (r UserRepository) IsOrganization(userID uint64) (bool, error) {
+	checkUser := "SELECT count(*) FROM users WHERE id = $1 AND organization_id IS NOT NULL;"
+	rows, err := r.db.Query(checkUser, userID)
+	if err != nil {
+		return false, err
+	}
+
+	if rows.Next() {
+		return true, nil
+	}
+	return false, nil
+}
+
 func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	user := User{ID: userID}
 

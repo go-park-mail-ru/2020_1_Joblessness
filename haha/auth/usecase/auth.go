@@ -9,10 +9,10 @@ import (
 )
 
 type AuthUseCase struct {
-	userRepo authInterfaces.UserRepository
+	userRepo authInterfaces.AuthRepository
 }
 
-func NewAuthUseCase(userRepo authInterfaces.UserRepository) *AuthUseCase {
+func NewAuthUseCase(userRepo authInterfaces.AuthRepository) *AuthUseCase {
 	return &AuthUseCase{
 		userRepo:userRepo,
 	}
@@ -59,6 +59,40 @@ func (a *AuthUseCase) Logout(sessionId string) error {
 
 func (a *AuthUseCase) SessionExists(sessionId string) (uint64, error) {
 	return a.userRepo.SessionExists(sessionId)
+}
+
+func (a *AuthUseCase) PersonSession(sessionId string) (uint64, error) {
+	userID, err := a.userRepo.SessionExists(sessionId)
+	if err == nil {
+		return 0, err
+	}
+
+	exist, err := a.userRepo.IsPerson(userID)
+	if err != nil {
+		return userID, err
+	}
+
+	if exist {
+		return userID, nil
+	}
+	return userID, authInterfaces.ErrUserNotPerson
+}
+
+func (a *AuthUseCase) OrganizationSession(sessionId string) (uint64, error) {
+	userID, err := a.userRepo.SessionExists(sessionId)
+	if err == nil {
+		return 0, err
+	}
+
+	exist, err := a.userRepo.IsOrganization(userID)
+	if err != nil {
+		return userID, err
+	}
+
+	if exist {
+		return userID, nil
+	}
+	return userID, authInterfaces.ErrUserNotOrg
 }
 
 func (a *AuthUseCase) GetPerson(userID uint64) (*models.Person, error) {

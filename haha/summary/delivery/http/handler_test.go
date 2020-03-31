@@ -125,7 +125,7 @@ func (suite *userSuite) TestCreateSummary() {
 		Return(uint64(3), nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -143,7 +143,7 @@ func (suite *userSuite) TestCreateSummaryWrongJson() {
 		Return(uint64(3), nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -161,7 +161,7 @@ func (suite *userSuite) TestCreateSummaryFailed() {
 		Return(uint64(0), errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -322,7 +322,7 @@ func (suite *userSuite) TestChangeSummary() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -340,7 +340,7 @@ func (suite *userSuite) TestChangeSummaryWrongUrl() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -358,7 +358,7 @@ func (suite *userSuite) TestChangeSummaryWrongJson() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -376,7 +376,7 @@ func (suite *userSuite) TestChangeSummaryFailed() {
 		Return(errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -394,7 +394,7 @@ func (suite *userSuite) TestDeleteSummary() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -412,7 +412,7 @@ func (suite *userSuite) TestDeleteSummaryWrongUrl() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -430,7 +430,7 @@ func (suite *userSuite) TestDeleteSummaryFailed() {
 		Return(errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -448,7 +448,7 @@ func (suite *userSuite) TestSendSummary() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -466,7 +466,7 @@ func (suite *userSuite) TestSendSummaryNotOwner() {
 		Return(summaryInterfaces.ErrPersonIsNotOwner).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -484,7 +484,7 @@ func (suite *userSuite) TestSendSummaryNoSummary() {
 		Return(summaryInterfaces.ErrNoSummaryToRefresh).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -502,7 +502,7 @@ func (suite *userSuite) TestSendSummaryDefaultErr() {
 		Return(errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -520,7 +520,7 @@ func (suite *userSuite) TestSendSummaryWrongJson() {
 		Return(summaryInterfaces.ErrNoSummaryToRefresh).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -538,7 +538,7 @@ func (suite *userSuite) TestSendSummaryWrongUrl() {
 		Return(summaryInterfaces.ErrNoSummaryToRefresh).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		PersonSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -556,7 +556,7 @@ func (suite *userSuite) TestResponseSummary() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(13), nil).
 		Times(1)
 
@@ -574,7 +574,7 @@ func (suite *userSuite) TestResponseSummaryWrongJSON() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(13), nil).
 		Times(1)
 
@@ -592,7 +592,7 @@ func (suite *userSuite) TestResponseSummaryWrongURL() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(13), nil).
 		Times(1)
 
@@ -610,7 +610,7 @@ func (suite *userSuite) TestResponseSummaryNotOwner() {
 		Return(summaryInterfaces.ErrOrgIsNotOwner).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(13), nil).
 		Times(1)
 
@@ -628,7 +628,7 @@ func (suite *userSuite) TestResponseSummaryNoSummary() {
 		Return(summaryInterfaces.ErrNoSummaryToRefresh).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(13), nil).
 		Times(1)
 
@@ -646,7 +646,7 @@ func (suite *userSuite) TestResponseSummaryDefaultErr() {
 		Return(errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(13), nil).
 		Times(1)
 

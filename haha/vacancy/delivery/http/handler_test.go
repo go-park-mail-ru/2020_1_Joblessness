@@ -89,7 +89,7 @@ func (suite *userSuite) TestCreateVacancy() {
 		Return(uint64(3), nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -114,7 +114,7 @@ func (suite *userSuite) TestCreateVacancyEmptyName() {
 		Return(uint64(3), nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -132,7 +132,7 @@ func (suite *userSuite) TestCreateVacancyWrongJson() {
 		Return(uint64(3), nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -150,7 +150,7 @@ func (suite *userSuite) TestCreateVacancyFailed() {
 		Return(uint64(0), errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -246,7 +246,7 @@ func (suite *userSuite) TestChangeVacancy() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -264,7 +264,7 @@ func (suite *userSuite) TestChangeVacancyWrongUrl() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -282,7 +282,7 @@ func (suite *userSuite) TestChangeVacancyWrongJson() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -307,7 +307,7 @@ func (suite *userSuite) TestChangeVacancyEmptyName() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -325,7 +325,7 @@ func (suite *userSuite) TestChangeVacancyFailed() {
 		Return(errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -343,7 +343,7 @@ func (suite *userSuite) TestDeleteVacancy() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -361,7 +361,7 @@ func (suite *userSuite) TestDeleteVacancyWrongUrl() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -379,7 +379,7 @@ func (suite *userSuite) TestDeleteVacancyFailed() {
 		Return(errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
