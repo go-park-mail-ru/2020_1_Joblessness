@@ -162,7 +162,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, sessionId, err := h.useCase.Login(user.Login, user.Password)
+	userId, role, sessionId, err := h.useCase.Login(user.Login, user.Password)
 	switch err {
 	case authInterfaces.ErrWrongLogPas:
 		golog.Errorf("#%s: %w",  rID, err)
@@ -187,7 +187,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, cookie)
 
-	jsonData, _ := json.Marshal(models.Response{userId})
+	jsonData, _ := json.Marshal(models.Response{ID: userId, Role: role})
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }
@@ -226,7 +226,14 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, _ := json.Marshal(models.Response{userID})
+	role, err := h.useCase.GetRole(userID)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	jsonData, _ := json.Marshal(models.Response{ID: userID, Role: role})
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }

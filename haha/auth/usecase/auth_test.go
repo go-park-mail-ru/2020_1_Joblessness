@@ -37,7 +37,8 @@ func TestAuthPersonFlow(t *testing.T) {
 
 	//Login
 	repo.EXPECT().Login(login, password, gomock.Any()).Return(userIdEx, nil).Times(1)
-	userId, sid, err := uc.Login(login, password)
+	repo.EXPECT().GetRole(userIdEx).Return("userIdEx", nil).Times(1)
+	userId, _, sid, err := uc.Login(login, password)
 	assert.NoError(t, err)
 	assert.Equal(t, userIdEx, userId, "Id corrupted")
 	assert.NotEmpty(t, sid, "No sid")

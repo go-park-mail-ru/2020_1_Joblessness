@@ -22,6 +22,7 @@ type Organization struct {
 	Login string `json:"login,omitempty"`
 	Password string `json:"password,omitempty"`
 	Tag string `json:"tag,omitempty"`
+	About string `json:"about,omitempty"`
 	Email string `json:"email,omitempty"`
 	Phone string `json:"phone,omitempty"`
 	Registered time.Time `json:"registered,omitempty"`
@@ -45,4 +46,5 @@ type Favorites []*Favorite
 
 type Response struct {
 	ID uint64 `json:"id"`
+	Role string `json:"role"`
 }

@@ -148,6 +148,21 @@ func (mr *MockAuthRepositoryMockRecorder) GetPerson(arg0 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPerson", reflect.TypeOf((*MockAuthRepository)(nil).GetPerson), arg0)
 }
 
+// GetRole mocks base method
+func (m *MockAuthRepository) GetRole(arg0 uint64) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRole", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRole indicates an expected call of GetRole
+func (mr *MockAuthRepositoryMockRecorder) GetRole(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRole", reflect.TypeOf((*MockAuthRepository)(nil).GetRole), arg0)
+}
+
 // GetUserFavorite mocks base method
 func (m *MockAuthRepository) GetUserFavorite(arg0 uint64) (models.Favorites, error) {
 	m.ctrl.T.Helper()
@@ -161,36 +176,6 @@ func (m *MockAuthRepository) GetUserFavorite(arg0 uint64) (models.Favorites, err
 func (mr *MockAuthRepositoryMockRecorder) GetUserFavorite(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserFavorite", reflect.TypeOf((*MockAuthRepository)(nil).GetUserFavorite), arg0)
-}
-
-// IsOrganization mocks base method
-func (m *MockAuthRepository) IsOrganization(arg0 uint64) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsOrganization", arg0)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// IsOrganization indicates an expected call of IsOrganization
-func (mr *MockAuthRepositoryMockRecorder) IsOrganization(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsOrganization", reflect.TypeOf((*MockAuthRepository)(nil).IsOrganization), arg0)
-}
-
-// IsPerson mocks base method
-func (m *MockAuthRepository) IsPerson(arg0 uint64) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsPerson", arg0)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// IsPerson indicates an expected call of IsPerson
-func (mr *MockAuthRepositoryMockRecorder) IsPerson(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsPerson", reflect.TypeOf((*MockAuthRepository)(nil).IsPerson), arg0)
 }
 
 // Login mocks base method

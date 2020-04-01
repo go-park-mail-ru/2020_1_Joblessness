@@ -34,3 +34,7 @@ func (u *VacancyUseCase) ChangeVacancy(vacancy *models.Vacancy) error {
 func (u *VacancyUseCase) DeleteVacancy(vacancyID uint64) error {
 	return u.vacancyRepo.DeleteVacancy(vacancyID)
 }
+
+func (u *VacancyUseCase) GetOrgVacancies(userID uint64) ([]models.Vacancy, error) {
+	return u.vacancyRepo.GetOrgVacancies(userID)
+}

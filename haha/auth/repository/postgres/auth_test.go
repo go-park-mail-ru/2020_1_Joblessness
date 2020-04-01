@@ -149,7 +149,7 @@ func (suite *userSuite) TestCreateOrg() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO organization").
-		WithArgs(suite.organization.Name, suite.organization.Site).
+		WithArgs(suite.organization.Name, suite.organization.Site, suite.organization.About).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
@@ -436,7 +436,7 @@ func (suite *userSuite) TestChangeOrganization() {
 
 	suite.mock.
 		ExpectExec("UPDATE organization").
-		WithArgs(suite.organization.Name, suite.organization.Site, 1).
+		WithArgs(suite.organization.Name, suite.organization.Site, suite.organization.About, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	suite.mock.
 		ExpectExec("UPDATE user").

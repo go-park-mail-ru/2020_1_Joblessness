@@ -76,6 +76,21 @@ func (mr *MockVacancyUseCaseMockRecorder) DeleteVacancy(arg0 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVacancy", reflect.TypeOf((*MockVacancyUseCase)(nil).DeleteVacancy), arg0)
 }
 
+// GetOrgVacancies mocks base method
+func (m *MockVacancyUseCase) GetOrgVacancies(arg0 uint64) ([]models.Vacancy, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetOrgVacancies", arg0)
+	ret0, _ := ret[0].([]models.Vacancy)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetOrgVacancies indicates an expected call of GetOrgVacancies
+func (mr *MockVacancyUseCaseMockRecorder) GetOrgVacancies(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrgVacancies", reflect.TypeOf((*MockVacancyUseCase)(nil).GetOrgVacancies), arg0)
+}
+
 // GetVacancies mocks base method
 func (m *MockVacancyUseCase) GetVacancies(arg0 string) ([]models.Vacancy, error) {
 	m.ctrl.T.Helper()

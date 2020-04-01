@@ -196,3 +196,27 @@ func (r *VacancyRepository) DeleteVacancy(vacancyID uint64) (err error) {
 
 	return nil
 }
+
+func (r *VacancyRepository) GetOrgVacancies(userID uint64) (vacancies []models.Vacancy, err error) {
+	getVacancies := `SELECT id, name, salary_from, salary_to, with_tax, keywords
+					 FROM vacancy
+					WHERE organization_id = $1;`
+	rows, err := r.db.Query(getVacancies, userID)
+	if err != nil {
+		return vacancies, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var vacancyDB models.Vacancy
+		err = rows.Scan(&vacancyDB.ID, &vacancyDB.Name, &vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax,
+			&vacancyDB.Keywords)
+		if err != nil {
+			return vacancies, err
+		}
+
+		vacancies = append(vacancies, vacancyDB)
+	}
+
+	return vacancies, nil
+}
