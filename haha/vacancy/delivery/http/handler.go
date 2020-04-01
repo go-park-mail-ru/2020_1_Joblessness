@@ -167,14 +167,14 @@ func (h *Handler) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetOrgVacancies(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
-	userID, err := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
+	orgID, err := strconv.ParseUint(mux.Vars(r)["organization_id"], 10, 64)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	vacancies, err := h.useCase.GetOrgVacancies(userID)
+	vacancies, err := h.useCase.GetOrgVacancies(orgID)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
