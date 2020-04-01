@@ -378,10 +378,10 @@ func (suite *userSuite) TestGetOrganization() {
 		WithArgs(12).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"name"})
-	rows = rows.AddRow(suite.organization.Name)
+	rows = sqlmock.NewRows([]string{"name", "site", "about"})
+	rows = rows.AddRow(suite.organization.Name, suite.organization.Site, suite.organization.About)
 	suite.mock.
-		ExpectQuery("SELECT name").
+		ExpectQuery("SELECT name, site, about").
 		WithArgs(suite.organization.ID).
 		WillReturnRows(rows)
 
@@ -414,8 +414,6 @@ func (suite *userSuite) TestGetOrganizationFailedTwo() {
 		WithArgs(12).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"name"})
-	rows = rows.AddRow(suite.organization.Name)
 	suite.mock.
 		ExpectQuery("SELECT name").
 		WithArgs(suite.organization.ID).

@@ -22,12 +22,12 @@ type Organization struct {
 	Login string `json:"login,omitempty"`
 	Password string `json:"password,omitempty"`
 	Tag string `json:"tag,omitempty"`
-	About string `json:"about,omitempty"`
 	Email string `json:"email,omitempty"`
 	Phone string `json:"phone,omitempty"`
 	Registered time.Time `json:"registered,omitempty"`
 	Avatar string `json:"avatar,omitempty"`
 	Name string `json:"name,omitempty"`
+	About string `json:"about,omitempty"`
 	Site string `json:"site,omitempty"`
 }
 

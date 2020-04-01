@@ -8,10 +8,10 @@ import (
 func main() {
 	corsHandler := middleware.NewCorsHandler()
 
-	corsHandler.AddOrigin("https://91.210.170.6:8000")
-	corsHandler.AddOrigin("http://91.210.170.6:8000")
-	corsHandler.AddOrigin("http://localhost:8000")
-	corsHandler.AddOrigin("http://localhost:8080")
+	corsHandler.AddOrigin("https://5.23.54.85:80")
+	corsHandler.AddOrigin("http://5.23.54.85:80")
+	corsHandler.AddOrigin("http://localhost:80")
+	corsHandler.AddOrigin("http://localhost:80")
 	corsHandler.AddOrigin("https://compassionate-wescoff-a0cb89.netlify.com")
 
 	app := server.NewApp(corsHandler)

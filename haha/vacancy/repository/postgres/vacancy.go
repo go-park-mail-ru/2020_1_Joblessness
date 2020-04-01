@@ -175,10 +175,10 @@ func (r *VacancyRepository) ChangeVacancy(vacancy *models.Vacancy) (err error) {
 	//TODO проверять автора
 
 	changeVacancy := `UPDATE vacancy
-					  SET organization_id = $1, name = $2, description = $3, salary_from = $4, salary_to = $5,
-						  with_tax = $6, responsibilities = $7, conditions = $8, keywords = $9
-					  WHERE id = $10;`
-	_, err = r.db.Exec(changeVacancy, vacancyDB.OrganizationID, vacancyDB.Name, vacancyDB.Description,
+					  SET name = $1, description = $2, salary_from = $3, salary_to = $5,
+						  with_tax = $5, responsibilities = $6, conditions = $7, keywords = $8
+					  WHERE id = $9;`
+	_, err = r.db.Exec(changeVacancy, vacancyDB.Name, vacancyDB.Description,
 						 vacancyDB.SalaryFrom, vacancyDB.SalaryTo, vacancyDB.WithTax, vacancyDB.Responsibilities,
 						 vacancyDB.Conditions, vacancyDB.Keywords, vacancyDB.ID)
 

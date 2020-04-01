@@ -213,8 +213,8 @@ func (suite *vacancySuite) TestGetVacanciesFailedTwo() {
 
 func (suite *vacancySuite) TestChangeVacancy() {
 	suite.mock.
-		ExpectExec("UPDATE vacancy SET organization_id =").
-		WithArgs(suite.vacancy.Organization.ID, suite.vacancy.Name, suite.vacancy.Description,
+		ExpectExec("UPDATE vacancy SET name =").
+		WithArgs(suite.vacancy.Name, suite.vacancy.Description,
 		suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax, suite.vacancy.Responsibilities,
 		suite.vacancy.Conditions, suite.vacancy.Keywords, suite.vacancy.ID).
 		WillReturnResult(sqlmock.NewResult(1, 1))

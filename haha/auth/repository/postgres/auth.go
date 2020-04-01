@@ -355,8 +355,8 @@ func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, er
 
 	var org Organization
 
-	getOrg := "SELECT name FROM organization WHERE id = $1;"
-	err = r.db.QueryRow(getOrg, user.OrganizationID).Scan(&org.Name)
+	getOrg := "SELECT name, site, about FROM organization WHERE id = $1;"
+	err = r.db.QueryRow(getOrg, user.OrganizationID).Scan(&org.Name, &org.Site, &org.About)
 	if err != nil {
 		return nil, err
 	}

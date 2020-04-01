@@ -249,14 +249,7 @@ func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type Response struct {
-		User models.Person `json:"user"`
-		Summaries []models.UserSummary `json:"summaries"`
-	}
-
-	jsonData, _ := json.Marshal(Response{
-		*user, []models.UserSummary{},
-	})
+	jsonData, _ := json.Marshal(user)
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
