@@ -20,5 +20,6 @@ type OrganizationInfo struct {
 	Name string `json:"name,omitempty"`
 	Site string `json:"site,omitempty"`
 	Tag string `json:"tag,omitempty"`
+	About string `json:"about,omitempty"`
 	Avatar string `json:"avatar,omitempty"`
 }

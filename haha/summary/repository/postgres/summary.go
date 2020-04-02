@@ -1,12 +1,9 @@
-package postgres
+package summaryRepoPostgres
 
 import (
 	"database/sql"
-	"fmt"
-	"github.com/kataras/golog"
 	"joblessness/haha/models"
-	"log"
-	"math"
+	summaryInterfaces "joblessness/haha/summary/interfaces"
 	"strings"
 	"time"
 )
@@ -14,60 +11,60 @@ import (
 type Summary struct {
 	ID uint64
 	AuthorID uint64
-	Keywords sql.NullString
+	Keywords string
 }
 
 type Education struct {
 	SummaryID uint64
-	Institution sql.NullString
-	Speciality sql.NullString
-	Graduated sql.NullString
-	Type sql.NullString
+	Institution string
+	Speciality string
+	Graduated sql.NullTime
+	Type string
 }
 
 type Experience struct {
 	SummaryID uint64
-	CompanyName sql.NullString
-	Role sql.NullString
-	Responsibilities sql.NullString
+	CompanyName string
+	Role string
+	Responsibilities string
 	Start sql.NullTime
 	Stop sql.NullTime
 }
 
 type User struct {
 	ID             uint64
-	Login          sql.NullString
-	Password       sql.NullString
+	Login          string
+	Password       string
 	OrganizationID uint64
 	PersonID       uint64
-	Tag            sql.NullString
-	Email          sql.NullString
-	Phone          sql.NullString
-	Registered     sql.NullTime
-	Avatar         sql.NullString
+	Tag            string
+	Email          string
+	Phone          string
+	Registered     time.Time
+	Avatar         string
 }
 
 type Person struct {
-	ID       sql.NullString
-	Name     sql.NullString
-	Gender   sql.NullString
-	Birthday sql.NullTime
+	ID       uint64
+	Name     string
+	Gender   string
+	Birthday time.Time
 }
 
 func toPostgres(s *models.Summary) (summary *Summary, educations []Education, experiences []Experience) {
 	summary = &Summary{
 		ID:       s.ID,
 		AuthorID: s.Author.ID,
-		Keywords: sql.NullString{String: s.Keywords, Valid: true},
+		Keywords: s.Keywords,
 	}
 
 	for _, education := range s.Educations {
 		educations = append(educations, Education{
 			SummaryID:   summary.ID,
-			Institution: sql.NullString{String: education.Institution, Valid: true},
-			Speciality:  sql.NullString{String: education.Speciality, Valid: true},
-			Graduated:   sql.NullString{String: education.Graduated, Valid: true},
-			Type:        sql.NullString{String: education.Type, Valid: true},
+			Institution: education.Institution,
+			Speciality:  education.Speciality,
+			Graduated:   sql.NullTime{education.Graduated, !education.Graduated.IsZero()},
+			Type:        education.Type,
 		})
 	}
 
@@ -83,11 +80,11 @@ func toPostgres(s *models.Summary) (summary *Summary, educations []Education, ex
 
 		experiences = append(experiences, Experience{
 			SummaryID:        summary.ID,
-			CompanyName:      sql.NullString{String: experience.CompanyName, Valid: true},
-			Role:             sql.NullString{String: experience.Role, Valid: true},
-			Responsibilities: sql.NullString{String: experience.Responsibilities, Valid: true},
-			Start:            sql.NullTime{Time: start, Valid: true},
-			Stop:             sql.NullTime{Time: stop, Valid: true},
+			CompanyName:      experience.CompanyName,
+			Role:             experience.Role,
+			Responsibilities: experience.Responsibilities,
+			Start:            sql.NullTime{experience.Start, !experience.Start.IsZero()},
+			Stop:             sql.NullTime{experience.Stop, !experience.Stop.IsZero()},
 		})
 	}
 
@@ -99,10 +96,10 @@ func toModel(s *Summary, eds []Education, exs []Experience, u *User, p *Person) 
 
 	for _, ed := range eds {
 		educations = append(educations, models.Education{
-			Institution: ed.Institution.String,
-			Speciality:  ed.Speciality.String,
-			Graduated:   ed.Graduated.String,
-			Type:        ed.Type.String,
+			Institution: ed.Institution,
+			Speciality:  ed.Speciality,
+			Graduated:   ed.Graduated.Time,
+			Type:        ed.Type,
 		})
 	}
 
@@ -115,49 +112,45 @@ func toModel(s *Summary, eds []Education, exs []Experience, u *User, p *Person) 
 			ex.Start.Time.Day(), ex.Start.Time.Hour(), ex.Start.Time.Minute(), ex.Start.Time.Second())
 
 		experiences = append(experiences, models.Experience{
-			CompanyName:      ex.CompanyName.String,
-			Role:             ex.Role.String,
-			Responsibilities: ex.Responsibilities.String,
-			Start:            start,
-			Stop:             stop,
+			CompanyName:      ex.CompanyName,
+			Role:             ex.Role,
+			Responsibilities: ex.Responsibilities,
+			Start:            ex.Start.Time,
+			Stop:             ex.Stop.Time,
 		})
 	}
 
-	nameArr := strings.Split(p.Name.String, " ")
+	nameArr := strings.Split(p.Name, " ")
 	firstName := nameArr[0]
 	var lastName string
 	if len(nameArr) > 1 {
 		lastName = nameArr[1]
 	}
 
-	birthday := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n", u.Registered.Time.Year(), u.Registered.Time.Month(),
-		u.Registered.Time.Day(), u.Registered.Time.Hour(), u.Registered.Time.Minute(), u.Registered.Time.Second())
-
 	author := models.Author{
 		ID:        u.ID,
-		Tag:       u.Tag.String,
-		Email:     u.Email.String,
-		Phone:     u.Phone.String,
-		Avatar:    u.Avatar.String,
+		Tag:       u.Tag,
+		Email:     u.Email,
+		Phone:     u.Phone,
+		Avatar:    u.Avatar,
 		FirstName: firstName,
 		LastName:  lastName,
-		Gender:    p.Gender.String,
-		Birthday:  birthday,
+		Gender:    p.Gender,
+		Birthday:  p.Birthday,
 	}
 
 	return &models.Summary{
 		ID:          s.ID,
 		Author:      author,
-		Keywords:    s.Keywords.String,
+		Keywords:    s.Keywords,
 		Educations:  educations,
 		Experiences: experiences,
 	}
 }
 
 type GetOptions struct {
-	UserID     uint64
-	PageNumber uint64
-	PageSize   uint64
+	userID uint64
+	page int
 }
 
 type SummaryRepository struct {
@@ -213,7 +206,7 @@ func (r *SummaryRepository) GetEducationsBySummaryID(summaryID uint64) ([]Educat
 	if err != nil {
 		return nil, err
 	}
-
+	defer rows.Close()
 	var educationDBs []Education
 
 	for rows.Next() {
@@ -239,7 +232,7 @@ func (r *SummaryRepository) GetExperiencesBySummaryID(summaryID uint64) ([]Exper
 	if err != nil {
 		return nil, err
 	}
-
+	defer rows.Close()
 	var experienceDBs []Experience
 
 	for rows.Next() {
@@ -259,24 +252,16 @@ func (r *SummaryRepository) GetExperiencesBySummaryID(summaryID uint64) ([]Exper
 
 func (r *SummaryRepository) GetSummaryAuthor(authorID uint64) (*User, *Person, error) {
 	user := User{ID: authorID}
-
-	getUser := `SELECT person_id, tag, email, phone, avatar
-				FROM users WHERE id = $1`
-	err := r.db.QueryRow(getUser, user.ID).Scan(&user.PersonID, &user.Tag, &user.Email, &user.Phone, &user.Avatar)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	var person Person
 
-	getPerson := `SELECT name, gender, birthday
-				  FROM person WHERE id = $1`
-	err = r.db.QueryRow(getPerson, user.PersonID).Scan(&person.Name, &person.Gender, &person.Birthday)
-	if err != nil {
-		return nil, nil ,err
-	}
+	getUser := `SELECT tag, email, phone, avatar, name, gender, birthday
+				FROM users 
+				JOIN person p on users.person_id = p.id
+				WHERE users.id = $1`
+	err := r.db.QueryRow(getUser, user.ID).Scan(&user.Tag, &user.Email, &user.Phone, &user.Avatar,
+		&person.Name, &person.Gender, &person.Birthday)
 
-	return &user, &person, nil
+	return &user, &person, err
 }
 
 func (r *SummaryRepository) GetSummaries(opt *GetOptions) (summaries []models.Summary, pageCount uint64,
@@ -300,38 +285,25 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) (summaries []models.Su
 
 	var rows *sql.Rows
 
-	var pageNumber uint64 = 0
-	if opt.PageNumber != 0 {
-		pageNumber = opt.PageNumber
-	}
-	if pageNumber > pageCount {
-		pageNumber = pageCount
-	}
-
-	var pageSize uint64 = 10
-	if opt.PageSize != 0 {
-		pageSize = opt.PageSize
-	}
-
-	if opt.UserID == 0 {
-		getSummaries := `SELECT summary.id, summary.author, summary.keywords
+	if opt.userID == 0 {
+		getSummaries := `SELECT id, author, keywords
 					 	 FROM summary
-					 	 JOIN (SELECT id FROM summary ORDER BY id LIMIT $1 OFFSET $2) AS s
-					 	 ON summary.id = s.id;`
-		rows, err = r.db.Query(getSummaries, pageSize, (pageNumber - 1) * pageSize)
+					 	 LIMIT $1 OFFSET $2;`
+		rows, err = r.db.Query(getSummaries, opt.page*10, 9)
 		if err != nil {
 			return summaries, pageCount, hasPrev, hasNext, err
 		}
 	} else {
 		getSummaries := `SELECT id, author, keywords
-					 	 FROM summary
-					 	 JOIN (SELECT id FROM summary WHERE author = $1 ORDER BY id LIMIT $2 OFFSET $3) AS s
-					 	 ON summary.id = s.id`
-		rows, err = r.db.Query(getSummaries, opt.UserID, pageSize, (pageNumber - 1) * pageSize)
+					 	 FROM summary WHERE author = $1
+						LIMIT $2 OFFSET $3;`
+		rows, err = r.db.Query(getSummaries, opt.userID, opt.page*10, 9)
 		if err != nil {
 			return summaries, pageCount, hasPrev, hasNext, err
 		}
 	}
+	defer rows.Close()
+	var summaries []models.Summary
 
 	for rows.Next() {
 		var summaryDB Summary
@@ -362,22 +334,12 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) (summaries []models.Su
 	return summaries, pageCount, hasPrev, hasNext, err
 }
 
-func (r *SummaryRepository) GetAllSummaries(pageNumber uint64) (summaries []models.Summary, pageCount uint64,
-																hasPrev, hasNext bool, err error) {
-	return r.GetSummaries(&GetOptions{
-		PageNumber: pageNumber,
-		PageSize: 10,
-	})
+func (r *SummaryRepository) GetAllSummaries(page int) (summaries []models.Summary, err error) {
+	return r.GetSummaries(&GetOptions{0, page})
 }
 
-func (r *SummaryRepository) GetUserSummaries(userID uint64, pageNumber uint64) (summaries []models.Summary,
-																				pageCount uint64, hasPrev, hasNext bool,
-																				err error) {
-	return r.GetSummaries(&GetOptions{
-		UserID: userID,
-		PageNumber: pageNumber,
-		PageSize: 10,
-	})
+func (r *SummaryRepository) GetUserSummaries(userID uint64) (summaries []models.Summary, err error) {
+	return r.GetSummaries(&GetOptions{userID, 0})
 }
 
 func (r *SummaryRepository) GetSummary(summaryID uint64) (*models.Summary, error) {
@@ -402,34 +364,41 @@ func (r *SummaryRepository) GetSummary(summaryID uint64) (*models.Summary, error
 
 	userDB, personDB, err := r.GetSummaryAuthor(summaryDB.AuthorID)
 
-	return toModel(&summaryDB, educationDBs, experienceDBs, userDB, personDB), nil
+	return toModel(&summaryDB, educationDBs, experienceDBs, userDB, personDB), err
 }
 
 func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 	summaryDB, educationDBs, experienceDBs := toPostgres(summary)
 
 	changeSummary := `UPDATE summary
-					  SET author = $1, keywords = $2
-					  WHERE id = $3`
-	_, err = r.db.Exec(changeSummary, summaryDB.AuthorID, summaryDB.Keywords, summaryDB.ID)
+					  SET keywords = COALESCE(NULLIF(keywords, ''), $1)
+					  WHERE id = $2`
+	_, err = r.db.Exec(changeSummary, summaryDB.Keywords, summaryDB.ID)
 	if err != nil {
 		return err
 	}
 
 	changeEducation := `UPDATE education
-						SET institution = $1, speciality = $2, graduated = $3, type = $4
+						SET institution = COALESCE(NULLIF(institution, ''), $1), 
+						    speciality = COALESCE(NULLIF(speciality, ''), $2),
+						    graduated = COALESCE(NULLIF(graduated, ''), $3), 
+						    type = COALESCE(NULLIF(type, ''), $4)
 						WHERE summary_id = $5`
 
 	for _, educationDB := range educationDBs {
 		_, err = r.db.Exec(changeEducation, &educationDB.Institution, &educationDB.Speciality, &educationDB.Graduated,
-						   &educationDB.Type, educationDB.SummaryID)
+						   &educationDB.Type, &educationDB.SummaryID)
 		if err != nil {
 			return err
 		}
 	}
 
 	changeExperience := `UPDATE experience
-						SET company_name = $1, role = $2, responsibilities = $3, start = $4, stop = $5
+						SET company_name = COALESCE(NULLIF(company_name, ''), $1),
+						    role = COALESCE(NULLIF(role, ''), $2), 
+						    responsibilities = COALESCE(NULLIF(responsibilities, ''), $3),
+						    start = COALESCE(NULLIF(start, ''), $4),
+						    stop = COALESCE(NULLIF(stop, ''), $5)
 						WHERE summary_id = $6`
 
 	for _, experienceDB := range experienceDBs {
@@ -452,19 +421,123 @@ func (r *SummaryRepository) DeleteSummary(summaryID uint64) (err error) {
 		return err
 	}
 
-	deleteEducations := `DELETE FROM education
-						 WHERE summary_id = $1`
-	_, err = r.db.Exec(deleteEducations, summaryID)
+	//TODO Убрал удаление связанных строк CASCADE есть в бд
+	return nil
+}
+
+func (r *SummaryRepository) IsPersonSummary(summaryID, userID uint64) (res bool, err error) {
+	findSummary := `SELECT u.id
+				FROM users u 
+				JOIN summary s on u.id = s.author
+				WHERE s.id = $1
+				AND s.author = $2`
+	rows, err := r.db.Query(findSummary, summaryID, userID)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (r *SummaryRepository) SendSummary(sendSummary *models.SendSummary) (err error) {
+	setLike := `INSERT INTO response (summary_id, vacancy_id)
+				VALUES ($1, $2)
+				ON CONFLICT DO NOTHING;`
+	rows, err := r.db.Exec(setLike, sendSummary.SummaryID, sendSummary.VacancyID)
 	if err != nil {
 		return err
 	}
-
-	deleteExperiences := `DELETE FROM experience
-						  WHERE summary_id = $1`
-	_, err = r.db.Exec(deleteExperiences, summaryID)
-	if err != nil {
-		return err
+	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
+		return summaryInterfaces.ErrSummaryAlreadySend
 	}
 
 	return nil
+}
+
+func (r *SummaryRepository) RefreshSummary(summaryID, vacancyID uint64) (err error) {
+	setLike := `UPDATE response 
+				SET date = CURRENT_TIMESTAMP,
+				    approved = false,
+				    rejected = false
+				WHERE summary_id = $1
+				AND vacancy_id = $2;`
+	rows, err := r.db.Exec(setLike, summaryID, vacancyID)
+	if err != nil {
+		return err
+	}
+	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
+		return summaryInterfaces.ErrNoSummaryToRefresh
+	}
+
+	return nil
+}
+
+func (r *SummaryRepository) IsOrganizationVacancy(vacancyID, userID uint64) (res bool, err error) {
+	findSummary := `SELECT u.id
+				FROM users u 
+				JOIN vacancy v on u.id = v.organization_id
+				WHERE v.id = $1
+				AND v.organization_id = $2`
+	rows, err := r.db.Query(findSummary, vacancyID, userID)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (r *SummaryRepository) ResponseSummary(sendSummary *models.SendSummary)  (err error) {
+	response := `UPDATE response 
+				SET date = CURRENT_TIMESTAMP,
+				    approved = $1,
+				    rejected = $2
+				WHERE summary_id = $3
+				AND vacancy_id = $4;`
+	rows, err := r.db.Exec(response, sendSummary.Accepted, sendSummary.Denied, sendSummary.SummaryID, sendSummary.VacancyID)
+	if err != nil {
+		return err
+	}
+	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
+		return summaryInterfaces.ErrNoSummaryToRefresh
+	}
+
+	return nil
+}
+
+func (r *SummaryRepository) GetOrgSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
+	getSummary := `SELECT u.id, u.tag, v.id, s.id, s.keywords
+				   FROM vacancy v 
+				   JOIN response r on v.id = r.vacancy_id
+				       AND r.approved = false
+				       AND r.rejected = false
+				   JOIN summary s on r.summary_id = s.id
+				   JOIN users u on s.author = u.id
+				   WHERE v.organization_id = $1
+				   order by r.date desc`
+
+	rows, err := r.db.Query(getSummary, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var vacancyDB models.VacancyResponse
+
+		err = rows.Scan(&vacancyDB.UserID, &vacancyDB.Tag, &vacancyDB.VacancyID, &vacancyDB.SummaryID, &vacancyDB.Keywords)
+		if err != nil {
+			return nil, err
+		}
+
+		summaries = append(summaries, &vacancyDB)
+	}
+	return summaries, nil
 }

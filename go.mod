@@ -11,6 +11,7 @@ require (
 	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/kataras/golog v0.0.10
 	github.com/lib/pq v1.3.0
+	github.com/microcosm-cc/bluemonday v1.0.2
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20200317142112-1b76d66859c6
 )

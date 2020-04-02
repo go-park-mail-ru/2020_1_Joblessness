@@ -5,16 +5,16 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 	"joblessness/haha/models"
-	"joblessness/haha/vacancy"
+	"joblessness/haha/vacancy/interfaces"
 	"net/http"
 	"strconv"
 )
 
 type Handler struct {
-	useCase vacancy.VacancyUseCase
+	useCase vacancyInterfaces.VacancyUseCase
 }
 
-func NewHandler(useCase vacancy.VacancyUseCase) *Handler {
+func NewHandler(useCase vacancyInterfaces.VacancyUseCase) *Handler {
 	return &Handler{useCase}
 }
 
@@ -88,17 +88,12 @@ func (h *Handler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetVacancies(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
+	page := r.FormValue("page")
 
-	vacancies, err := h.useCase.GetVacancies()
+	vacancies, err := h.useCase.GetVacancies(page)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	if len(vacancies) == 0 {
-		golog.Errorf("#%s: %s",  rID, "no vacancies")
-		w.WriteHeader(http.StatusNoContent)
 		return
 	}
 
@@ -166,4 +161,32 @@ func (h *Handler) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+
+func (h *Handler) GetOrgVacancies(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
+	orgID, err := strconv.ParseUint(mux.Vars(r)["organization_id"], 10, 64)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	vacancies, err := h.useCase.GetOrgVacancies(orgID)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	jsonData, err := json.Marshal(vacancies)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
 }

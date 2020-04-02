@@ -1,54 +1,56 @@
 package server
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
-	"joblessness/haha/auth"
 	"joblessness/haha/auth/delivery/http"
+	"joblessness/haha/auth/interfaces"
 	postgresAuth "joblessness/haha/auth/repository/postgres"
 	usecaseAuth "joblessness/haha/auth/usecase"
 	"joblessness/haha/middleware"
-	"joblessness/haha/summary"
-	"joblessness/haha/summary/delivery/http"
+ecaseSearch "joblessness/haha/search/usecase"
+"joblessness/haha/summary/delivery/http"
+su"joblessness/haha/middleware/xss"
+	httpSearch "joblessness/haha/search/delivery/http"
+	searchInterfaces "joblessness/haha/search/interfaces"
+	postgresSearch "joblessness/haha/search/repository/postgres"
+	usmmaryInterfaces "joblessness/haha/summary/interfaces"
 	postgresSummary "joblessness/haha/summary/repository/postgres"
 	usecaseSummary "joblessness/haha/summary/usecase"
-	"joblessness/haha/utils/cors"
 	"joblessness/haha/utils/database"
-	"joblessness/haha/utils/seed"
-	"joblessness/haha/vacancy"
 	"joblessness/haha/vacancy/delivery/http"
+	vacancyInterfaces "joblessness/haha/vacancy/interfaces"
 	postgresVacancy "joblessness/haha/vacancy/repository/postgres"
 	usecaseVacancy "joblessness/haha/vacancy/usecase"
-	"log"
 	"net/http"
-	"os"
 )
 
 type App struct {
 	httpServer *http.Server
-	authUse auth.AuthUseCase
-	vacancyUse vacancy.VacancyUseCase
-	summaryUse summary.SummaryUseCase
-	corsHandler *cors.CorsHandler
+	authUse    authInterfaces.AuthUseCase
+	vacancyUse vacancyInterfaces.VacancyUseCase
+	summaryUse summaryInterfaces.SummaryUseCase
+	searchUse  searchInterfaces.SearchUseCase
+	corsHandler *middleware.CorsHandler
 }
 
-func NewApp(c *cors.CorsHandler) *App {
-	database.InitDatabase(os.Getenv("HAHA_DB_USER"), os.Getenv("HAHA_DB_PASSWORD"), os.Getenv("HAHA_DB_NAME"))
-	if err := database.OpenDatabase(); err != nil {
-		log.Println(err.Error())
+func NewApp(c *middleware.CorsHandler) *App {
+	db, err := database.OpenDatabase()
+	if err != nil {
+		golog.Error(err.Error())
 		return nil
 	}
-	db := database.GetDatabase()
 
 	userRepo := postgresAuth.NewUserRepository(db)
 	vacancyRepo := postgresVacancy.NewVacancyRepository(db)
 	summaryRepo := postgresSummary.NewSummaryRepository(db)
+	searchRepo := postgresSearch.NewAuthRepository(db)
 
 	return &App{
 		authUse: usecaseAuth.NewAuthUseCase(userRepo),
 		vacancyUse: usecaseVacancy.NewVacancyUseCase(vacancyRepo),
 		summaryUse: usecaseSummary.NewSummaryUseCase(summaryRepo),
+		searchUse: usecaseSearch.NewSearchUseCase(searchRepo),
 		corsHandler: c,
 	}
 }
@@ -58,10 +60,12 @@ func (app *App) StartRouter() {
 
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
+	mXss := xss.NewXssHandler()
 
 	router.Use(m.RecoveryMiddleware)
 	router.Use(app.corsHandler.CorsMiddleware)
 	router.Use(m.LogMiddleware)
+	router.Use(mXss.SanitizeMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
 	// users
@@ -73,13 +77,13 @@ func (app *App) StartRouter() {
 	// summaries
 	httpSummary.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
 
-	seeder := seed.NewSeeder(&app.authUse)
-	err := seeder.Seed()
-	if err != nil {
-		golog.Error(err.Error())
-	}
+	// search
+	httpSearch.RegisterHTTPEndpoints(router, app.searchUse)
 
 	http.Handle("/", router)
-	fmt.Println("Server started")
-	http.ListenAndServe(":8001", router)
+	golog.Info("Server started")
+	err := http.ListenAndServe(":8001", router)
+	if err != nil {
+		golog.Error("Server failed")
+	}
 }

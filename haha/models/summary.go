@@ -1,18 +1,20 @@
 package models
 
+import "time"
+
 type Education struct {
 	Institution string `json:"institution,omitempty"`
-	Speciality string `json:"speciality,omitempty"`
-	Graduated string `json:"graduated,omitempty"`
-	Type string `json:"type,omitempty"`
+	Speciality  string `json:"speciality,omitempty"`
+	Graduated   time.Time   `json:"graduated,omitempty"`
+	Type        string `json:"type,omitempty"`
 }
 
 type Experience struct {
 	CompanyName string `json:"company_name,omitempty"`
 	Role string `json:"role,omitempty"`
 	Responsibilities string `json:"responsibilities,omitempty"`
-	Start string `json:"start,omitempty"`
-	Stop string `json:"stop,omitempty"`
+	Start time.Time `json:"start,omitempty"`
+	Stop time.Time `json:"stop,omitempty"`
 }
 
 type Author struct {
@@ -24,7 +26,7 @@ type Author struct {
 	FirstName string `json:"first_name,omitempty"`
 	LastName string `json:"last_name,omitempty"`
 	Gender string `json:"gender,omitempty"`
-	Birthday string `json:"birthday,omitempty"`
+	Birthday time.Time `json:"birthday,omitempty"`
 }
 
 type Summary struct {
@@ -34,3 +36,22 @@ type Summary struct {
 	Educations []Education `json:"educations,omitempty"`
 	Experiences []Experience `json:"experiences,omitempty"`
 }
+
+type SendSummary struct {
+	VacancyID uint64 `json:"vacancy_id"`
+	SummaryID uint64 `json:"summary_id"`
+	UserID uint64 `json:"user_id,omitempty"`
+	OrganizationID uint64 `json:"organization_id,omitempty"`
+	Accepted bool `json:"accepted,omitempty"`
+	Denied bool `json:"denied,omitempty"`
+}
+
+type VacancyResponse struct {
+	UserID uint64 `json:"user_id,omitempty"`
+	Tag string `json:"tag,omitempty"`
+	VacancyID uint64 `json:"vacancy_id"`
+	SummaryID uint64 `json:"summary_id"`
+	Keywords  string `json:"keywords,omitempty"`
+}
+
+type OrgSummaries []*VacancyResponse

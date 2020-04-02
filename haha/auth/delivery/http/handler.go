@@ -5,8 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/juju/loggo"
 	"github.com/kataras/golog"
-	"io/ioutil"
-	"joblessness/haha/auth"
+	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/models"
 	"net/http"
 	"strconv"
@@ -14,11 +13,11 @@ import (
 )
 
 type Handler struct {
-	useCase auth.AuthUseCase
+	useCase authInterfaces.AuthUseCase
 	logger  *loggo.Logger
 }
 
-func NewHandler(useCase auth.AuthUseCase) *Handler {
+func NewHandler(useCase authInterfaces.AuthUseCase) *Handler {
 	return &Handler{
 		useCase: useCase,
 	}
@@ -61,7 +60,7 @@ func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	err = h.useCase.SetAvatar(form, userID)
 
 	switch err {
-	case auth.ErrUploadAvatar:
+	case authInterfaces.ErrUploadAvatar:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusFailedDependency)
 		return
@@ -78,15 +77,9 @@ func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
-	body, err := ioutil.ReadAll(r.Body)
-	golog.Debugf("#%s: %s",  rID, body)
-	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 	var user models.Person
-	err = json.Unmarshal(body, &user)
+	err := json.NewDecoder(r.Body).Decode(&user)
+	golog.Debugf("#%s: %w", rID, user)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -101,7 +94,7 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 
 	err = h.useCase.RegisterPerson(&user)
 	switch err {
-	case auth.ErrUserAlreadyExists:
+	case authInterfaces.ErrUserAlreadyExists:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -119,16 +112,9 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	golog.Debugf("#%s: %s",  rID, body)
-
 	var org models.Organization
-	err = json.Unmarshal(body, &org)
+	err := json.NewDecoder(r.Body).Decode(&org)
+	golog.Debugf("#%s: %w", rID, org)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -143,7 +129,7 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 
 	err = h.useCase.RegisterOrganization(&org)
 	switch err {
-	case auth.ErrUserAlreadyExists:
+	case authInterfaces.ErrUserAlreadyExists:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -161,17 +147,11 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 	var user models.UserLogin
-	err = json.Unmarshal(body, &user)
-	golog.Debugf("#%s: %s",  rID, user)
+	err := json.NewDecoder(r.Body).Decode(&user)
+	golog.Debugf("#%s: %w", rID, user)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w\n%w",  rID, err, user)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -182,9 +162,9 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, sessionId, err := h.useCase.Login(user.Login, user.Password)
+	userId, role, sessionId, err := h.useCase.Login(user.Login, user.Password)
 	switch err {
-	case auth.ErrWrongLogPas:
+	case authInterfaces.ErrWrongLogPas:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -207,7 +187,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, cookie)
 
-	jsonData, _ := json.Marshal(models.Response{userId})
+	jsonData, _ := json.Marshal(models.Response{ID: userId, Role: role})
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }
@@ -246,7 +226,14 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, _ := json.Marshal(models.Response{userID})
+	role, err := h.useCase.GetRole(userID)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	jsonData, _ := json.Marshal(models.Response{ID: userID, Role: role})
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }
@@ -262,22 +249,13 @@ func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type Response struct {
-		User models.UserInfo `json:"user"`
-		Summaries []models.UserSummary `json:"summaries"`
-	}
-
-	jsonData, _ := json.Marshal(Response{
-		models.UserInfo{user.FirstName, user.LastName, "", ""},
-		[]models.UserSummary{},
-	})
+	jsonData, _ := json.Marshal(user)
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
 
 func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-
 	userID, ok := r.Context().Value("userID").(uint64)
 	if !ok {
 		golog.Errorf("#%s: %s",  rID, "no cookie")
@@ -292,14 +270,8 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var person models.Person
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	err = json.Unmarshal(body, &person)
+	err := json.NewDecoder(r.Body).Decode(&person)
+	golog.Debugf("#%s: %w", rID, person)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -330,12 +302,10 @@ func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type Response struct {
-		User models.OrganizationInfo `json:"user"`
+		User models.Organization `json:"user"`
 	}
 
-	jsonData, _ := json.Marshal(Response{
-		models.OrganizationInfo{user.Name, user.Site, "", ""},
-	})
+	jsonData, _ := json.Marshal(Response{*user})
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
@@ -357,15 +327,8 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var org models.Organization
-
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	err = json.Unmarshal(body, &org)
+	err := json.NewDecoder(r.Body).Decode(&org)
+	golog.Debugf("#%s: %w", rID, org)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -409,6 +372,64 @@ func (h *Handler) GetListOfOrgs(w http.ResponseWriter, r *http.Request) {
 		listOrgs,
 	})
 
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}
+
+func (h *Handler) LikeUser(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
+	userID, ok := r.Context().Value("userID").(uint64)
+	if !ok {
+		golog.Errorf("#%s: %s",  rID, "no cookie")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	var favoriteID uint64
+	favoriteID, _ = strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
+
+	likeSet, err := h.useCase.LikeUser(userID, favoriteID)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	type Response struct {
+		Like bool `json:"like"`
+	}
+	jsonData, _ := json.Marshal(Response{
+		likeSet,
+	})
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}
+
+func (h *Handler) GetUserFavorite(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
+	userID, ok := r.Context().Value("userID").(uint64)
+	if !ok {
+		golog.Errorf("#%s: %s",  rID, "no cookie")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	if favoriteID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); favoriteID != userID {
+		golog.Errorf("#%s: %s",  rID, "user requested and session user doesnt match")
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	favorites, err := h.useCase.GetUserFavorite(userID)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	jsonData, _ := json.Marshal(favorites)
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }

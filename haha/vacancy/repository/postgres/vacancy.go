@@ -1,4 +1,4 @@
-package postgres
+package vacancyRepoPostgres
 
 import (
 	"database/sql"
@@ -9,20 +9,18 @@ import (
 type Vacancy struct {
 	ID uint64
 	OrganizationID uint64
-	Name sql.NullString
-	Description sql.NullString
+	Name string
+	Description string
 	SalaryFrom int
 	SalaryTo int
 	WithTax bool
-	Responsibilities sql.NullString
-	Conditions sql.NullString
-	Keywords sql.NullString
+	Responsibilities string
+	Conditions string
+	Keywords string
 }
 
 type User struct {
 	ID             uint64
-	Login          string
-	Password       string
 	OrganizationID uint64
 	PersonID       uint64
 	Tag            string
@@ -42,14 +40,14 @@ func toPostgres(v *models.Vacancy) *Vacancy {
 	return &Vacancy{
 		ID:               v.ID,
 		OrganizationID:   v.Organization.ID,
-		Name:             sql.NullString{String: v.Name, Valid: true},
-		Description:      sql.NullString{String: v.Description, Valid: true},
+		Name:             v.Name,
+		Description:      v.Description,
 		SalaryFrom:       v.SalaryFrom,
 		SalaryTo:         v.SalaryTo,
 		WithTax:          v.WithTax,
-		Responsibilities: sql.NullString{String: v.Responsibilities, Valid: true},
-		Conditions:       sql.NullString{String: v.Conditions, Valid: true},
-		Keywords:         sql.NullString{String: v.Keywords, Valid: true},
+		Responsibilities: v.Responsibilities,
+		Conditions:       v.Conditions,
+		Keywords:         v.Keywords,
 	}
 }
 
@@ -67,14 +65,14 @@ func toModel(v *Vacancy, u *User, o *Organization) *models.Vacancy {
 	return &models.Vacancy{
 		ID:               v.ID,
 		Organization:     organization,
-		Name:             v.Name.String,
-		Description:      v.Description.String,
+		Name:             v.Name,
+		Description:      v.Description,
 		SalaryFrom:       v.SalaryFrom,
 		SalaryTo:         v.SalaryTo,
 		WithTax:          v.WithTax,
-		Responsibilities: v.Responsibilities.String,
-		Conditions:       v.Conditions.String,
-		Keywords:         v.Keywords.String,
+		Responsibilities: v.Responsibilities,
+		Conditions:       v.Conditions,
+		Keywords:         v.Keywords,
 	}
 }
 
@@ -104,34 +102,53 @@ func (r *VacancyRepository) CreateVacancy(vacancy *models.Vacancy) (vacancyID ui
 
 func (r *VacancyRepository) GetVacancyOrganization(organizationID uint64) (*User, *Organization, error) {
 	user := User{ID: organizationID}
-
-	getUser := `SELECT person_id, tag, email, phone, avatar
-				FROM users WHERE id = $1`
-	err := r.db.QueryRow(getUser, user.ID).Scan(&user.PersonID, &user.Tag, &user.Email, &user.Phone, &user.Avatar)
-	if err != nil {
-		return nil, nil, err
-	}
-
 	var organization Organization
 
-	getOrganization := `SELECT name, site
-						FROM organization WHERE id = $1`
-	err = r.db.QueryRow(getOrganization, user.OrganizationID).Scan(&organization.Name, &organization.Site)
+	getUser := `SELECT organization_id, tag, email, phone, avatar, name, site
+				FROM users
+				JOIN organization o on users.organization_id = o.id
+				WHERE id = $1 AND organization_id IS NOT NULL`
+	err := r.db.QueryRow(getUser, user.ID).
+		Scan(&user.OrganizationID, &user.Tag, &user.Email, &user.Phone, &user.Avatar, &organization.Name, &organization.Site)
 	if err != nil {
 		return nil, nil, err
 	}
 
+	organization.ID = user.OrganizationID
 	return &user, &organization, nil
 }
 
-func (r *VacancyRepository) GetVacancies() (vacancies []models.Vacancy, err error) {
+func (r *VacancyRepository) GetVacancy(vacancyID uint64) (vacancy *models.Vacancy, err error) {
+	var vacancyDB Vacancy
+
+	getVacancy := `SELECT id, organization_id, name, description, salary_from, salary_to, with_tax, responsibilities,
+       					  conditions, keywords
+				   FROM vacancy WHERE id = $1;`
+	err = r.db.QueryRow(getVacancy, vacancyID).Scan(&vacancyDB.ID, &vacancyDB.OrganizationID, &vacancyDB.Name,
+		&vacancyDB.Description, &vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
+		&vacancyDB.Conditions, &vacancyDB.Keywords)
+	if err != nil {
+		return nil, err
+	}
+
+	userDB, organizationDB, err := r.GetVacancyOrganization(vacancyDB.OrganizationID)
+	if err != nil {
+		return nil, err
+	}
+
+	return toModel(&vacancyDB, userDB, organizationDB), nil
+}
+
+func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, err error) {
 	getVacancies := `SELECT id, organization_id, name, description, salary_from, salary_to, with_tax, responsibilities,
        						conditions, keywords
-					 FROM vacancy;`
-	rows, err := r.db.Query(getVacancies)
+					 FROM vacancy
+					LIMIT $1 OFFSET $2;`
+	rows, err := r.db.Query(getVacancies, page*10, 9)
 	if err != nil {
 		return vacancies, err
 	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var vacancyDB Vacancy
@@ -153,41 +170,19 @@ func (r *VacancyRepository) GetVacancies() (vacancies []models.Vacancy, err erro
 	return vacancies, nil
 }
 
-func (r *VacancyRepository) GetVacancy(vacancyID uint64) (vacancy *models.Vacancy, err error) {
-	var vacancyDB Vacancy
-
-	getVacancy := `SELECT id, organization_id, name, description, salary_from, salary_to, with_tax, responsibilities,
-       					  conditions, keywords
-				   FROM vacancy WHERE id = $1;`
-	err = r.db.QueryRow(getVacancy, vacancyID).Scan(vacancyDB)
-	if err != nil {
-		return vacancy, err
-	}
-
-	userDB, organizationDB, err := r.GetVacancyOrganization(vacancyDB.OrganizationID)
-	if err != nil {
-		return nil, err
-	}
-
-	return toModel(&vacancyDB, userDB, organizationDB), nil
-}
-
 func (r *VacancyRepository) ChangeVacancy(vacancy *models.Vacancy) (err error) {
 	vacancyDB := toPostgres(vacancy)
 	//TODO проверять автора
 
 	changeVacancy := `UPDATE vacancy
-					  SET organization_id = $1, name = $2, description = $3, salary_from = $4, salary_to = $5,
-						  with_tax = $6, responsibilities = $7, conditions = $8, keywords = $9
-					  WHERE id = $10;`
-	_, err = r.db.Exec(changeVacancy, &vacancyDB.OrganizationID, &vacancyDB.Name, &vacancyDB.Description,
-						 &vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
-						 &vacancyDB.Conditions, &vacancyDB.Keywords, &vacancyDB.ID)
-	if err != nil {
-		return err
-	}
+					  SET name = $1, description = $2, salary_from = $3, salary_to = $5,
+						  with_tax = $5, responsibilities = $6, conditions = $7, keywords = $8
+					  WHERE id = $9;`
+	_, err = r.db.Exec(changeVacancy, vacancyDB.Name, vacancyDB.Description,
+						 vacancyDB.SalaryFrom, vacancyDB.SalaryTo, vacancyDB.WithTax, vacancyDB.Responsibilities,
+						 vacancyDB.Conditions, vacancyDB.Keywords, vacancyDB.ID)
 
-	return nil
+	return err
 }
 
 func (r *VacancyRepository) DeleteVacancy(vacancyID uint64) (err error) {
@@ -202,17 +197,26 @@ func (r *VacancyRepository) DeleteVacancy(vacancyID uint64) (err error) {
 	return nil
 }
 
-func (r *VacancyRepository) HasVacancies() (has bool, err error) {
-	var vacancyCount int
-
-	getVacancyCount := `SELECT COUNT(*) FROM vacancy`
-	err = r.db.QueryRow(getVacancyCount).Scan(&vacancyCount)
+func (r *VacancyRepository) GetOrgVacancies(userID uint64) (vacancies []models.Vacancy, err error) {
+	getVacancies := `SELECT id, name, salary_from, salary_to, with_tax, keywords
+					 FROM vacancy
+					WHERE organization_id = $1;`
+	rows, err := r.db.Query(getVacancies, userID)
 	if err != nil {
-		return has, err
+		return vacancies, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var vacancyDB models.Vacancy
+		err = rows.Scan(&vacancyDB.ID, &vacancyDB.Name, &vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax,
+			&vacancyDB.Keywords)
+		if err != nil {
+			return vacancies, err
+		}
+
+		vacancies = append(vacancies, vacancyDB)
 	}
 
-	if vacancyCount > 0 {
-		return true, nil
-	}
-	return false, nil
+	return vacancies, nil
 }

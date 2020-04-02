@@ -1,15 +1,16 @@
-package usecase
+package vacancyUseCase
 
 import (
 	"joblessness/haha/models"
-	"joblessness/haha/vacancy"
+	"joblessness/haha/vacancy/interfaces"
+	"strconv"
 )
 
 type VacancyUseCase struct {
-	vacancyRepo vacancy.VacancyRepository
+	vacancyRepo vacancyInterfaces.VacancyRepository
 }
 
-func NewVacancyUseCase(vacancyRepo vacancy.VacancyRepository) *VacancyUseCase {
+func NewVacancyUseCase(vacancyRepo vacancyInterfaces.VacancyRepository) *VacancyUseCase {
 	return &VacancyUseCase{vacancyRepo}
 }
 
@@ -17,8 +18,9 @@ func (u *VacancyUseCase) CreateVacancy(vacancy *models.Vacancy) (vacancyID uint6
 	return u.vacancyRepo.CreateVacancy(vacancy)
 }
 
-func (u *VacancyUseCase) GetVacancies() ([]models.Vacancy, error) {
-	return u.vacancyRepo.GetVacancies()
+func (u *VacancyUseCase) GetVacancies(page string) ([]models.Vacancy, error) {
+	pageInt, _ := strconv.Atoi(page)
+	return u.vacancyRepo.GetVacancies(pageInt)
 }
 
 func (u *VacancyUseCase) GetVacancy(vacancyID uint64) (*models.Vacancy, error) {
@@ -33,6 +35,6 @@ func (u *VacancyUseCase) DeleteVacancy(vacancyID uint64) error {
 	return u.vacancyRepo.DeleteVacancy(vacancyID)
 }
 
-func (u *VacancyUseCase) HasVacancies() (has bool, err error) {
-	return u.vacancyRepo.HasVacancies()
+func (u *VacancyUseCase) GetOrgVacancies(userID uint64) ([]models.Vacancy, error) {
+	return u.vacancyRepo.GetOrgVacancies(userID)
 }
