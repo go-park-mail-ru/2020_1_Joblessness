@@ -69,15 +69,6 @@ func toPostgres(s *models.Summary) (summary *Summary, educations []Education, ex
 	}
 
 	for _, experience := range s.Experiences {
-		start, err := time.Parse(time.RFC3339, experience.Start)
-		if err != nil {
-			log.Println(err.Error())
-		}
-		stop, err := time.Parse(time.RFC3339, experience.Stop)
-		if err != nil {
-			log.Println(err.Error())
-		}
-
 		experiences = append(experiences, Experience{
 			SummaryID:        summary.ID,
 			CompanyName:      experience.CompanyName,
@@ -106,11 +97,6 @@ func toModel(s *Summary, eds []Education, exs []Experience, u *User, p *Person) 
 	var experiences []models.Experience
 
 	for _, ex := range exs {
-		start := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n", ex.Start.Time.Year(), ex.Start.Time.Month(),
-			ex.Start.Time.Day(), ex.Start.Time.Hour(), ex.Start.Time.Minute(), ex.Start.Time.Second())
-		stop := fmt.Sprintf("%d-%02d-%02dT%02d:%02d:%02d-00:00\n", ex.Start.Time.Year(), ex.Start.Time.Month(),
-			ex.Start.Time.Day(), ex.Start.Time.Hour(), ex.Start.Time.Minute(), ex.Start.Time.Second())
-
 		experiences = append(experiences, models.Experience{
 			CompanyName:      ex.CompanyName,
 			Role:             ex.Role,
@@ -164,8 +150,6 @@ func NewSummaryRepository(db *sql.DB) *SummaryRepository {
 func (r *SummaryRepository) CreateSummary(summary *models.Summary) (summaryID uint64, err error) {
 	summaryDB, educationDBs, experienceDBs := toPostgres(summary)
 
-	golog.Infof("%s %s %s", summaryDB, educationDBs, experienceDBs)
-
 	createSummary := `INSERT INTO summary (author, keywords)
 					  VALUES ($1, $2) RETURNING id;`
 	err = r.db.QueryRow(createSummary, summaryDB.AuthorID, summaryDB.Keywords).Scan(&summaryDB.ID)
@@ -178,7 +162,7 @@ func (r *SummaryRepository) CreateSummary(summary *models.Summary) (summaryID ui
 
 	for _, educationDB := range educationDBs {
 		_, err = r.db.Exec(createEducation, summaryDB.ID, educationDB.Institution, educationDB.Speciality,
-						   educationDB.Graduated, educationDB.Type)
+			educationDB.Graduated, educationDB.Type)
 		if err != nil {
 			return summaryID, err
 		}
@@ -189,7 +173,7 @@ func (r *SummaryRepository) CreateSummary(summary *models.Summary) (summaryID ui
 
 	for _, experienceDB := range experienceDBs {
 		_, err = r.db.Exec(createExperience, summaryDB.ID, experienceDB.CompanyName, experienceDB.Role,
-						   experienceDB.Responsibilities, experienceDB.Start, experienceDB.Stop)
+			experienceDB.Responsibilities, experienceDB.Start, experienceDB.Stop)
 		if err != nil {
 			return summaryID, err
 		}
@@ -264,26 +248,9 @@ func (r *SummaryRepository) GetSummaryAuthor(authorID uint64) (*User, *Person, e
 	return &user, &person, err
 }
 
-func (r *SummaryRepository) GetSummaries(opt *GetOptions) (summaries []models.Summary, pageCount uint64,
-														   hasPrev, hasNext bool, err error) {
-	var summaryCount uint64
-
-	getSummaryCount := `SELECT COUNT(*) FROM summary;`
-	err = r.db.QueryRow(getSummaryCount).Scan(&summaryCount)
-	if err != nil {
-		return summaries, pageCount, hasPrev, hasNext, err
-	}
-
-	pageCount = uint64(math.Ceil(float64(summaryCount) / float64(opt.PageSize)))
-
-	if opt.PageNumber > 1 {
-		hasPrev = true
-	}
-	if opt.PageNumber < pageCount {
-		hasNext = true
-	}
-
+func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, error) {
 	var rows *sql.Rows
+	var err error
 
 	if opt.userID == 0 {
 		getSummaries := `SELECT id, author, keywords
@@ -291,7 +258,7 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) (summaries []models.Su
 					 	 LIMIT $1 OFFSET $2;`
 		rows, err = r.db.Query(getSummaries, opt.page*10, 9)
 		if err != nil {
-			return summaries, pageCount, hasPrev, hasNext, err
+			return nil, err
 		}
 	} else {
 		getSummaries := `SELECT id, author, keywords
@@ -299,7 +266,7 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) (summaries []models.Su
 						LIMIT $2 OFFSET $3;`
 		rows, err = r.db.Query(getSummaries, opt.userID, opt.page*10, 9)
 		if err != nil {
-			return summaries, pageCount, hasPrev, hasNext, err
+			return nil, err
 		}
 	}
 	defer rows.Close()
@@ -310,28 +277,28 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) (summaries []models.Su
 
 		err = rows.Scan(&summaryDB.ID, &summaryDB.AuthorID, &summaryDB.Keywords)
 		if err != nil {
-			return summaries, pageCount, hasPrev, hasNext, err
+			return nil, err
 		}
 
 		educationDBs, err := r.GetEducationsBySummaryID(summaryDB.ID)
 		if err != nil {
-			return summaries, pageCount, hasPrev, hasNext, err
+			return nil, err
 		}
 
 		experienceDBs, err := r.GetExperiencesBySummaryID(summaryDB.ID)
 		if err != nil {
-			return summaries, pageCount, hasPrev, hasNext, err
+			return nil, err
 		}
 
 		userDB, personDB, err := r.GetSummaryAuthor(summaryDB.AuthorID)
 		if err != nil {
-			return summaries, pageCount, hasPrev, hasNext, err
+			return nil, err
 		}
 
 		summaries = append(summaries, *toModel(&summaryDB, educationDBs, experienceDBs, userDB, personDB))
 	}
 
-	return summaries, pageCount, hasPrev, hasNext, err
+	return summaries, nil
 }
 
 func (r *SummaryRepository) GetAllSummaries(page int) (summaries []models.Summary, err error) {
@@ -387,7 +354,7 @@ func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 
 	for _, educationDB := range educationDBs {
 		_, err = r.db.Exec(changeEducation, &educationDB.Institution, &educationDB.Speciality, &educationDB.Graduated,
-						   &educationDB.Type, &educationDB.SummaryID)
+			&educationDB.Type, &educationDB.SummaryID)
 		if err != nil {
 			return err
 		}
@@ -403,8 +370,8 @@ func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 
 	for _, experienceDB := range experienceDBs {
 		_, err = r.db.Exec(changeExperience, &experienceDB.CompanyName, &experienceDB.Role,
-						   &experienceDB.Responsibilities, &experienceDB.Start, &experienceDB.Stop,
-						   &experienceDB.SummaryID)
+			&experienceDB.Responsibilities, &experienceDB.Start, &experienceDB.Stop,
+			&experienceDB.SummaryID)
 		if err != nil {
 			return err
 		}
