@@ -13,7 +13,7 @@ func TestAuthPersonFlow(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := mock.NewMockUserRepository(controller)
+	repo := mock.NewMockAuthRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	login := "user"
@@ -37,7 +37,8 @@ func TestAuthPersonFlow(t *testing.T) {
 
 	//Login
 	repo.EXPECT().Login(login, password, gomock.Any()).Return(userIdEx, nil).Times(1)
-	userId, sid, err := uc.Login(login, password)
+	repo.EXPECT().GetRole(userIdEx).Return("userIdEx", nil).Times(1)
+	userId, _, sid, err := uc.Login(login, password)
 	assert.NoError(t, err)
 	assert.Equal(t, userIdEx, userId, "Id corrupted")
 	assert.NotEmpty(t, sid, "No sid")
@@ -71,7 +72,7 @@ func TestAuthOrganizationFlow(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := mock.NewMockUserRepository(controller)
+	repo := mock.NewMockAuthRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	login := "user"
@@ -110,7 +111,7 @@ func TestSetAvatarNoFile(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := mock.NewMockUserRepository(controller)
+	repo := mock.NewMockAuthRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	link := "link"
@@ -126,7 +127,7 @@ func TestListOrgs(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := mock.NewMockUserRepository(controller)
+	repo := mock.NewMockAuthRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	repo.EXPECT().GetListOfOrgs(1).Return([]models.Organization{}, nil).Times(1)
@@ -138,7 +139,7 @@ func TestLike(t *testing.T) {
 	controller := gomock.NewController(t)
 	defer controller.Finish()
 
-	repo := mock.NewMockUserRepository(controller)
+	repo := mock.NewMockAuthRepository(controller)
 	uc := NewAuthUseCase(repo)
 
 	repo.EXPECT().SetOrDeleteLike(uint64(1), uint64(5)).Return(true, nil).Times(1)

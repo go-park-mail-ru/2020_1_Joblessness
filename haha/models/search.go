@@ -1,7 +1,7 @@
 package models
 
 type SearchResult struct {
-	Persons []*Person
-	Organizations []*Organization
-	Vacancies []*Vacancy
+	Persons []*Person `json:"persons,omitempty"`
+	Organizations []*Organization `json:"organizations,omitempty"`
+	Vacancies []*Vacancy `json:"vacancies,omitempty"`
 }

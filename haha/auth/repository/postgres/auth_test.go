@@ -149,7 +149,7 @@ func (suite *userSuite) TestCreateOrg() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO organization").
-		WithArgs(suite.organization.Name, suite.organization.Site).
+		WithArgs(suite.organization.Name, suite.organization.Site, suite.organization.About).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
@@ -378,10 +378,10 @@ func (suite *userSuite) TestGetOrganization() {
 		WithArgs(12).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"name"})
-	rows = rows.AddRow(suite.organization.Name)
+	rows = sqlmock.NewRows([]string{"name", "site", "about"})
+	rows = rows.AddRow(suite.organization.Name, suite.organization.Site, suite.organization.About)
 	suite.mock.
-		ExpectQuery("SELECT name").
+		ExpectQuery("SELECT name, site, about").
 		WithArgs(suite.organization.ID).
 		WillReturnRows(rows)
 
@@ -414,8 +414,6 @@ func (suite *userSuite) TestGetOrganizationFailedTwo() {
 		WithArgs(12).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"name"})
-	rows = rows.AddRow(suite.organization.Name)
 	suite.mock.
 		ExpectQuery("SELECT name").
 		WithArgs(suite.organization.ID).
@@ -436,7 +434,7 @@ func (suite *userSuite) TestChangeOrganization() {
 
 	suite.mock.
 		ExpectExec("UPDATE organization").
-		WithArgs(suite.organization.Name, suite.organization.Site, 1).
+		WithArgs(suite.organization.Name, suite.organization.Site, suite.organization.About, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	suite.mock.
 		ExpectExec("UPDATE user").
@@ -487,12 +485,12 @@ func (suite *userSuite) TestGetOrgList() {
 
 	suite.mock.
 		ExpectQuery("SELECT users.id as userId, name, site").
-		WithArgs(0, 9).
+		WithArgs(10, 9).
 		WillReturnRows(rows)
 
 	result, err := suite.rep.GetListOfOrgs(1)
 
-	assert.Equal(suite.T(), len(result), 4)
+	assert.Equal(suite.T(), 4, len(result))
 	assert.NoError(suite.T(), err)
 }
 

@@ -3,6 +3,7 @@ package vacancyUseCase
 import (
 	"joblessness/haha/models"
 	"joblessness/haha/vacancy/interfaces"
+	"strconv"
 )
 
 type VacancyUseCase struct {
@@ -17,8 +18,9 @@ func (u *VacancyUseCase) CreateVacancy(vacancy *models.Vacancy) (vacancyID uint6
 	return u.vacancyRepo.CreateVacancy(vacancy)
 }
 
-func (u *VacancyUseCase) GetVacancies() ([]models.Vacancy, error) {
-	return u.vacancyRepo.GetVacancies()
+func (u *VacancyUseCase) GetVacancies(page string) ([]models.Vacancy, error) {
+	pageInt, _ := strconv.Atoi(page)
+	return u.vacancyRepo.GetVacancies(pageInt)
 }
 
 func (u *VacancyUseCase) GetVacancy(vacancyID uint64) (*models.Vacancy, error) {
@@ -31,4 +33,8 @@ func (u *VacancyUseCase) ChangeVacancy(vacancy *models.Vacancy) error {
 
 func (u *VacancyUseCase) DeleteVacancy(vacancyID uint64) error {
 	return u.vacancyRepo.DeleteVacancy(vacancyID)
+}
+
+func (u *VacancyUseCase) GetOrgVacancies(userID uint64) ([]models.Vacancy, error) {
+	return u.vacancyRepo.GetOrgVacancies(userID)
 }

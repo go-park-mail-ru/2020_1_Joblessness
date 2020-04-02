@@ -1,8 +1,7 @@
-package cors
+package middleware
 
 import (
 	"github.com/kataras/golog"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -25,12 +24,11 @@ func (corsList *CorsHandler) Preflight(w http.ResponseWriter, req *http.Request)
 	corsList.PrivateApi(&w, req)
 }
 
-//TODO разбить
 func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Request) bool {
 	referer := req.Header.Get("Referer")
 	origin := req.Header.Get("Origin")
 
-	golog.Info("Origin: ", referer, origin)
+	golog.Info("Origin: ", origin, ". Referer: ", referer)
 	result := false
 	for _, origins := range corsList.allowedOrigins {
 		if origin == origins || strings.HasPrefix(referer, origins) {
@@ -60,7 +58,7 @@ func (corsList *CorsHandler) CorsMiddleware(next http.Handler) http.Handler {
 		if corsList.PrivateApi(&w, r) {
 			next.ServeHTTP(w, r)
 		} else {
-			log.Println("Not allowed origin")
+			golog.Info("Not allowed origin")
 		}
 
 	})

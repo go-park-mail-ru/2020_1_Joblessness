@@ -10,8 +10,9 @@ import (
 	"github.com/stretchr/testify/suite"
 	mockAuth "joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
+	"joblessness/haha/middleware/xss"
 	"joblessness/haha/models"
-	"joblessness/haha/vacancy/usecase/mock"
+	vacancyUseCaseMock "joblessness/haha/vacancy/usecase/mock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -21,8 +22,9 @@ import (
 type userSuite struct {
 	suite.Suite
 	router *mux.Router
-	mainMiddleware *middleware.Middleware
-	authMiddleware *middleware.AuthMiddleware
+	mainMiddleware *middleware.RecoveryHandler
+	authMiddleware *middleware.SessionHandler
+	xssMiddleware *xss.XssHandler
 	controller *gomock.Controller
 	authUseCase *mockAuth.MockAuthUseCase
 	uc *vacancyUseCaseMock.MockVacancyUseCase
@@ -34,6 +36,8 @@ type userSuite struct {
 func (suite *userSuite) SetupTest() {
 	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
+	suite.xssMiddleware = xss.NewXssHandler()
+	suite.router.Use(suite.xssMiddleware.SanitizeMiddleware)
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())
@@ -85,7 +89,7 @@ func (suite *userSuite) TestCreateVacancy() {
 		Return(uint64(3), nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -110,7 +114,7 @@ func (suite *userSuite) TestCreateVacancyEmptyName() {
 		Return(uint64(3), nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -128,7 +132,7 @@ func (suite *userSuite) TestCreateVacancyWrongJson() {
 		Return(uint64(3), nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -146,7 +150,7 @@ func (suite *userSuite) TestCreateVacancyFailed() {
 		Return(uint64(0), errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -199,11 +203,11 @@ func (suite *userSuite) TestGetVacancyWrongUrl() {
 
 func (suite *userSuite) TestGetVacancies() {
 	suite.uc.EXPECT().
-		GetVacancies().
+		GetVacancies("1").
 		Return([]models.Vacancy{suite.vacancy}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/vacancies", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/vacancies?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -212,24 +216,24 @@ func (suite *userSuite) TestGetVacancies() {
 
 func (suite *userSuite) TestGetVacanciesEmpty() {
 	suite.uc.EXPECT().
-		GetVacancies().
+		GetVacancies("1").
 		Return([]models.Vacancy{}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/vacancies", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/vacancies?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 204, w.Code, "Status is not 204")
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
 }
 
 func (suite *userSuite) TestGetVacanciesFailed() {
 	suite.uc.EXPECT().
-		GetVacancies().
+		GetVacancies("1").
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/vacancies", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/vacancies?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -242,7 +246,7 @@ func (suite *userSuite) TestChangeVacancy() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -260,7 +264,7 @@ func (suite *userSuite) TestChangeVacancyWrongUrl() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -278,7 +282,7 @@ func (suite *userSuite) TestChangeVacancyWrongJson() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -303,7 +307,7 @@ func (suite *userSuite) TestChangeVacancyEmptyName() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -321,7 +325,7 @@ func (suite *userSuite) TestChangeVacancyFailed() {
 		Return(errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -339,7 +343,7 @@ func (suite *userSuite) TestDeleteVacancy() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -357,7 +361,7 @@ func (suite *userSuite) TestDeleteVacancyWrongUrl() {
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 
@@ -375,7 +379,7 @@ func (suite *userSuite) TestDeleteVacancyFailed() {
 		Return(errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().
-		SessionExists("username").
+		OrganizationSession("username").
 		Return(uint64(12), nil).
 		Times(1)
 

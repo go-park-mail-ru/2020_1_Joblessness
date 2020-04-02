@@ -57,8 +57,9 @@ func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetSummaries(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
+	page := r.FormValue("page")
 
-	summaries, err := h.useCase.GetAllSummaries()
+	summaries, err := h.useCase.GetAllSummaries(page)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)

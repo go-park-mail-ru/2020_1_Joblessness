@@ -9,10 +9,10 @@ import (
 )
 
 type AuthUseCase struct {
-	userRepo authInterfaces.UserRepository
+	userRepo authInterfaces.AuthRepository
 }
 
-func NewAuthUseCase(userRepo authInterfaces.UserRepository) *AuthUseCase {
+func NewAuthUseCase(userRepo authInterfaces.AuthRepository) *AuthUseCase {
 	return &AuthUseCase{
 		userRepo:userRepo,
 	}
@@ -47,18 +47,60 @@ func (a *AuthUseCase) RegisterOrganization(o *models.Organization) (err error) {
 }
 
 
-func (a *AuthUseCase) Login(login, password string) (userId uint64, sessionId string, err error) {
+func (a *AuthUseCase) Login(login, password string) (userID uint64, role, sessionId string, err error) {
 	sessionId = GetSID(64)
-	userId, err = a.userRepo.Login(login, password, sessionId)
-	return userId, sessionId, err
+	userID, err = a.userRepo.Login(login, password, sessionId)
+	if err == nil {
+		role, err = a.userRepo.GetRole(userID)
+	}
+
+	return userID, role, sessionId, err
 }
 
 func (a *AuthUseCase) Logout(sessionId string) error {
 	return a.userRepo.Logout(sessionId)
 }
 
-func (a *AuthUseCase) SessionExists(sessionId string) (uint64, error) {
+func (a *AuthUseCase) SessionExists(sessionId string) (userID uint64, err error) {
 	return a.userRepo.SessionExists(sessionId)
+}
+
+func (a *AuthUseCase) GetRole(userID uint64) (string, error) {
+	return a.userRepo.GetRole(userID)
+}
+
+func (a *AuthUseCase) PersonSession(sessionId string) (uint64, error) {
+	userID, err := a.userRepo.SessionExists(sessionId)
+	if err != nil {
+		return 0, err
+	}
+
+	role, err := a.userRepo.GetRole(userID)
+	if err != nil {
+		return userID, err
+	}
+
+	if role == "person" {
+		return userID, nil
+	}
+	return userID, authInterfaces.ErrUserNotPerson
+}
+
+func (a *AuthUseCase) OrganizationSession(sessionId string) (uint64, error) {
+	userID, err := a.userRepo.SessionExists(sessionId)
+	if err != nil {
+		return 0, err
+	}
+
+	role, err := a.userRepo.GetRole(userID)
+	if err != nil {
+		return userID, err
+	}
+
+	if role == "organization" {
+		return userID, nil
+	}
+	return userID, authInterfaces.ErrUserNotOrg
 }
 
 func (a *AuthUseCase) GetPerson(userID uint64) (*models.Person, error) {

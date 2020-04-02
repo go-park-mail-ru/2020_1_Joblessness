@@ -8,6 +8,7 @@ import (
 	postgresAuth "joblessness/haha/auth/repository/postgres"
 	usecaseAuth "joblessness/haha/auth/usecase"
 	"joblessness/haha/middleware"
+	"joblessness/haha/middleware/xss"
 	httpSearch "joblessness/haha/search/delivery/http"
 	searchInterfaces "joblessness/haha/search/interfaces"
 	postgresSearch "joblessness/haha/search/repository/postgres"
@@ -16,7 +17,6 @@ import (
 	summaryInterfaces "joblessness/haha/summary/interfaces"
 	postgresSummary "joblessness/haha/summary/repository/postgres"
 	usecaseSummary "joblessness/haha/summary/usecase"
-	"joblessness/haha/utils/cors"
 	"joblessness/haha/utils/database"
 	"joblessness/haha/vacancy/delivery/http"
 	vacancyInterfaces "joblessness/haha/vacancy/interfaces"
@@ -31,10 +31,10 @@ type App struct {
 	vacancyUse vacancyInterfaces.VacancyUseCase
 	summaryUse summaryInterfaces.SummaryUseCase
 	searchUse  searchInterfaces.SearchUseCase
-	corsHandler *cors.CorsHandler
+	corsHandler *middleware.CorsHandler
 }
 
-func NewApp(c *cors.CorsHandler) *App {
+func NewApp(c *middleware.CorsHandler) *App {
 	db, err := database.OpenDatabase()
 	if err != nil {
 		golog.Error(err.Error())
@@ -60,10 +60,12 @@ func (app *App) StartRouter() {
 
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
+	mXss := xss.NewXssHandler()
 
 	router.Use(m.RecoveryMiddleware)
 	router.Use(app.corsHandler.CorsMiddleware)
 	router.Use(m.LogMiddleware)
+	router.Use(mXss.SanitizeMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
 	// users

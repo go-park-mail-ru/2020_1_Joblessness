@@ -35,6 +35,7 @@ type Organization struct {
 	ID uint64
 	Name string
 	Site string
+	About string
 }
 
 func toPostgresPerson(p *models.Person) (*User, *Person) {
@@ -71,6 +72,7 @@ func toPostgresOrg(o *models.Organization) (*User, *Organization) {
 	&Organization{
 		Name: o.Name,
 		Site: o.Site,
+		About: o.About,
 	}
 }
 
@@ -106,6 +108,7 @@ func toModelOrganization(u *User, o *Organization) *models.Organization {
 		Login:      u.Login,
 		Password:   u.Password,
 		Tag:        u.Tag,
+		About:      o.About,
 		Email:      u.Email,
 		Phone:      u.Phone,
 		Registered: u.Registered,
@@ -192,7 +195,8 @@ func (r UserRepository) CreatePerson(user *models.Person) (err error) {
 func (r UserRepository) CreateOrganization(org *models.Organization) (err error) {
 	dbUser, dbOrg := toPostgresOrg(org)
 
-	err = r.db.QueryRow("INSERT INTO organization (name, site) VALUES($1) RETURNING id", dbOrg.Name, dbOrg.Site).
+	err = r.db.QueryRow("INSERT INTO organization (name, site, about) VALUES($1, $2, $3) RETURNING id",
+		dbOrg.Name, dbOrg.Site, dbOrg.About).
 		Scan(&dbUser.OrganizationID)
 	if err != nil {
 		return err
@@ -251,6 +255,22 @@ func (r UserRepository) SessionExists(sessionId string) (userId uint64, err erro
 	}
 
 	return userId, err
+}
+
+func (r UserRepository) GetRole(userID uint64) (string, error) {
+	var personID, organizationID sql.NullInt64
+	checkUser := "SELECT person_id, organization_id FROM users WHERE id = $1;"
+	err := r.db.QueryRow(checkUser, userID).Scan(&personID, &organizationID)
+	if err != nil {
+		return "", err
+	}
+
+	if personID.Valid {
+		return "person", nil
+	} else if organizationID.Valid {
+		return "organization", nil
+	}
+	return "", nil
 }
 
 func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
@@ -335,8 +355,8 @@ func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, er
 
 	var org Organization
 
-	getOrg := "SELECT name FROM organization WHERE id = $1;"
-	err = r.db.QueryRow(getOrg, user.OrganizationID).Scan(&org.Name)
+	getOrg := "SELECT name, site, about FROM organization WHERE id = $1;"
+	err = r.db.QueryRow(getOrg, user.OrganizationID).Scan(&org.Name, &org.Site, &org.About)
 	if err != nil {
 		return nil, err
 	}
@@ -355,9 +375,10 @@ func (r UserRepository) ChangeOrganization(o models.Organization) error {
 
 	changeOrg := `UPDATE organization 
 					SET name = COALESCE(NULLIF($1, ''), name),
-					    site = COALESCE(NULLIF($2, ''), site)
-					WHERE id = $3;`
-	_, err = r.db.Exec(changeOrg, dbOrg.Name, dbOrg.Site, user.OrganizationID)
+					    site = COALESCE(NULLIF($2, ''), site),
+					    about = COALESCE(NULLIF($3, ''), about)
+					WHERE id = $4;`
+	_, err = r.db.Exec(changeOrg, dbOrg.Name, dbOrg.Site, dbOrg.About, user.OrganizationID)
 	if err != nil {
 		return err
 	}
@@ -373,7 +394,7 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 				ORDER BY registered desc
 				LIMIT $1 OFFSET $2`
 
-	rows, err := r.db.Query(getOrgs, (page - 1)*10, 9)
+	rows, err := r.db.Query(getOrgs, page*10, 9)
 
 	if err != nil {
 		return nil, err

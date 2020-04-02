@@ -11,6 +11,7 @@ import (
 	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
+	"joblessness/haha/middleware/xss"
 	"joblessness/haha/models"
 	"net/http"
 	"net/http/httptest"
@@ -22,8 +23,9 @@ import (
 type userSuite struct {
 	suite.Suite
 	router *mux.Router
-	mainMiddleware *middleware.Middleware
-	authMiddleware *middleware.AuthMiddleware
+	mainMiddleware *middleware.RecoveryHandler
+	authMiddleware *middleware.SessionHandler
+	xssMiddleware *xss.XssHandler
 	controller *gomock.Controller
 	uc *mock.MockAuthUseCase
 	person models.Person
@@ -35,6 +37,8 @@ type userSuite struct {
 func (suite *userSuite) SetupTest() {
 	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
+	suite.xssMiddleware = xss.NewXssHandler()
+	suite.router.Use(suite.xssMiddleware.SanitizeMiddleware)
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())
@@ -244,7 +248,7 @@ func (suite *userSuite) TestLogin() {
 
 	suite.uc.EXPECT().
 		Login(userLogin.Login, userLogin.Password).
-		Return(uint64(1), "sid", nil).
+		Return(uint64(1), "organization", "sid", nil).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(userJSON))
@@ -256,7 +260,6 @@ func (suite *userSuite) TestLogin() {
 }
 
 func (suite *userSuite) TestFailedLoginNotFound() {
-
 	userLogin := models.UserLogin{
 		Login:    "username",
 		Password: "Password123",
@@ -266,7 +269,7 @@ func (suite *userSuite) TestFailedLoginNotFound() {
 
 	suite.uc.EXPECT().
 		Login(userLogin.Login, userLogin.Password).
-		Return(uint64(0), "", authInterfaces.ErrWrongLogPas).
+		Return(uint64(0), "organization", "", authInterfaces.ErrWrongLogPas).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(userJSON))
@@ -343,6 +346,10 @@ func (suite *userSuite) TestCheck() {
 		SessionExists(cookie.Value).
 		Return(uint64(1), nil).
 		Times(1)
+	suite.uc.EXPECT().
+		GetRole(uint64(1)).
+		Return("organization", nil).
+		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
@@ -353,8 +360,6 @@ func (suite *userSuite) TestCheck() {
 }
 
 func (suite *userSuite) TestCheckNoCookie() {
-
-
 	suite.uc.EXPECT().
 		SessionExists(gomock.Any()).
 		Times(0)

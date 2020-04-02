@@ -136,6 +136,7 @@ func toModel(s *Summary, eds []Education, exs []Experience, u *User, p *Person) 
 
 type GetOptions struct {
 	userID uint64
+	page int
 }
 
 type SummaryRepository struct {
@@ -189,7 +190,7 @@ func (r *SummaryRepository) GetEducationsBySummaryID(summaryID uint64) ([]Educat
 	if err != nil {
 		return nil, err
 	}
-
+	defer rows.Close()
 	var educationDBs []Education
 
 	for rows.Next() {
@@ -215,7 +216,7 @@ func (r *SummaryRepository) GetExperiencesBySummaryID(summaryID uint64) ([]Exper
 	if err != nil {
 		return nil, err
 	}
-
+	defer rows.Close()
 	var experienceDBs []Experience
 
 	for rows.Next() {
@@ -253,20 +254,22 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, err
 
 	if opt.userID == 0 {
 		getSummaries := `SELECT id, author, keywords
-					 	 FROM summary;`
-		rows, err = r.db.Query(getSummaries)
+					 	 FROM summary
+					 	 LIMIT $1 OFFSET $2;`
+		rows, err = r.db.Query(getSummaries, opt.page*10, 9)
 		if err != nil {
 			return nil, err
 		}
 	} else {
 		getSummaries := `SELECT id, author, keywords
-					 	 FROM summary WHERE author = $1;`
-		rows, err = r.db.Query(getSummaries, opt.userID)
+					 	 FROM summary WHERE author = $1
+						LIMIT $2 OFFSET $3;`
+		rows, err = r.db.Query(getSummaries, opt.userID, opt.page*10, 9)
 		if err != nil {
 			return nil, err
 		}
 	}
-
+	defer rows.Close()
 	var summaries []models.Summary
 
 	for rows.Next() {
@@ -298,12 +301,12 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, err
 	return summaries, nil
 }
 
-func (r *SummaryRepository) GetAllSummaries() (summaries []models.Summary, err error) {
-	return r.GetSummaries(&GetOptions{})
+func (r *SummaryRepository) GetAllSummaries(page int) (summaries []models.Summary, err error) {
+	return r.GetSummaries(&GetOptions{0, page})
 }
 
 func (r *SummaryRepository) GetUserSummaries(userID uint64) (summaries []models.Summary, err error) {
-	return r.GetSummaries(&GetOptions{userID})
+	return r.GetSummaries(&GetOptions{userID, 0})
 }
 
 func (r *SummaryRepository) GetSummary(summaryID uint64) (*models.Summary, error) {
