@@ -150,6 +150,8 @@ func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, 
 	}
 	defer rows.Close()
 
+	vacancies = make([]models.Vacancy, 0)
+
 	for rows.Next() {
 		var vacancyDB Vacancy
 		err = rows.Scan(&vacancyDB.ID, &vacancyDB.OrganizationID, &vacancyDB.Name, &vacancyDB.Description,
@@ -206,6 +208,8 @@ func (r *VacancyRepository) GetOrgVacancies(userID uint64) (vacancies []models.V
 		return vacancies, err
 	}
 	defer rows.Close()
+
+	vacancies = make([]models.Vacancy, 0)
 
 	for rows.Next() {
 		var vacancyDB models.Vacancy

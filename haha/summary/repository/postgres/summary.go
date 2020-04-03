@@ -191,7 +191,8 @@ func (r *SummaryRepository) GetEducationsBySummaryID(summaryID uint64) ([]Educat
 		return nil, err
 	}
 	defer rows.Close()
-	var educationDBs []Education
+
+	educationDBs := make([]Education, 0)
 
 	for rows.Next() {
 		educationDB := Education{SummaryID: summaryID}
@@ -217,7 +218,8 @@ func (r *SummaryRepository) GetExperiencesBySummaryID(summaryID uint64) ([]Exper
 		return nil, err
 	}
 	defer rows.Close()
-	var experienceDBs []Experience
+
+	experienceDBs := make([]Experience, 0)
 
 	for rows.Next() {
 		experienceDB := Experience{SummaryID: summaryID}
@@ -270,6 +272,7 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, err
 		}
 	}
 	defer rows.Close()
+
 	summaries := make([]models.Summary, 0)
 
 	for rows.Next() {

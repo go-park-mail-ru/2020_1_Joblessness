@@ -138,11 +138,12 @@ func (r SearchRepository) SearchPersons(request, since, desc string) (result []*
 					ORDER BY name ` + desc + `, registered 
  					LIMIT $2 OFFSET $3`
 	rows, err := r.db.Query(getPersons, request, 9, page*10)
-
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
+	result = make([]*models.Person, 0)
 
 	for rows.Next() {
 		var personDB models.Person
@@ -182,11 +183,12 @@ func (r SearchRepository) SearchOrganizations(request, since, desc string) (resu
 					LIMIT $2 OFFSET $3`
 
 	rows, err := r.db.Query(getOrgs, request, 9, page*10)
-
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
+	result = make([]*models.Organization, 0)
 
 	for rows.Next() {
 		var orgDB models.Organization
@@ -220,11 +222,12 @@ func (r SearchRepository) SearchVacancies(request, since, desc string) (result [
 					LIMIT $2 OFFSET $3`
 
 	rows, err := r.db.Query(getVacancies, request, 9, (page - 1)*10)
-
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
+	result = make([]*models.Vacancy, 0)
 
 	for rows.Next() {
 		var vacancyDB models.Vacancy

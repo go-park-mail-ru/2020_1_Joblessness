@@ -409,6 +409,7 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 		userId uint64
 		name, site string
 	)
+	result = make([]models.Organization, 0)
 
 	for rows.Next() {
 		err := rows.Scan(&userId, &name, &site)
@@ -465,6 +466,8 @@ func (r UserRepository) GetUserFavorite(userID uint64) (res models.Favorites, er
 	var (
 		personID sql.NullInt64
 	)
+	res = make(models.Favorites, 0)
+
 	for rows.Next() {
 		var favorite models.Favorite
 		err := rows.Scan(&favorite.ID, &favorite.Tag, &personID)
