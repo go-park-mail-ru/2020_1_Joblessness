@@ -29,7 +29,7 @@ func (s *XssHandler) SanitizeMiddleware(next http.Handler) http.Handler {
 		content := r.Header.Get("Content-Type")
 		method := r.Method
 
-		golog.Error(r.Body)
+		golog.Error("Body before XSS: ", r.Body)
 
 		if !strings.Contains(content, "multipart/form-data") && (method == "POST" || method == "GET") {
 			var jsonBod interface{}
@@ -50,6 +50,7 @@ func (s *XssHandler) SanitizeMiddleware(next http.Handler) http.Handler {
 			}
 		}
 
+		golog.Error("Body after XSS: ", r.Body)
 		next.ServeHTTP(w, r)
 	})
 }
