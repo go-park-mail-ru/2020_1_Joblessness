@@ -244,7 +244,7 @@ func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
 	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 	user, err := h.useCase.GetPerson(userID)
 	switch err {
-	case authInterfaces.ErrUserNotOrg :
+	case authInterfaces.ErrUserNotPerson :
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 	case nil:
@@ -283,13 +283,16 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 
 	person.ID = userID
 	err = h.useCase.ChangePerson(person)
-	if err != nil {
+	switch err {
+	case authInterfaces.ErrUserNotPerson :
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusNotFound)
+	case nil:
+		w.WriteHeader(http.StatusNoContent)
+	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
@@ -304,16 +307,12 @@ func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	case nil:
 		jsonData, _ := json.Marshal(user)
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusNoContent)
 		w.Write(jsonData)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-
-	jsonData, _ := json.Marshal(user)
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonData)
 }
 
 func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
@@ -343,13 +342,16 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 
 	org.ID = userID
 	err = h.useCase.ChangeOrganization(org)
-	if err != nil {
+	switch err {
+	case authInterfaces.ErrUserNotOrg :
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusNotFound)
+	case nil:
+		w.WriteHeader(http.StatusOK)
+	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *Handler) GetListOfOrgs(w http.ResponseWriter, r *http.Request) {

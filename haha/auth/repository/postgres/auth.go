@@ -285,7 +285,7 @@ func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	}
 
 	if user.PersonID == 0 {
-		return nil, authInterfaces.ErrUserNotOrg
+		return nil, authInterfaces.ErrUserNotPerson
 	}
 
 	var person Person
