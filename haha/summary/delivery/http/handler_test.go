@@ -283,7 +283,7 @@ func (suite *userSuite) TestGetUserSummaries() {
 		Return([]models.Summary{suite.summary}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/user/12/summaries", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/users/12/summaries", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -296,7 +296,7 @@ func (suite *userSuite) TestGetUserSummariesWrongUrl() {
 		Return([]models.Summary{suite.summary}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/user/a/summaries", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/users/a/summaries", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -309,7 +309,7 @@ func (suite *userSuite) TestGetUserSummariesFailed() {
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/user/12/summaries", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/users/12/summaries", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
