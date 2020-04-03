@@ -29,6 +29,8 @@ func (s *XssHandler) SanitizeMiddleware(next http.Handler) http.Handler {
 		content := r.Header.Get("Content-Type")
 		method := r.Method
 
+		golog.Error(r.Body)
+
 		if !strings.Contains(content, "multipart/form-data") && (method == "POST" || method == "GET") {
 			var jsonBod interface{}
 			d := json.NewDecoder(r.Body)

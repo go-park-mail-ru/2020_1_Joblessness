@@ -27,6 +27,7 @@ func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
 	var newSummary models.Summary
+	golog.Error(r.Body)
 	err := json.NewDecoder(r.Body).Decode(&newSummary)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
