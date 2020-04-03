@@ -121,9 +121,25 @@ func (s *XssHandler) unravelSlice(slce []interface{}) bytes.Buffer {
 		case string:
 			buff.WriteString(fmt.Sprintf("%q", s.defaultPolicy.Sanitize(nn)))
 			buff.WriteByte(',')
+		case json.Number:
+			buff.WriteString(s.defaultPolicy.Sanitize(fmt.Sprintf("%v", nn)))
+			buff.WriteByte(',')
+		case float64:
+			buff.WriteString(s.defaultPolicy.Sanitize(strconv.FormatFloat(nn, 'g', 0, 64)))
+			buff.WriteByte(',')
+		default:
+			if nn == nil {
+				buff.WriteString(fmt.Sprintf("%s", "null"))
+				buff.WriteByte(',')
+			} else {
+				buff.WriteString(s.defaultPolicy.Sanitize(fmt.Sprintf("%v", nn)))
+				buff.WriteByte(',')
+			}
 		}
 	}
-	buff.Truncate(buff.Len() - 1) // remove last ','
+	if len(slce) > 0 {
+		buff.Truncate(buff.Len() - 1) // remove last ','
+	}
 	buff.WriteByte(']')
 	return buff
 }
