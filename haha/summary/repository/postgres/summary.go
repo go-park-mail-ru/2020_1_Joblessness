@@ -256,7 +256,7 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, err
 		getSummaries := `SELECT id, author, keywords
 					 	 FROM summary
 					 	 LIMIT $1 OFFSET $2;`
-		rows, err = r.db.Query(getSummaries, opt.page*10, 9)
+		rows, err = r.db.Query(getSummaries, 9,  opt.page*10)
 		if err != nil {
 			return nil, err
 		}
@@ -264,7 +264,7 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, err
 		getSummaries := `SELECT id, author, keywords
 					 	 FROM summary WHERE author = $1
 						LIMIT $2 OFFSET $3;`
-		rows, err = r.db.Query(getSummaries, opt.userID, opt.page*10, 9)
+		rows, err = r.db.Query(getSummaries, opt.userID, 9,  opt.page*10)
 		if err != nil {
 			return nil, err
 		}

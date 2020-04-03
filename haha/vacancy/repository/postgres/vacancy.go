@@ -144,7 +144,7 @@ func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, 
        						conditions, keywords
 					 FROM vacancy
 					LIMIT $1 OFFSET $2;`
-	rows, err := r.db.Query(getVacancies, page*10, 9)
+	rows, err := r.db.Query(getVacancies, 9, page*10)
 	if err != nil {
 		return vacancies, err
 	}

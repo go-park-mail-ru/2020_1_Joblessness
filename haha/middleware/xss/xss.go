@@ -29,7 +29,7 @@ func (s *XssHandler) SanitizeMiddleware(next http.Handler) http.Handler {
 		content := r.Header.Get("Content-Type")
 		method := r.Method
 
-		golog.Error("Body before XSS: ", r.Body)
+		golog.Debug("Body before XSS: ", r.Body)
 
 		if !strings.Contains(content, "multipart/form-data") && (method == "POST" || method == "GET") {
 			var jsonBod interface{}
@@ -50,7 +50,7 @@ func (s *XssHandler) SanitizeMiddleware(next http.Handler) http.Handler {
 			}
 		}
 
-		golog.Error("Body after XSS: ", r.Body)
+		golog.Debug("Body after XSS: ", r.Body)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -69,7 +69,9 @@ func (s *XssHandler) ConstructJson(xmj map[string]interface{}, buff bytes.Buffer
 		apndBuff := s.buildJsonApplyPolicy(v, b)
 		buff.WriteString(apndBuff.String())
 	}
-	buff.Truncate(buff.Len() - 1) // remove last ','
+	if len(m) > 0 {
+		buff.Truncate(buff.Len() - 1) // remove last ','
+	}
 	buff.WriteByte('}')
 
 	return buff
