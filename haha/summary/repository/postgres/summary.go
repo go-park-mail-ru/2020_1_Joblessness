@@ -270,7 +270,7 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, err
 		}
 	}
 	defer rows.Close()
-	var summaries []models.Summary
+	summaries := make([]models.Summary, 0)
 
 	for rows.Next() {
 		var summaryDB Summary
@@ -495,6 +495,8 @@ func (r *SummaryRepository) GetOrgSummaries(userID uint64) (summaries models.Org
 		return nil, err
 	}
 	defer rows.Close()
+
+	summaries = make(models.OrgSummaries, 0)
 
 	for rows.Next() {
 		var vacancyDB models.VacancyResponse

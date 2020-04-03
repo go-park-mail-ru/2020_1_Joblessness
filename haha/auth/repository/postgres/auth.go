@@ -276,12 +276,16 @@ func (r UserRepository) GetRole(userID uint64) (string, error) {
 func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	user := User{ID: userID}
 
-	getUser := "SELECT login, person_id, email, phone, avatar, tag FROM users WHERE id = $1;"
+	getUser := "SELECT login, COALESCE(person_id, 0), email, phone, avatar, tag FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, userID).
 		Scan(&user.Login, &user.PersonID, &user.Email, &user.Phone, &user.Avatar, &user.Tag)
 	if err != nil {
 		golog.Error(err)
-		return nil, authInterfaces.ErrUserNotPerson
+		return nil, err
+	}
+
+	if user.PersonID == 0 {
+		return nil, authInterfaces.ErrUserNotOrg
 	}
 
 	var person Person
@@ -342,7 +346,7 @@ func (r UserRepository) ChangePerson(p models.Person) error {
 func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, error) {
 	user := User{ID: userID}
 
-	getUser := "SELECT login, password, organization_id, email, phone, avatar FROM users WHERE id = $1;"
+	getUser := "SELECT login, password, COALESCE(organization_id, 0), email, phone, avatar FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, userID).
 		Scan(&user.Login, &user.Password, &user.OrganizationID, &user.Email, &user.Phone, &user.Avatar)
 	if err != nil {

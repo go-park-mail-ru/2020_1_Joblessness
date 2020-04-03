@@ -243,15 +243,18 @@ func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
 
 	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 	user, err := h.useCase.GetPerson(userID)
-	if err != nil {
+	switch err {
+	case authInterfaces.ErrUserNotOrg :
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusNotFound)
+	case nil:
+		jsonData, _ := json.Marshal(user)
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonData)
+	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
-
-	jsonData, _ := json.Marshal(user)
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonData)
 }
 
 func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
@@ -295,17 +298,20 @@ func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
 	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 
 	user, err := h.useCase.GetOrganization(userID)
-	if err != nil {
+	switch err {
+	case authInterfaces.ErrUserNotOrg :
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusNotFound)
+	case nil:
+		jsonData, _ := json.Marshal(user)
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonData)
+	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
 
-	type Response struct {
-		User models.Organization `json:"user"`
-	}
-
-	jsonData, _ := json.Marshal(Response{*user})
+	jsonData, _ := json.Marshal(user)
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
