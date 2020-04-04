@@ -221,7 +221,7 @@ func (r SearchRepository) SearchVacancies(request, since, desc string) (result [
 					ORDER BY o.name ` + desc + `, v.name
 					LIMIT $2 OFFSET $3`
 
-	rows, err := r.db.Query(getVacancies, request, 9, (page - 1)*10)
+	rows, err := r.db.Query(getVacancies, request, 9, page*10)
 	if err != nil {
 		return nil, err
 	}
