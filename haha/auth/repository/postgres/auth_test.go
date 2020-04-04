@@ -265,7 +265,7 @@ func (suite *userSuite) TestGetPerson() {
 	rows = rows.AddRow(suite.person.Login, suite.person.ID,
 		suite.person.Email, suite.person.Phone, suite.person.Avatar, suite.person.Tag)
 	suite.mock.
-		ExpectQuery("SELECT login, person_id,").
+		ExpectQuery("SELECT login").
 		WithArgs(1).
 		WillReturnRows(rows)
 
@@ -282,11 +282,11 @@ func (suite *userSuite) TestGetPerson() {
 }
 
 func (suite *userSuite) TestGetPersonFailedOne() {
-	rows := sqlmock.NewRows([]string{"login", "password", "person_id", "email", "phone", "avatar"})
-	rows = rows.AddRow(suite.person.Login, suite.person.Password, suite.person.ID,
+	rows := sqlmock.NewRows([]string{"login", "person_id", "email", "phone", "avatar"})
+	rows = rows.AddRow(suite.person.Login, suite.person.ID,
 		suite.person.Email, suite.person.Phone, suite.person.Avatar)
 	suite.mock.
-		ExpectQuery("SELECT login, password, person_id, email, phone, avatar").
+		ExpectQuery("SELECT login, person_id, email, phone, avatar").
 		WithArgs(12).
 		WillReturnError(errors.New(""))
 
@@ -296,11 +296,11 @@ func (suite *userSuite) TestGetPersonFailedOne() {
 }
 
 func (suite *userSuite) TestGetPersonFailedTwo() {
-	rows := sqlmock.NewRows([]string{"login", "password", "person_id", "email", "phone", "avatar"})
-	rows = rows.AddRow(suite.person.Login, suite.person.Password, suite.person.ID,
+	rows := sqlmock.NewRows([]string{"login", "person_id", "email", "phone", "avatar"})
+	rows = rows.AddRow(suite.person.Login, suite.person.ID,
 		suite.person.Email, suite.person.Phone, suite.person.Avatar)
 	suite.mock.
-		ExpectQuery("SELECT login, password, person_id, email, phone, avatar").
+		ExpectQuery("SELECT login, person_id, email, phone, avatar").
 		WithArgs(12).
 		WillReturnRows(rows)
 
@@ -370,11 +370,11 @@ func (suite *userSuite) TestChangePersonFailedTwo() {
 }
 
 func (suite *userSuite) TestGetOrganization() {
-	rows := sqlmock.NewRows([]string{"login", "password", "organization_id", "email", "phone", "avatar"})
-	rows = rows.AddRow(suite.organization.Login, suite.organization.Password, suite.organization.ID,
+	rows := sqlmock.NewRows([]string{"login", "organization_id", "email", "phone", "avatar"})
+	rows = rows.AddRow(suite.organization.Login, suite.organization.ID,
 		suite.organization.Email, suite.organization.Phone, suite.organization.Avatar)
 	suite.mock.
-		ExpectQuery("SELECT login, password, organization_id, email, phone, avatar").
+		ExpectQuery("SELECT login,").
 		WithArgs(12).
 		WillReturnRows(rows)
 
@@ -392,11 +392,11 @@ func (suite *userSuite) TestGetOrganization() {
 }
 
 func (suite *userSuite) TestGetOrganizationFailedOne() {
-	rows := sqlmock.NewRows([]string{"login", "password", "organization_id", "email", "phone", "avatar"})
-	rows = rows.AddRow(suite.organization.Login, suite.organization.Password, suite.organization.ID,
+	rows := sqlmock.NewRows([]string{"login", "organization_id", "email", "phone", "avatar"})
+	rows = rows.AddRow(suite.organization.Login, suite.organization.ID,
 		suite.organization.Email, suite.organization.Phone, suite.organization.Avatar)
 	suite.mock.
-		ExpectQuery("SELECT login, password, organization_id, email, phone, avatar").
+		ExpectQuery("SELECT login, organization_id, email, phone, avatar").
 		WithArgs(12).
 		WillReturnError(errors.New(""))
 
@@ -485,7 +485,7 @@ func (suite *userSuite) TestGetOrgList() {
 
 	suite.mock.
 		ExpectQuery("SELECT users.id as userId, name, site").
-		WithArgs(10, 9).
+		WithArgs(9, 10).
 		WillReturnRows(rows)
 
 	result, err := suite.rep.GetListOfOrgs(1)

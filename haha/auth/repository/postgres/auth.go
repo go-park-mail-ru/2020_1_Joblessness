@@ -144,17 +144,17 @@ func (r UserRepository) DoesUserExists(login string) (err error) {
 }
 
 func (r UserRepository) CreateUser(user *User) (err error) {
-	var personIdSql sql.NullInt64
-	var orgIdSql sql.NullInt64
-	if user.PersonID != 0 {
-		personIdSql.Valid = true
-		personIdSql.Int64 = int64(user.PersonID)
-	} else if user.OrganizationID != 0 {
-		orgIdSql.Valid = true
-		orgIdSql.Int64 = int64(user.OrganizationID)
-	} else {
-		return errors.New("inserted id is 0")
-	}
+	//var personIdSql sql.NullInt64
+	//var orgIdSql sql.NullInt64
+	//if user.PersonID != 0 {
+	//	personIdSql.Valid = true
+	//	personIdSql.Int64 = int64(user.PersonID)
+	//} else if user.OrganizationID != 0 {
+	//	orgIdSql.Valid = true
+	//	orgIdSql.Int64 = int64(user.OrganizationID)
+	//} else {
+	//	return errors.New("inserted id is 0")
+	//}
 
 	user.Password, err = salt.HashAndSalt(user.Password)
 
@@ -342,7 +342,6 @@ func (r UserRepository) ChangePerson(p models.Person) error {
 	return err
 }
 
-
 func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, error) {
 	user := User{ID: userID}
 
@@ -401,7 +400,7 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 	rows, err := r.db.Query(getOrgs, 9, page*10)
 
 	if err != nil {
-		return nil, err
+		return nil, authInterfaces.ErrUserNotFound
 	}
 	defer rows.Close()
 
@@ -439,7 +438,7 @@ func (r UserRepository) SetOrDeleteLike(userID, favoriteID uint64) (res bool, er
 				ON CONFLICT DO NOTHING;`
 	rows, err := r.db.Exec(setLike, userID, favoriteID)
 	if err != nil {
-		return false, err
+		return false, authInterfaces.ErrUserNotFound
 	}
 	if rowsAf, err := rows.RowsAffected(); rowsAf != 0 {
 		return true, err

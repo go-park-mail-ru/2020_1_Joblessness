@@ -166,7 +166,7 @@ func (suite *vacancySuite) TestGetVacancies() {
 			suite.vacancy.Conditions, suite.vacancy.Keywords)
 	suite.mock.
 		ExpectQuery("SELECT id, organization_id, name, description, salary_from, salary_to, with_tax").
-		WithArgs(10, 9).
+		WithArgs(9, 10).
 		WillReturnRows(rows)
 
 	rows = sqlmock.NewRows([]string{"organization_id", "tag", "email", "phone", "avatar", "name", "site"}).

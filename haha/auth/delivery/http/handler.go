@@ -34,13 +34,7 @@ type ResponseId struct {
 
 func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-
-	userID, ok := r.Context().Value("userID").(uint64)
-	if !ok {
-		golog.Errorf("#%s: %s",  rID, "no cookie")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+	userID, _ := r.Context().Value("userID").(uint64)
 
 	if reqID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); reqID != userID {
 		golog.Errorf("#%s: %s",  rID, "user requested and session user doesnt match")
@@ -194,7 +188,6 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
 		golog.Errorf("#%s: %w",  rID, err)
@@ -218,13 +211,7 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-
-	userID, ok := r.Context().Value("userID").(uint64)
-	if !ok {
-		golog.Errorf("#%s: %s",  rID, "no cookie")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+	userID, _ := r.Context().Value("userID").(uint64)
 
 	role, err := h.useCase.GetRole(userID)
 	if err != nil {
@@ -259,12 +246,7 @@ func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-	userID, ok := r.Context().Value("userID").(uint64)
-	if !ok {
-		golog.Errorf("#%s: %s",  rID, "no cookie")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+	userID, _ := r.Context().Value("userID").(uint64)
 
 	if reqID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); reqID != userID {
 		golog.Errorf("#%s: %s",  rID, "user requested and session user doesnt match")
@@ -297,7 +279,6 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-
 	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 
 	user, err := h.useCase.GetOrganization(userID)
@@ -307,7 +288,7 @@ func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	case nil:
 		jsonData, _ := json.Marshal(user)
-		w.WriteHeader(http.StatusNoContent)
+		w.WriteHeader(http.StatusOK)
 		w.Write(jsonData)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
@@ -317,13 +298,7 @@ func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-
-	userID, ok := r.Context().Value("userID").(uint64)
-	if !ok {
-		golog.Errorf("#%s: %s",  rID, "no cookie")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+	userID, _ := r.Context().Value("userID").(uint64)
 
 	if reqID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); reqID != userID {
 		golog.Errorf("#%s: %s",  rID, "user requested and session user doesnt match")
@@ -347,7 +322,7 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 	case nil:
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusNoContent)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -356,73 +331,53 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetListOfOrgs(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-	//TODO проверять существование контекста
-
 	page, err := strconv.Atoi(r.FormValue("page"))
-	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 
 	listOrgs, err := h.useCase.GetListOfOrgs(page)
-	if err != nil {
+	switch err {
+	case authInterfaces.ErrUserNotFound :
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusNotFound)
+	case nil:
+		jsonData, _ := json.Marshal(listOrgs)
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonData)
+	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
-
-	type Response struct {
-		Organizations []models.Organization `json:"organizations"`
-	}
-
-	jsonData, _ := json.Marshal(Response{
-		listOrgs,
-	})
-
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonData)
 }
 
 func (h *Handler) LikeUser(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-
-	userID, ok := r.Context().Value("userID").(uint64)
-	if !ok {
-		golog.Errorf("#%s: %s",  rID, "no cookie")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+	userID, _ := r.Context().Value("userID").(uint64)
 
 	var favoriteID uint64
 	favoriteID, _ = strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 
 	likeSet, err := h.useCase.LikeUser(userID, favoriteID)
-	if err != nil {
+	switch err {
+	case authInterfaces.ErrUserNotFound :
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusNotFound)
+	case nil:
+		type Response struct {
+			Like bool `json:"like"`
+		}
+		jsonData, _ := json.Marshal(Response{
+			likeSet,
+		})
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonData)
+	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
-
-	type Response struct {
-		Like bool `json:"like"`
-	}
-	jsonData, _ := json.Marshal(Response{
-		likeSet,
-	})
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonData)
 }
 
 func (h *Handler) GetUserFavorite(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-
-	userID, ok := r.Context().Value("userID").(uint64)
-	if !ok {
-		golog.Errorf("#%s: %s",  rID, "no cookie")
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
+	userID, _ := r.Context().Value("userID").(uint64)
 
 	if favoriteID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64); favoriteID != userID {
 		golog.Errorf("#%s: %s",  rID, "user requested and session user doesnt match")
