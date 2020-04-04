@@ -31,7 +31,7 @@ func (s *XssHandler) SanitizeMiddleware(next http.Handler) http.Handler {
 
 		golog.Debug("Body before XSS: ", r.Body)
 
-		if !strings.Contains(content, "multipart/form-data") && (method == "POST" || method == "GET") {
+		if !strings.Contains(content, "multipart/form-data") && (method == "POST" || method == "PUT") {
 			var jsonBod interface{}
 			d := json.NewDecoder(r.Body)
 			d.UseNumber()
