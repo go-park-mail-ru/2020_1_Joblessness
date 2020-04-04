@@ -452,7 +452,7 @@ func (suite *userSuite) TestSendSummary() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/summaries/7/response", suite.sendSumByte)
+	r, _ := http.NewRequest("POST", "/api/vacancies/7/response", suite.sendSumByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -470,7 +470,7 @@ func (suite *userSuite) TestSendSummaryNotOwner() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/summaries/7/response", suite.sendSumByte)
+	r, _ := http.NewRequest("POST", "/api/vacancies/7/response", suite.sendSumByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -488,7 +488,7 @@ func (suite *userSuite) TestSendSummaryNoSummary() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/summaries/7/response", suite.sendSumByte)
+	r, _ := http.NewRequest("POST", "/api/vacancies/7/response", suite.sendSumByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -506,7 +506,7 @@ func (suite *userSuite) TestSendSummaryDefaultErr() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/summaries/7/response", suite.sendSumByte)
+	r, _ := http.NewRequest("POST", "/api/vacancies/7/response", suite.sendSumByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -524,7 +524,7 @@ func (suite *userSuite) TestSendSummaryWrongJson() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/summaries/7/response", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/api/vacancies/7/response", bytes.NewBuffer([]byte{}))
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -542,7 +542,7 @@ func (suite *userSuite) TestSendSummaryWrongUrl() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/summaries/7a/response", suite.sendSumByte)
+	r, _ := http.NewRequest("POST", "/api/vacancies/7a/response", suite.sendSumByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)

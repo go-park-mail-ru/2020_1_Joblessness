@@ -108,7 +108,7 @@ func (suite *vacancySuite) TestGetVacancy() {
 			suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax, suite.vacancy.Responsibilities,
 			suite.vacancy.Conditions, suite.vacancy.Keywords)
 	suite.mock.
-		ExpectQuery("SELECT id, organization_id, name, description, salary_from, salary_to, with_tax").
+		ExpectQuery("SELECT v.id, v.organization_id, v.name, v.description, v.salary_from").
 		WithArgs(suite.vacancy.ID).
 		WillReturnRows(rows)
 
