@@ -267,12 +267,12 @@ CREATE TABLE public.vacancy (
     organization_id integer,
     name character varying(60) NOT NULL,
     description text,
-    salary_from money,
-    salary_to money,
     with_tax boolean DEFAULT false,
     responsibilities text,
     conditions text,
-    keywords text
+    keywords text,
+    salary_from integer DEFAULT 0 NOT NULL,
+    salary_to integer DEFAULT 0 NOT NULL
 );
 
 
@@ -419,7 +419,7 @@ COPY public.users (id, login, password, organization_id, person_id, tag, email, 
 -- Data for Name: vacancy; Type: TABLE DATA; Schema: public; Owner: huvalk
 --
 
-COPY public.vacancy (id, organization_id, name, description, salary_from, salary_to, with_tax, responsibilities, conditions, keywords) FROM stdin;
+COPY public.vacancy (id, organization_id, name, description, with_tax, responsibilities, conditions, keywords, salary_from, salary_to) FROM stdin;
 \.
 
 
