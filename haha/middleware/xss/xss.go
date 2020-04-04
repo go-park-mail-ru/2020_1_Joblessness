@@ -45,8 +45,6 @@ func (s *XssHandler) SanitizeMiddleware(next http.Handler) http.Handler {
 				enc := json.NewEncoder(ioutil.Discard)
 				err = enc.Encode(&bodOut)
 				r.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(bodOut)))
-			} else {
-				golog.Error(err)
 			}
 		}
 
