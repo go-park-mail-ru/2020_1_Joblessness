@@ -20,14 +20,11 @@ func NewHandler(useCase summaryInterfaces.SummaryUseCase) *Handler {
 	return &Handler{useCase}
 }
 
-type Response struct {
-	ID uint64 `json:"id"`
-}
-
 func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-
 	var newSummary models.Summary
+	newSummary.Author.ID =  r.Context().Value("userID").(uint64)
+
 	err := json.NewDecoder(r.Body).Decode(&newSummary)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
@@ -35,17 +32,14 @@ func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO проверять существование контекста
-	newSummary.Author.ID =  r.Context().Value("userID").(uint64)
-
-	summaryID, err := h.useCase.CreateSummary(&newSummary)
+	newSummary.ID, err = h.useCase.CreateSummary(&newSummary)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	jsonData, err := json.Marshal(Response{summaryID})
+	jsonData, err := json.Marshal(models.ResponseID{ID: newSummary.ID})
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)

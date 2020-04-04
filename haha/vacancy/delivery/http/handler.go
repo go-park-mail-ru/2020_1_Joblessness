@@ -19,14 +19,11 @@ func NewHandler(useCase vacancyInterfaces.VacancyUseCase) *Handler {
 	return &Handler{useCase}
 }
 
-type Response struct {
-	ID uint64 `json:"id"`
-}
-
 func (h *Handler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-
 	var newVacancy models.Vacancy
+	newVacancy.Organization.ID =  r.Context().Value("userID").(uint64)
+
 	err := json.NewDecoder(r.Body).Decode(&newVacancy)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
@@ -40,17 +37,15 @@ func (h *Handler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO проверять существование контекста
-	newVacancy.Organization.ID =  r.Context().Value("userID").(uint64)
 
-	vacancyID, err := h.useCase.CreateVacancy(&newVacancy)
+	newVacancy.ID, err = h.useCase.CreateVacancy(&newVacancy)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	jsonData, err := json.Marshal(Response{vacancyID})
+	jsonData, err := json.Marshal(models.ResponseID{ID: newVacancy.ID})
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)

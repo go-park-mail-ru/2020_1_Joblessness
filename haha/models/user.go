@@ -44,7 +44,7 @@ type Favorite struct {
 
 type Favorites []*Favorite
 
-type Response struct {
+type ResponseRole struct {
 	ID uint64 `json:"id"`
 	Role string `json:"role"`
 }

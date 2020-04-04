@@ -28,10 +28,6 @@ type UserLogin struct {
 	Password string `json:"password"`
 }
 
-type ResponseId struct {
-	ID int `json:"id"`
-}
-
 func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	userID, _ := r.Context().Value("userID").(uint64)
@@ -181,7 +177,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, cookie)
 
-	jsonData, _ := json.Marshal(models.Response{ID: userId, Role: role})
+	jsonData, _ := json.Marshal(models.ResponseRole{ID: userId, Role: role})
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }
@@ -220,7 +216,7 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, _ := json.Marshal(models.Response{ID: userID, Role: role})
+	jsonData, _ := json.Marshal(models.ResponseRole{ID: userID, Role: role})
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }
@@ -352,21 +348,20 @@ func (h *Handler) LikeUser(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	userID, _ := r.Context().Value("userID").(uint64)
 
-	var favoriteID uint64
+	var (
+		favoriteID uint64
+		response models.ResponseBool
+		err error
+	)
 	favoriteID, _ = strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 
-	likeSet, err := h.useCase.LikeUser(userID, favoriteID)
+	response.Like, err = h.useCase.LikeUser(userID, favoriteID)
 	switch err {
 	case authInterfaces.ErrUserNotFound :
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 	case nil:
-		type Response struct {
-			Like bool `json:"like"`
-		}
-		jsonData, _ := json.Marshal(Response{
-			likeSet,
-		})
+		jsonData, _ := json.Marshal(response)
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonData)
 	default:
@@ -379,19 +374,17 @@ func (h *Handler) LikeExists(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	userID, _ := r.Context().Value("userID").(uint64)
 
-	var favoriteID uint64
+	var (
+		favoriteID uint64
+		response models.ResponseBool
+		err error
+	)
 	favoriteID, _ = strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 
-	likeSet, err := h.useCase.LikeExists(userID, favoriteID)
+	response.Like, err = h.useCase.LikeExists(userID, favoriteID)
 	switch err {
 	case nil:
-		// TODO заменить на структуру в модели
-		type Response struct {
-			Like bool `json:"like"`
-		}
-		jsonData, _ := json.Marshal(Response{
-			likeSet,
-		})
+		jsonData, _ := json.Marshal(response)
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonData)
 	default:
