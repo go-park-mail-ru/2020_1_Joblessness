@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
+	"gopkg.in/go-playground/validator.v9"
 	"joblessness/haha/models"
 	"joblessness/haha/vacancy/interfaces"
 	"net/http"
@@ -31,12 +32,11 @@ func (h *Handler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if newVacancy.Name == "" {
-		golog.Errorf("#%s: %s",  rID, "empty vacancy name")
+	if err = validator.New().Struct(newVacancy); err != nil {
+		golog.Errorf("#%s: %s",  rID, "Empty vacancy name")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
 
 	newVacancy.ID, err = h.useCase.CreateVacancy(&newVacancy)
 	if err != nil {
@@ -124,8 +124,8 @@ func (h *Handler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if newVacancy.Name == "" {
-		golog.Errorf("#%s: %s",  rID, "empty vacancy name")
+	if err = validator.New().Struct(newVacancy); err != nil {
+		golog.Errorf("#%s: %s",  rID, "Empty vacancy name")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

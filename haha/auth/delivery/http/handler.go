@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/juju/loggo"
 	"github.com/kataras/golog"
+	"gopkg.in/go-playground/validator.v9"
 	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/models"
 	"net/http"
@@ -21,11 +22,6 @@ func NewHandler(useCase authInterfaces.AuthUseCase) *Handler {
 	return &Handler{
 		useCase: useCase,
 	}
-}
-
-type UserLogin struct {
-	Login string `json:"login"`
-	Password string `json:"password"`
 }
 
 func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
@@ -46,22 +42,19 @@ func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	}
 	form := r.MultipartForm
 
-	//TODO перенести в юзкейс
 	err = h.useCase.SetAvatar(form, userID)
 
 	switch err {
 	case authInterfaces.ErrUploadAvatar:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusFailedDependency)
-		return
 	case nil:
 		golog.Infof("#%s: %s",  rID, "Успешно")
+		w.WriteHeader(http.StatusCreated)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	}
-	w.WriteHeader(http.StatusCreated)
 }
 
 func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
@@ -76,7 +69,7 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.Login == "" || user.Password == "" {
+	if err = validator.New().Struct(user); err != nil {
 		golog.Errorf("#%s: %s",  rID, "Empty login or password")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -111,7 +104,7 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if org.Login == "" || org.Password == "" {
+	if err = validator.New().Struct(org); err != nil {
 		golog.Errorf("#%s: %s",  rID, "Empty login or password")
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -142,12 +135,12 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	golog.Debugf("#%s: %w", rID, user)
 	if err != nil {
 		golog.Errorf("#%s: %w\n%w",  rID, err, user)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if user.Login == "" || user.Password == "" {
-		golog.Errorf("#%s: %s",  rID, "login or password in empty")
+	if err = validator.New().Struct(user); err != nil {
+		golog.Errorf("#%s: %s",  rID, "Empty login or password")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

@@ -4,8 +4,8 @@ import "time"
 
 type Person struct {
 	ID uint64 `json:"id,omitempty"`
-	Login string `json:"login,omitempty"`
-	Password string `json:"password,omitempty"`
+	Login string `json:"login,omitempty" validate:"required"`
+	Password string `json:"password,omitempty" validate:"required"`
 	Tag string `json:"tag,omitempty"`
 	Email string `json:"email,omitempty"`
 	Phone string `json:"phone,omitempty"`
@@ -19,8 +19,8 @@ type Person struct {
 
 type Organization struct {
 	ID uint64 `json:"id,omitempty"`
-	Login string `json:"login,omitempty"`
-	Password string `json:"password,omitempty"`
+	Login string `json:"login,omitempty" validate:"required"`
+	Password string `json:"password,omitempty" validate:"required"`
 	Tag string `json:"tag,omitempty"`
 	Email string `json:"email,omitempty"`
 	Phone string `json:"phone,omitempty"`
@@ -32,8 +32,8 @@ type Organization struct {
 }
 
 type UserLogin struct {
-	Login string `json:"login"`
-	Password string `json:"password"`
+	Login string `json:"login" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 type Favorite struct {

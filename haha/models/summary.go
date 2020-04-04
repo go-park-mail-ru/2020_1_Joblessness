@@ -31,26 +31,26 @@ type Author struct {
 
 type Summary struct {
 	ID uint64 `json:"id,omitempty"`
-	Author Author `json:"author,omitempty"`
+	Author Author `json:"author,omitempty" validate:"required"`
 	Keywords string `json:"keywords,omitempty"`
 	Educations []Education `json:"educations,omitempty"`
 	Experiences []Experience `json:"experiences,omitempty"`
 }
 
 type SendSummary struct {
-	VacancyID uint64 `json:"vacancyId"`
+	VacancyID uint64 `json:"vacancyId,omitempty"`
 	SummaryID uint64 `json:"summaryId"`
 	UserID uint64 `json:"user_id,omitempty"`
 	OrganizationID uint64 `json:"organizationId,omitempty"`
-	Accepted bool `json:"accepted,omitempty"`
-	Denied bool `json:"denied,omitempty"`
+	Accepted bool `json:"accepted"`
+	Denied bool `json:"denied"`
 }
 
 type VacancyResponse struct {
 	UserID uint64 `json:"user_id,omitempty"`
 	Tag string `json:"tag,omitempty"`
-	VacancyID uint64 `json:"vacancyId"`
-	SummaryID uint64 `json:"summaryId"`
+	VacancyID uint64 `json:"vacancyId,omitempty"`
+	SummaryID uint64 `json:"summaryId,omitempty"`
 	Keywords  string `json:"keywords,omitempty"`
 }
 
