@@ -21,5 +21,6 @@ type AuthUseCase interface {
 	GetListOfOrgs(page int) ([]models.Organization, error)
 	SetAvatar(form *multipart.Form, userID uint64) error
 	LikeUser(userID, favoriteID uint64) (bool, error)
+	LikeExists(userID, favoriteID uint64) (bool, error)
 	GetUserFavorite(userID uint64) (models.Favorites, error)
 }

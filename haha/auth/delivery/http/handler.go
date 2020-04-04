@@ -375,6 +375,31 @@ func (h *Handler) LikeUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *Handler) LikeExists(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+	userID, _ := r.Context().Value("userID").(uint64)
+
+	var favoriteID uint64
+	favoriteID, _ = strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
+
+	likeSet, err := h.useCase.LikeExists(userID, favoriteID)
+	switch err {
+	case nil:
+		// TODO заменить на структуру в модели
+		type Response struct {
+			Like bool `json:"like"`
+		}
+		jsonData, _ := json.Marshal(Response{
+			likeSet,
+		})
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonData)
+	default:
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+}
+
 func (h *Handler) GetUserFavorite(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	userID, _ := r.Context().Value("userID").(uint64)

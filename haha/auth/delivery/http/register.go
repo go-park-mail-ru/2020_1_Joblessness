@@ -21,5 +21,6 @@ func RegisterHTTPEndpoints(router *mux.Router, m *middleware.SessionHandler, uc 
 	router.HandleFunc("/organizations", h.GetListOfOrgs).Methods("GET")
 	router.HandleFunc("/users/{user_id:[0-9]+}/avatar", m.UserRequired(h.SetAvatar)).Methods("POST")
 	router.HandleFunc("/users/{user_id:[0-9]+}/like", m.UserRequired(h.LikeUser)).Methods("POST")
+	router.HandleFunc("/users/{user_id:[0-9]+}/like", m.UserRequired(h.LikeExists)).Methods("GET")
 	router.HandleFunc("/users/{user_id:[0-9]+}/favorite", m.UserRequired(h.GetUserFavorite)).Methods("GET")
 }

@@ -137,6 +137,21 @@ func (mr *MockAuthUseCaseMockRecorder) GetUserFavorite(arg0 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserFavorite", reflect.TypeOf((*MockAuthUseCase)(nil).GetUserFavorite), arg0)
 }
 
+// LikeExists mocks base method
+func (m *MockAuthUseCase) LikeExists(arg0, arg1 uint64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LikeExists", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LikeExists indicates an expected call of LikeExists
+func (mr *MockAuthUseCaseMockRecorder) LikeExists(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LikeExists", reflect.TypeOf((*MockAuthUseCase)(nil).LikeExists), arg0, arg1)
+}
+
 // LikeUser mocks base method
 func (m *MockAuthUseCase) LikeUser(arg0, arg1 uint64) (bool, error) {
 	m.ctrl.T.Helper()

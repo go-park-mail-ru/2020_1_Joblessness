@@ -247,7 +247,6 @@ func (h *Handler) SendSummary(w http.ResponseWriter, r *http.Request) {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
-
 }
 
 func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {

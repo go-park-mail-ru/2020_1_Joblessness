@@ -451,6 +451,20 @@ func (r UserRepository) SetOrDeleteLike(userID, favoriteID uint64) (res bool, er
 	return false, err
 }
 
+func (r UserRepository) LikeExists(userID, favoriteID uint64) (res bool, err error) {
+	setLike := `SELECT count(*)
+				FROM favorite f
+				WHERE f.user_id = $1
+				AND f.favorite_id = $2;`
+	rows, err := r.db.Query(setLike, userID, favoriteID)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	return rows.Next(), nil
+}
+
 func (r UserRepository) GetUserFavorite(userID uint64) (res models.Favorites, err error) {
 	getFavorite := `SELECT u.id, u.tag, u.person_id
 				FROM favorite f, users u 
