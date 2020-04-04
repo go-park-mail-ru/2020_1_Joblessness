@@ -1,6 +1,7 @@
 package httpSummary
 
 import (
+	"database/sql"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
@@ -115,23 +116,23 @@ func (h *Handler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	summary, err := h.useCase.GetSummary(summaryID)
-	if err != nil {
+	switch err {
+	case sql.ErrNoRows :
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusNotFound)
+	case nil:
+		jsonData, err := json.Marshal(summary)
+		if err != nil {
+			golog.Errorf("#%s: %w",  rID, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonData)
+	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
-
-	golog.Infof("#%s: %w", rID, summary)
-
-	jsonData, err := json.Marshal(summary)
-	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonData)
 }
 
 func (h *Handler) GetUserSummaries(w http.ResponseWriter, r *http.Request) {

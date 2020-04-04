@@ -1,6 +1,7 @@
 package httpVacancy
 
 import (
+	"database/sql"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
@@ -70,20 +71,23 @@ func (h *Handler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	getVacancy, err := h.useCase.GetVacancy(vacancyId)
-	if err != nil {
+	switch err {
+	case sql.ErrNoRows :
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusNotFound)
+	case nil:
+		jsonData, err := json.Marshal(getVacancy)
+		if err != nil {
+			golog.Errorf("#%s: %w",  rID, err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonData)
+	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
-
-	jsonData, err := json.Marshal(getVacancy)
-	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(jsonData)
 }
 
 func (h *Handler) GetVacancies(w http.ResponseWriter, r *http.Request) {
