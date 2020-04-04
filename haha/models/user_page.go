@@ -6,8 +6,8 @@ type UserPage struct {
 }
 
 type UserInfo struct {
-	Firstname string `json:"first-name,omitempty"`
-	Lastname string `json:"last-name,omitempty"`
+	Firstname string `json:"firstName,omitempty"`
+	Lastname string `json:"lastName,omitempty"`
 	Tag string `json:"tag,omitempty"`
 	Avatar string `json:"avatar,omitempty"`
 }

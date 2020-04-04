@@ -15,9 +15,9 @@ type Vacancy struct {
 	Organization VacancyOrganization `json:"organization,omitempty"`
 	Name string `json:"name,omitempty"`
 	Description string `json:"description,omitempty"`
-	SalaryFrom int `json:"salary_from,omitempty"`
-	SalaryTo int `json:"salary_to,omitempty"`
-	WithTax bool `json:"with_tax,omitempty"`
+	SalaryFrom int `json:"salaryFrom,omitempty"`
+	SalaryTo int `json:"salaryTo,omitempty"`
+	WithTax bool `json:"withTax,omitempty"`
 	Responsibilities string `json:"responsibilities,omitempty"`
 	Conditions string `json:"conditions,omitempty"`
 	Keywords string`json:"keywords,omitempty"`

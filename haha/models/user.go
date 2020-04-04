@@ -11,8 +11,8 @@ type Person struct {
 	Phone string `json:"phone,omitempty"`
 	Registered time.Time `json:"registered,omitempty"`
 	Avatar string `json:"avatar,omitempty"`
-	FirstName string `json:"first_name,omitempty"`
-	LastName string `json:"last_name,omitempty"`
+	FirstName string `json:"firstName,omitempty"`
+	LastName string `json:"lastName,omitempty"`
 	Gender string `json:"gender,omitempty"`
 	Birthday time.Time `json:"birthday,omitempty"`
 }
@@ -39,7 +39,7 @@ type UserLogin struct {
 type Favorite struct {
 	ID uint64 `json:"id"`
 	Tag string `json:"tag"`
-	IsPerson bool `json:"is_person"`
+	IsPerson bool `json:"isPerson"`
 }
 
 type Favorites []*Favorite
