@@ -682,6 +682,54 @@ func (suite *userSuite) TestLikeUserFailed() {
 	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
 }
 
+func (suite *userSuite) TestLikeExists() {
+	suite.uc.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+	suite.uc.EXPECT().
+		LikeExists(uint64(12), uint64(1)).
+		Return(false, nil).
+		Times(1)
+
+	cookie := &http.Cookie {
+		Name: "session_id",
+		Value: "username",
+		Expires: time.Now().Add(time.Hour),
+	}
+
+	r, _ := http.NewRequest("GET", "/api/users/1/like",  bytes.NewBuffer([]byte{}))
+	r.AddCookie(cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
+
+func (suite *userSuite) TestLikeExistsFailed() {
+	suite.uc.EXPECT().
+		SessionExists("username").
+		Return(uint64(12), nil).
+		Times(1)
+	suite.uc.EXPECT().
+		LikeExists(uint64(12), uint64(1)).
+		Return(false, errors.New("")).
+		Times(1)
+
+	cookie := &http.Cookie {
+		Name: "session_id",
+		Value: "username",
+		Expires: time.Now().Add(time.Hour),
+	}
+
+	r, _ := http.NewRequest("GET", "/api/users/1/like",  bytes.NewBuffer([]byte{}))
+	r.AddCookie(cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+}
+
 func (suite *userSuite) TestGetFavorite() {
 	suite.uc.EXPECT().
 		SessionExists("username").

@@ -1,6 +1,7 @@
 package httpAuth
 
 import (
+	"database/sql"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/juju/loggo"
@@ -62,10 +63,9 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 
 	var user models.Person
 	err := json.NewDecoder(r.Body).Decode(&user)
-	golog.Debugf("#%s: %w", rID, user)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -80,16 +80,13 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	case authInterfaces.ErrUserAlreadyExists:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	case nil:
 		golog.Infof("#%s: %s",  rID, "Успешно")
+		w.WriteHeader(http.StatusCreated)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
-
-	w.WriteHeader(http.StatusCreated)
 }
 
 func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
@@ -97,10 +94,9 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 
 	var org models.Organization
 	err := json.NewDecoder(r.Body).Decode(&org)
-	golog.Debugf("#%s: %w", rID, org)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -115,16 +111,13 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 	case authInterfaces.ErrUserAlreadyExists:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
-		return
 	case nil:
 		golog.Infof("#%s: %s",  rID, "success")
+		w.WriteHeader(http.StatusCreated)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
-
-	w.WriteHeader(http.StatusCreated)
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -203,21 +196,24 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 	userID, _ := r.Context().Value("userID").(uint64)
 
 	role, err := h.useCase.GetRole(userID)
-	if err != nil {
+	switch err {
+	case sql.ErrNoRows :
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusNotFound)
+	case nil:
+		jsonData, _ := json.Marshal(models.ResponseRole{ID: userID, Role: role})
+		w.WriteHeader(http.StatusCreated)
+		w.Write(jsonData)
+	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
 	}
-
-	jsonData, _ := json.Marshal(models.ResponseRole{ID: userID, Role: role})
-	w.WriteHeader(http.StatusCreated)
-	w.Write(jsonData)
 }
 
 func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-
 	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
+
 	user, err := h.useCase.GetPerson(userID)
 	switch err {
 	case authInterfaces.ErrUserNotPerson :
@@ -245,10 +241,9 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 
 	var person models.Person
 	err := json.NewDecoder(r.Body).Decode(&person)
-	golog.Debugf("#%s: %w", rID, person)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -297,10 +292,9 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 
 	var org models.Organization
 	err := json.NewDecoder(r.Body).Decode(&org)
-	golog.Debugf("#%s: %w", rID, org)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
