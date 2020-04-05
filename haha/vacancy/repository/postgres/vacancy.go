@@ -174,7 +174,6 @@ func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, 
 
 func (r *VacancyRepository) ChangeVacancy(vacancy *models.Vacancy) (err error) {
 	vacancyDB := toPostgres(vacancy)
-	//TODO проверять автора
 
 	changeVacancy := `UPDATE vacancy
 					  SET name = $1, description = $2, salary_from = $3, salary_to = $5,

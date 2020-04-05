@@ -2,6 +2,7 @@ package searchRepoPostgres
 
 import (
 	"database/sql"
+	"github.com/kataras/golog"
 	"joblessness/haha/models"
 	"strconv"
 	"strings"
@@ -152,11 +153,13 @@ func (r SearchRepository) SearchPersons(request, since, desc string) (result []*
 			return nil, err
 		}
 
+		golog.Error("Name in base: ", personDB.FirstName)
 		index := strings.Index(personDB.FirstName, " ")
 		if index > -1 {
 			personDB.LastName = personDB.FirstName[index+1:]
 			personDB.FirstName = personDB.FirstName[:index]
 		}
+		golog.Error("Name after:",  personDB.FirstName, " ", personDB.LastName)
 
 		result= append(result, &personDB)
 	}
@@ -213,7 +216,7 @@ func (r SearchRepository) SearchVacancies(request, since, desc string) (result [
 
 	page, _ := strconv.Atoi(since)
 
-	getVacancies := `SELECT users.id, o.name, v.id, v.name, v.keywords
+	getVacancies := `SELECT users.id, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax
 					FROM users
 					JOIN organization o on users.organization_id = o.id
 					JOIN vacancy v on o.id = v.organization_id

@@ -124,12 +124,6 @@ func (h *Handler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = validator.New().Struct(newVacancy); err != nil {
-		golog.Errorf("#%s: %s",  rID, "Empty vacancy name")
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	newVacancy.ID = vacancyID
 
 	err = h.useCase.ChangeVacancy(&newVacancy)

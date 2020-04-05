@@ -39,7 +39,10 @@ type Organization struct {
 }
 
 func toPostgresPerson(p *models.Person) (*User, *Person) {
-	name := p.FirstName + " " + p.LastName
+	name := p.FirstName
+	if p.LastName != "" {
+		name += " " + p.LastName
+	}
 
 	return &User{
 		ID:             p.ID,
