@@ -72,5 +72,5 @@ func (u *SummaryUseCase) GetOrgSendSummaries(userID uint64) (summaries models.Or
 }
 
 func (u *SummaryUseCase) GetUserSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
-	return u.summaryRepo.GetOrgSendSummaries(userID)
+	return u.summaryRepo.GetUserSendSummaries(userID)
 }

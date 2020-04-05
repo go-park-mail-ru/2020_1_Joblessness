@@ -2,7 +2,6 @@ package summaryRepoPostgres
 
 import (
 	"database/sql"
-	"github.com/kataras/golog"
 	"joblessness/haha/models"
 	summaryInterfaces "joblessness/haha/summary/interfaces"
 	"strings"
@@ -544,8 +543,6 @@ func (r *SummaryRepository) GetUserSendSummaries(userID uint64) (summaries model
 		return nil, err
 	}
 	defer rows.Close()
-
-	golog.Error(rows)
 
 	summaries = make(models.OrgSummaries, 0)
 
