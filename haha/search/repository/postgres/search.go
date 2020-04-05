@@ -131,7 +131,7 @@ func (r SearchRepository) SearchPersons(request, since, desc string) (result []*
 
 	page, _ := strconv.Atoi(since)
 
-	getPersons := 	`SELECT users.id as userId, name, tag, avatar
+	getPersons := 	`SELECT users.id as userId, p.name, tag, avatar
 					FROM users
 					JOIN person p on users.person_id = p.id
 					WHERE name LIKE '%' || $1 || '%'
