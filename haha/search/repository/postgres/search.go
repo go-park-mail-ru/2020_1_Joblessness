@@ -140,7 +140,7 @@ func (r SearchRepository) SearchVacancies(request, since, desc string) (result [
 	getVacancies := `SELECT users.id, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax
 					FROM users
 					JOIN organization o on users.organization_id = o.id
-					JOIN vacancy v on o.id = v.organization_id
+					JOIN vacancy v on users.id = v.organization_id
 					WHERE v.name LIKE '%' || $1 || '%'
 					ORDER BY o.name ` + desc + `, v.name
 					LIMIT $2 OFFSET $3`
