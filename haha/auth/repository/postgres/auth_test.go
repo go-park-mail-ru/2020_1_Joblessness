@@ -370,9 +370,9 @@ func (suite *userSuite) TestChangePersonFailedTwo() {
 }
 
 func (suite *userSuite) TestGetOrganization() {
-	rows := sqlmock.NewRows([]string{"login", "organization_id", "email", "phone", "avatar"})
+	rows := sqlmock.NewRows([]string{"login", "organization_id", "email", "phone", "avatar", "tag"})
 	rows = rows.AddRow(suite.organization.Login, suite.organization.ID,
-		suite.organization.Email, suite.organization.Phone, suite.organization.Avatar)
+		suite.organization.Email, suite.organization.Phone, suite.organization.Avatar, suite.organization.Tag)
 	suite.mock.
 		ExpectQuery("SELECT login,").
 		WithArgs(12).
