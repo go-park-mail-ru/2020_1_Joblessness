@@ -176,7 +176,7 @@ func (r *VacancyRepository) ChangeVacancy(vacancy *models.Vacancy) (err error) {
 	vacancyDB := toPostgres(vacancy)
 
 	changeVacancy := `UPDATE vacancy
-					  SET name = $1, description = $2, salary_from = $3, salary_to = $5,
+					  SET name = $1, description = $2, salary_from = $3, salary_to = $4,
 						  with_tax = $5, responsibilities = $6, conditions = $7, keywords = $8
 					  WHERE id = $9;`
 	_, err = r.db.Exec(changeVacancy, vacancyDB.Name, vacancyDB.Description,
