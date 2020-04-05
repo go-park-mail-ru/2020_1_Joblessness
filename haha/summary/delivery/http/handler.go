@@ -122,8 +122,9 @@ func (h *Handler) GetSummary(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) GetUserSummaries(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	userID, err := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
+	page := r.FormValue("page")
 
-	summaries, err := h.useCase.GetUserSummaries(userID)
+	summaries, err := h.useCase.GetUserSummaries(page, userID)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)

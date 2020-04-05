@@ -279,7 +279,7 @@ func (suite *userSuite) TestPrintSummariesWrongUrl() {
 
 func (suite *userSuite) TestGetUserSummaries() {
 	suite.uc.EXPECT().
-		GetUserSummaries(suite.summary.Author.ID).
+		GetUserSummaries("", suite.summary.Author.ID).
 		Return([]models.Summary{suite.summary}, nil).
 		Times(1)
 
@@ -292,7 +292,7 @@ func (suite *userSuite) TestGetUserSummaries() {
 
 func (suite *userSuite) TestGetUserSummariesWrongUrl() {
 	suite.uc.EXPECT().
-		GetUserSummaries(suite.summary.Author.ID).
+		GetUserSummaries("", suite.summary.Author.ID).
 		Return([]models.Summary{suite.summary}, nil).
 		Times(1)
 
@@ -305,7 +305,7 @@ func (suite *userSuite) TestGetUserSummariesWrongUrl() {
 
 func (suite *userSuite) TestGetUserSummariesFailed() {
 	suite.uc.EXPECT().
-		GetUserSummaries(suite.summary.Author.ID).
+		GetUserSummaries("", suite.summary.Author.ID).
 		Return(nil, errors.New("")).
 		Times(1)
 

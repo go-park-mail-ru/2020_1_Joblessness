@@ -377,7 +377,7 @@ func (suite *summarySuite) TestGetUserSummaries() {
 		WithArgs(suite.summary.Author.ID).
 		WillReturnRows(rows)
 
-	summaries, err := suite.rep.GetUserSummaries(uint64(12))
+	summaries, err := suite.rep.GetUserSummaries(0, uint64(12))
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), suite.summary, summaries[0])
 }
