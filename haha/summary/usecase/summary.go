@@ -67,6 +67,10 @@ func (u *SummaryUseCase) ResponseSummary(sendSummary *models.SendSummary)  (err 
 	return err
 }
 
-func (u *SummaryUseCase) GetOrgSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
-	return u.summaryRepo.GetOrgSummaries(userID)
+func (u *SummaryUseCase) GetOrgSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
+	return u.summaryRepo.GetOrgSendSummaries(userID)
+}
+
+func (u *SummaryUseCase) GetUserSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
+	return u.summaryRepo.GetOrgSendSummaries(userID)
 }

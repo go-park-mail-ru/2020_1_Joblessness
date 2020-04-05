@@ -52,6 +52,8 @@ type VacancyResponse struct {
 	VacancyID uint64 `json:"vacancyId,omitempty"`
 	SummaryID uint64 `json:"summaryId,omitempty"`
 	Keywords  string `json:"keywords,omitempty"`
+	VacancyName  string `json:"vacancyName,omitempty"`
+	SummaryName  string `json:"summaryName,omitempty"`
 }
 
 type OrgSummaries []*VacancyResponse

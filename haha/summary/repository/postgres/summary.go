@@ -482,8 +482,8 @@ func (r *SummaryRepository) ResponseSummary(sendSummary *models.SendSummary)  (e
 	return nil
 }
 
-func (r *SummaryRepository) GetOrgSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
-	getSummary := `SELECT u.id, u.tag, v.id, s.id, s.keywords
+func (r *SummaryRepository) GetOrgSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
+	getSummary := `SELECT u.id, u.tag, v.id, s.id, s.keywords, s.name, v.name
 				   FROM vacancy v 
 				   JOIN response r on v.id = r.vacancy_id
 				       AND r.approved = false
@@ -504,7 +504,41 @@ func (r *SummaryRepository) GetOrgSummaries(userID uint64) (summaries models.Org
 	for rows.Next() {
 		var vacancyDB models.VacancyResponse
 
-		err = rows.Scan(&vacancyDB.UserID, &vacancyDB.Tag, &vacancyDB.VacancyID, &vacancyDB.SummaryID, &vacancyDB.Keywords)
+		err = rows.Scan(&vacancyDB.UserID, &vacancyDB.Tag, &vacancyDB.VacancyID, &vacancyDB.SummaryID,
+			&vacancyDB.Keywords, &vacancyDB.SummaryName, &vacancyDB.VacancyName)
+		if err != nil {
+			return nil, err
+		}
+
+		summaries = append(summaries, &vacancyDB)
+	}
+	return summaries, nil
+}
+
+
+func (r *SummaryRepository) GetUserSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
+	getSummary := `SELECT v.id, s.id, s.keywords, s.name, v.name
+				   FROM vacancy v 
+				   JOIN response r on v.id = r.vacancy_id
+				       AND r.approved = false
+				       AND r.rejected = false
+				   JOIN summary s on r.summary_id = s.id
+				   WHERE s.author = $1
+				   order by r.date desc`
+
+	rows, err := r.db.Query(getSummary, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	summaries = make(models.OrgSummaries, 0)
+
+	for rows.Next() {
+		var vacancyDB models.VacancyResponse
+
+		err = rows.Scan(&vacancyDB.VacancyID, &vacancyDB.SummaryID, &vacancyDB.Keywords, &vacancyDB.SummaryName,
+			&vacancyDB.VacancyName)
 		if err != nil {
 			return nil, err
 		}

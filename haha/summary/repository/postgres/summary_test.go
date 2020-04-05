@@ -640,7 +640,7 @@ func (suite *summarySuite) TestGetOrgSummaries() {
 		WithArgs(suite.sendSum.OrganizationID).
 		WillReturnRows(rows)
 
-	res, err := suite.rep.GetOrgSummaries(suite.sendSum.OrganizationID)
+	res, err := suite.rep.GetOrgSendSummaries(suite.sendSum.OrganizationID)
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), suite.response, *res[0])
 }
@@ -651,6 +651,6 @@ func (suite *summarySuite) TestGetOrgSummariesFailed() {
 		WithArgs(suite.sendSum.OrganizationID).
 		WillReturnError(errors.New(""))
 
-	_, err := suite.rep.GetOrgSummaries(suite.sendSum.OrganizationID)
+	_, err := suite.rep.GetOrgSendSummaries(suite.sendSum.OrganizationID)
 	assert.Error(suite.T(), err)
 }

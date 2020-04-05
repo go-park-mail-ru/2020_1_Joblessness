@@ -279,7 +279,7 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) GetOrgSummaries(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetOrgSendSummaries(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
 	userID, err := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
@@ -289,7 +289,34 @@ func (h *Handler) GetOrgSummaries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	summaries, err := h.useCase.GetOrgSummaries(userID)
+	summaries, err := h.useCase.GetOrgSendSummaries(userID)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	jsonData, err := json.Marshal(summaries)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}
+
+func (h *Handler) GetUserSendSummaries(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
+	userID, err := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
+	if err != nil {
+		golog.Errorf("#%s: %w",  rID, err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	summaries, err := h.useCase.GetUserSendSummaries(userID)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)

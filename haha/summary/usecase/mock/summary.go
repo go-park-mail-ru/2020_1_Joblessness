@@ -91,19 +91,19 @@ func (mr *MockSummaryUseCaseMockRecorder) GetAllSummaries(arg0 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllSummaries", reflect.TypeOf((*MockSummaryUseCase)(nil).GetAllSummaries), arg0)
 }
 
-// GetOrgSummaries mocks base method
-func (m *MockSummaryUseCase) GetOrgSummaries(arg0 uint64) (models.OrgSummaries, error) {
+// GetOrgSendSummaries mocks base method
+func (m *MockSummaryUseCase) GetOrgSendSummaries(arg0 uint64) (models.OrgSummaries, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOrgSummaries", arg0)
+	ret := m.ctrl.Call(m, "GetOrgSendSummaries", arg0)
 	ret0, _ := ret[0].(models.OrgSummaries)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetOrgSummaries indicates an expected call of GetOrgSummaries
+// GetOrgSendSummaries indicates an expected call of GetOrgSendSummaries
 func (mr *MockSummaryUseCaseMockRecorder) GetOrgSummaries(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrgSummaries", reflect.TypeOf((*MockSummaryUseCase)(nil).GetOrgSummaries), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrgSendSummaries", reflect.TypeOf((*MockSummaryUseCase)(nil).GetOrgSendSummaries), arg0)
 }
 
 // GetSummary mocks base method
