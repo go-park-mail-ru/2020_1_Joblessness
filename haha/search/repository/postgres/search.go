@@ -235,7 +235,7 @@ func (r SearchRepository) SearchVacancies(request, since, desc string) (result [
 	for rows.Next() {
 		var vacancyDB models.Vacancy
 		err := rows.Scan(&vacancyDB.Organization.ID, &vacancyDB.Organization.Name, &vacancyDB.ID,
-			&vacancyDB.Name, &vacancyDB.Keywords)
+			&vacancyDB.Name, &vacancyDB.Keywords, &vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax)
 		if err != nil {
 			return nil, err
 		}
