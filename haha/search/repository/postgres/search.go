@@ -2,7 +2,6 @@ package searchRepoPostgres
 
 import (
 	"database/sql"
-	"github.com/kataras/golog"
 	"joblessness/haha/models"
 	"strconv"
 	"strings"
