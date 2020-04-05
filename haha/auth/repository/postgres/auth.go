@@ -345,9 +345,9 @@ func (r UserRepository) ChangePerson(p models.Person) error {
 func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, error) {
 	user := User{ID: userID}
 
-	getUser := "SELECT login, COALESCE(organization_id, 0), email, phone, avatar FROM users WHERE id = $1;"
+	getUser := "SELECT login, COALESCE(organization_id, 0), email, phone, avatar, tag FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, userID).
-		Scan(&user.Login, &user.OrganizationID, &user.Email, &user.Phone, &user.Avatar)
+		Scan(&user.Login, &user.OrganizationID, &user.Email, &user.Phone, &user.Avatar, &user.Tag)
 	if err != nil {
 		return nil, err
 	}
