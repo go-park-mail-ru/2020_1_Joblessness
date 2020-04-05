@@ -659,3 +659,28 @@ func (suite *summarySuite) TestGetOrgSummariesFailed() {
 	_, err := suite.rep.GetOrgSendSummaries(suite.sendSum.OrganizationID)
 	assert.Error(suite.T(), err)
 }
+
+func (suite *summarySuite) TestGetUserSendSummaries() {
+	rows := sqlmock.NewRows([]string{"id", "id", "keywords", "name", "name", "approved", "rejected"}).
+		AddRow(suite.response.VacancyID, suite.response.SummaryID,
+			suite.response.Keywords, suite.response.SummaryName, suite.response.VacancyName, suite.response.Accepted,
+			suite.response.Denied)
+
+	suite.mock.
+		ExpectQuery("SELECT v.id, s.id, s.keywords, s.name, v.name").
+		WithArgs(suite.sendSum.OrganizationID).
+		WillReturnRows(rows)
+
+	_, err := suite.rep.GetUserSendSummaries(suite.sendSum.OrganizationID)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *summarySuite) TestGetUserSendSummariesFailed() {
+	suite.mock.
+		ExpectQuery("SELECT v.id, s.id, s.keywords, s.name, v.name").
+		WithArgs(suite.sendSum.OrganizationID).
+		WillReturnError(errors.New(""))
+
+	_, err := suite.rep.GetUserSendSummaries(suite.sendSum.OrganizationID)
+	assert.Error(suite.T(), err)
+}

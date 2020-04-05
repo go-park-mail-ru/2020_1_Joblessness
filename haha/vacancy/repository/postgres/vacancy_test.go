@@ -254,3 +254,25 @@ func (suite *vacancySuite) TestDeleteVacancyFailed() {
 	err := suite.rep.DeleteVacancy(suite.vacancy.ID)
 	assert.Error(suite.T(), err)
 }
+
+func (suite *vacancySuite) TestGetOrgVacancies() {
+	rows := sqlmock.NewRows([]string{"id", "name", "salary_from", "salary_to", "with_tax", "keywords"}).
+		AddRow(suite.vacancy.ID, suite.vacancy.Name, suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo,
+			suite.vacancy.WithTax, suite.vacancy.Keywords)
+	suite.mock.
+		ExpectQuery("SELECT id, name, salary_from, salary_to, with_tax").
+		WithArgs(1).
+		WillReturnRows(rows)
+
+	_, err := suite.rep.GetOrgVacancies(1)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *vacancySuite) TestGetOrgVacanciesFailedOne() {
+	suite.mock.
+		ExpectQuery("SELECT id, name, salary_from, salary_to, with_tax").
+		WillReturnError(errors.New(""))
+
+	_, err := suite.rep.GetVacancies(1)
+	assert.Error(suite.T(), err)
+}

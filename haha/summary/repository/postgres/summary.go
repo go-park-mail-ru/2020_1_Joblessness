@@ -353,7 +353,7 @@ func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 	summaryDB, educationDBs, experienceDBs := toPostgres(summary)
 
 	changeSummary := `UPDATE summary
-					  SET keywords = COALESCE(NULLIF(keywords, ''), $1)
+					  SET keywords = COALESCE(NULLIF($1, ''), keywords)
 					  WHERE id = $2`
 	_, err = r.db.Exec(changeSummary, summaryDB.Keywords, summaryDB.ID)
 	if err != nil {
@@ -361,10 +361,10 @@ func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 	}
 
 	changeEducation := `UPDATE education
-						SET institution = COALESCE(NULLIF(institution, ''), $1), 
-						    speciality = COALESCE(NULLIF(speciality, ''), $2),
-						    graduated = COALESCE(NULLIF(graduated, ''), $3), 
-						    type = COALESCE(NULLIF(type, ''), $4)
+						SET institution = COALESCE(NULLIF($1, ''), institution), 
+						    speciality = COALESCE(NULLIF($2, ''), speciality),
+						    graduated = COALESCE(NULLIF($3, ''), graduated), 
+						    type = COALESCE(NULLIF($4, ''), type)
 						WHERE summary_id = $5`
 
 	for _, educationDB := range educationDBs {
@@ -376,11 +376,11 @@ func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 	}
 
 	changeExperience := `UPDATE experience
-						SET company_name = COALESCE(NULLIF(company_name, ''), $1),
-						    role = COALESCE(NULLIF(role, ''), $2), 
-						    responsibilities = COALESCE(NULLIF(responsibilities, ''), $3),
-						    start = COALESCE(NULLIF(start, ''), $4),
-						    stop = COALESCE(NULLIF(stop, ''), $5)
+						SET company_name = COALESCE(NULLIF($1, ''), company_name),
+						    role = COALESCE(NULLIF($2, ''), role), 
+						    responsibilities = COALESCE(NULLIF($3, ''), responsibilities),
+						    start = COALESCE(NULLIF($4, ''), start),
+						    stop = COALESCE(NULLIF($5, ''), stop)
 						WHERE summary_id = $6`
 
 	for _, experienceDB := range experienceDBs {

@@ -147,18 +147,6 @@ func (r UserRepository) DoesUserExists(login string) (err error) {
 }
 
 func (r UserRepository) CreateUser(user *User) (err error) {
-	//var personIdSql sql.NullInt64
-	//var orgIdSql sql.NullInt64
-	//if user.PersonID != 0 {
-	//	personIdSql.Valid = true
-	//	personIdSql.Int64 = int64(user.PersonID)
-	//} else if user.OrganizationID != 0 {
-	//	orgIdSql.Valid = true
-	//	orgIdSql.Int64 = int64(user.OrganizationID)
-	//} else {
-	//	return errors.New("inserted id is 0")
-	//}
-
 	user.Password, err = salt.HashAndSalt(user.Password)
 
 	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone, tag) 

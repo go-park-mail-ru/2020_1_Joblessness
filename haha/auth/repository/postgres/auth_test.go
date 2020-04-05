@@ -533,6 +533,31 @@ func (suite *userSuite) TestLikeUserLikeFailed() {
 	assert.Error(suite.T(), err)
 }
 
+func (suite *userSuite) TestLikeExists() {
+	rows := sqlmock.NewRows([]string{"count"}).
+	AddRow(1)
+	suite.mock.
+		ExpectQuery("SELECT count").
+		WithArgs(suite.person.ID, suite.person.ID).
+		WillReturnRows(rows)
+
+	res, err := suite.rep.LikeExists(suite.person.ID, suite.person.ID)
+
+	assert.NoError(suite.T(), err)
+	assert.True(suite.T(), res)
+}
+
+func (suite *userSuite) TestLikeExistsFailed() {
+	suite.mock.
+		ExpectExec("SELECT count").
+		WithArgs(suite.person.ID, suite.person.ID).
+		WillReturnError(errors.New(""))
+
+	_, err := suite.rep.LikeExists(suite.person.ID, suite.person.ID)
+
+	assert.Error(suite.T(), err)
+}
+
 func (suite *userSuite) TestLikeUserDis() {
 	suite.mock.
 		ExpectExec("INSERT INTO favorite").
