@@ -12,6 +12,9 @@ type Summary struct {
 	ID uint64
 	AuthorID uint64
 	Keywords string
+	Name string
+	SalaryFrom int
+	SalaryTo int
 }
 
 type Education struct {
@@ -56,6 +59,9 @@ func toPostgres(s *models.Summary) (summary *Summary, educations []Education, ex
 		ID:       s.ID,
 		AuthorID: s.Author.ID,
 		Keywords: s.Keywords,
+		Name: s.Name,
+		SalaryFrom: s.SalaryFrom,
+		SalaryTo: s.SalaryTo,
 	}
 
 	for _, education := range s.Educations {
@@ -129,6 +135,9 @@ func toModel(s *Summary, eds []Education, exs []Experience, u *User, p *Person) 
 		ID:          s.ID,
 		Author:      author,
 		Keywords:    s.Keywords,
+		Name: s.Name,
+		SalaryFrom: s.SalaryFrom,
+		SalaryTo: s.SalaryTo,
 		Educations:  educations,
 		Experiences: experiences,
 	}
@@ -150,9 +159,10 @@ func NewSummaryRepository(db *sql.DB) *SummaryRepository {
 func (r *SummaryRepository) CreateSummary(summary *models.Summary) (summaryID uint64, err error) {
 	summaryDB, educationDBs, experienceDBs := toPostgres(summary)
 
-	createSummary := `INSERT INTO summary (author, keywords)
-					  VALUES ($1, $2) RETURNING id;`
-	err = r.db.QueryRow(createSummary, summaryDB.AuthorID, summaryDB.Keywords).Scan(&summaryDB.ID)
+	createSummary := `INSERT INTO summary (author, keywords, name, salary_from, salary_to)
+					  VALUES ($1, $2, $3, $4, $5) RETURNING id;`
+	err = r.db.QueryRow(createSummary, summaryDB.AuthorID, summaryDB.Keywords, summaryDB.Name,
+		summaryDB.SalaryFrom, summaryDB.SalaryTo).Scan(&summaryDB.ID)
 	if err != nil {
 		return summaryID, err
 	}
@@ -255,7 +265,7 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, err
 	var err error
 
 	if opt.userID == 0 {
-		getSummaries := `SELECT id, author, keywords
+		getSummaries := `SELECT id, author, keywords, name, salary_from, salary_to
 					 	 FROM summary
 					 	 LIMIT $1 OFFSET $2;`
 		rows, err = r.db.Query(getSummaries, 9,  opt.page*10)
@@ -263,7 +273,7 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, err
 			return nil, err
 		}
 	} else {
-		getSummaries := `SELECT id, author, keywords
+		getSummaries := `SELECT id, author, keywords, name, salary_from, salary_to
 					 	 FROM summary WHERE author = $1
 						LIMIT $2 OFFSET $3;`
 		rows, err = r.db.Query(getSummaries, opt.userID, 9,  opt.page*10)
@@ -278,7 +288,8 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, err
 	for rows.Next() {
 		var summaryDB Summary
 
-		err = rows.Scan(&summaryDB.ID, &summaryDB.AuthorID, &summaryDB.Keywords)
+		err = rows.Scan(&summaryDB.ID, &summaryDB.AuthorID, &summaryDB.Keywords, &summaryDB.Name, &summaryDB.SalaryFrom,
+			&summaryDB.SalaryTo)
 		if err != nil {
 			return nil, err
 		}
@@ -338,6 +349,7 @@ func (r *SummaryRepository) GetSummary(summaryID uint64) (*models.Summary, error
 }
 
 func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
+	// TODO Переделать, неправлиьные запросы
 	summaryDB, educationDBs, experienceDBs := toPostgres(summary)
 
 	changeSummary := `UPDATE summary
@@ -483,7 +495,7 @@ func (r *SummaryRepository) ResponseSummary(sendSummary *models.SendSummary)  (e
 }
 
 func (r *SummaryRepository) GetOrgSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
-	getSummary := `SELECT u.id, u.tag, v.id, s.id, s.keywords, s.name, v.name
+	getSummary := `SELECT u.id, u.tag, v.id, s.id, s.keywords, s.name, v.name, r.approved, r.rejected
 				   FROM vacancy v 
 				   JOIN response r on v.id = r.vacancy_id
 				       AND r.approved = false
@@ -505,7 +517,7 @@ func (r *SummaryRepository) GetOrgSendSummaries(userID uint64) (summaries models
 		var vacancyDB models.VacancyResponse
 
 		err = rows.Scan(&vacancyDB.UserID, &vacancyDB.Tag, &vacancyDB.VacancyID, &vacancyDB.SummaryID,
-			&vacancyDB.Keywords, &vacancyDB.SummaryName, &vacancyDB.VacancyName)
+			&vacancyDB.Keywords, &vacancyDB.SummaryName, &vacancyDB.VacancyName, &vacancyDB.Accepted, &vacancyDB.Denied)
 		if err != nil {
 			return nil, err
 		}
@@ -517,7 +529,7 @@ func (r *SummaryRepository) GetOrgSendSummaries(userID uint64) (summaries models
 
 
 func (r *SummaryRepository) GetUserSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
-	getSummary := `SELECT v.id, s.id, s.keywords, s.name, v.name
+	getSummary := `SELECT v.id, s.id, s.keywords, s.name, v.name, r.approved, r.rejected
 				   FROM vacancy v 
 				   JOIN response r on v.id = r.vacancy_id
 				       AND r.approved = false
@@ -538,7 +550,7 @@ func (r *SummaryRepository) GetUserSendSummaries(userID uint64) (summaries model
 		var vacancyDB models.VacancyResponse
 
 		err = rows.Scan(&vacancyDB.VacancyID, &vacancyDB.SummaryID, &vacancyDB.Keywords, &vacancyDB.SummaryName,
-			&vacancyDB.VacancyName)
+			&vacancyDB.VacancyName, &vacancyDB.Accepted, &vacancyDB.Denied)
 		if err != nil {
 			return nil, err
 		}

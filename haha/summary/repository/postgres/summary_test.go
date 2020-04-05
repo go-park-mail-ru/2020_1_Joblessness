@@ -112,7 +112,8 @@ func (suite *summarySuite) TestCreateSummary() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO summary").
-		WithArgs(suite.summary.Author.ID, suite.summary.Keywords).
+		WithArgs(suite.summary.Author.ID, suite.summary.Keywords, suite.summary.Name, suite.summary.SalaryFrom,
+			suite.summary.SalaryTo).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO education").
@@ -304,8 +305,9 @@ func (suite *summarySuite) TestGetSummaryFailedFor() {
 }
 
 func (suite *summarySuite) TestGetSummaries() {
-	rows := sqlmock.NewRows([]string{"id", "author", "keywords"}).
-		AddRow(suite.summary.ID, suite.summary.Author.ID, suite.summary.Keywords)
+	rows := sqlmock.NewRows([]string{"id", "author", "keywords", "name", "salary_from", "salary_to"}).
+		AddRow(suite.summary.ID, suite.summary.Author.ID, suite.summary.Keywords, suite.summary.Name,
+			suite.summary.SalaryFrom, suite.summary.SalaryTo)
 	suite.mock.
 		ExpectQuery("SELECT id, author, keywords").
 		WithArgs(9, uint64(10)).
@@ -342,8 +344,9 @@ func (suite *summarySuite) TestGetSummaries() {
 }
 
 func (suite *summarySuite) TestGetUserSummaries() {
-	rows := sqlmock.NewRows([]string{"id", "author", "keywords"}).
-		AddRow(suite.summary.ID, suite.summary.Author.ID, suite.summary.Keywords)
+	rows := sqlmock.NewRows([]string{"id", "author", "keywords", "name", "salary_from", "salary_to"}).
+		AddRow(suite.summary.ID, suite.summary.Author.ID, suite.summary.Keywords, suite.summary.Name,
+			suite.summary.SalaryFrom, suite.summary.SalaryTo)
 	suite.mock.
 		ExpectQuery("SELECT id, author, keywords").
 		WithArgs(suite.summary.Author.ID, 9, uint64(0)).
@@ -632,8 +635,10 @@ func (suite *summarySuite) TestResponseSummaryFailed() {
 }
 
 func (suite *summarySuite) TestGetOrgSummaries() {
-	rows := sqlmock.NewRows([]string{"id", "tag", "id", "id", "keywords"}).
-		AddRow(suite.response.UserID, suite.response.Tag, suite.response.VacancyID, suite.response.SummaryID, suite.response.Keywords)
+	rows := sqlmock.NewRows([]string{"id", "tag", "id", "id", "keywords", "name", "name", "approved", "rejected"}).
+		AddRow(suite.response.UserID, suite.response.Tag, suite.response.VacancyID, suite.response.SummaryID,
+			suite.response.Keywords, suite.response.SummaryName, suite.response.VacancyName, suite.response.Accepted,
+			suite.response.Denied)
 
 	suite.mock.
 		ExpectQuery("SELECT u.id, u.tag, v.id, s.id, s.keywords").

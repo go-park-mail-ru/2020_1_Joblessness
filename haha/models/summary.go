@@ -32,6 +32,9 @@ type Author struct {
 type Summary struct {
 	ID uint64 `json:"id,omitempty"`
 	Author Author `json:"author,omitempty" validate:"required"`
+	Name string `json:"summaryName,omitempty"`
+	SalaryFrom int `json:"salaryFrom,omitempty"`
+	SalaryTo int `json:"salaryTo,omitempty"`
 	Keywords string `json:"keywords,omitempty"`
 	Educations []Education `json:"educations,omitempty"`
 	Experiences []Experience `json:"experiences,omitempty"`
@@ -54,6 +57,8 @@ type VacancyResponse struct {
 	Keywords  string `json:"keywords,omitempty"`
 	VacancyName  string `json:"vacancyName,omitempty"`
 	SummaryName  string `json:"summaryName,omitempty"`
+	Accepted bool `json:"accepted"`
+	Denied bool `json:"denied"`
 }
 
 type OrgSummaries []*VacancyResponse

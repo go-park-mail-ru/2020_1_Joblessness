@@ -658,9 +658,9 @@ func (suite *userSuite) TestResponseSummaryDefaultErr() {
 	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
 }
 
-func (suite *userSuite) TestGetOrgSummaries() {
+func (suite *userSuite) TestGetOrgSendSummaries() {
 	suite.uc.EXPECT().
-		GetOrgSummaries(suite.sendSum.UserID).
+		GetOrgSendSummaries(suite.sendSum.UserID).
 		Return([]*models.VacancyResponse{&suite.response}, nil).
 		Times(1)
 
@@ -672,9 +672,9 @@ func (suite *userSuite) TestGetOrgSummaries() {
 	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
 }
 
-func (suite *userSuite) TestGetOrgSummariesWrongURL() {
+func (suite *userSuite) TestGetOrgSendSummariesWrongURL() {
 	suite.uc.EXPECT().
-		GetOrgSummaries(suite.sendSum.UserID).
+		GetOrgSendSummaries(suite.sendSum.UserID).
 		Times(0)
 
 	r, _ := http.NewRequest("GET", "/api/organizations/12a/summaries", bytes.NewBuffer([]byte{}))
@@ -685,9 +685,9 @@ func (suite *userSuite) TestGetOrgSummariesWrongURL() {
 	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
 }
 
-func (suite *userSuite) TestGetOrgSummariesFailed() {
+func (suite *userSuite) TestGetOrgSendSummariesFailed() {
 	suite.uc.EXPECT().
-		GetOrgSummaries(suite.sendSum.UserID).
+		GetOrgSendSummaries(suite.sendSum.UserID).
 		Return([]*models.VacancyResponse{}, errors.New("")).
 		Times(1)
 
