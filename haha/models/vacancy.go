@@ -13,11 +13,11 @@ type VacancyOrganization struct {
 type Vacancy struct {
 	ID uint64 `json:"id,omitempty"`
 	Organization VacancyOrganization `json:"organization,omitempty"`
-	Name string `json:"name,omitempty"`
+	Name string `json:"name,omitempty" validate:"required"`
 	Description string `json:"description,omitempty"`
-	SalaryFrom int `json:"salary_from,omitempty"`
-	SalaryTo int `json:"salary_to,omitempty"`
-	WithTax bool `json:"with_tax,omitempty"`
+	SalaryFrom int `json:"salaryFrom,omitempty"`
+	SalaryTo int `json:"salaryTo,omitempty"`
+	WithTax bool `json:"withTax"`
 	Responsibilities string `json:"responsibilities,omitempty"`
 	Conditions string `json:"conditions,omitempty"`
 	Keywords string`json:"keywords,omitempty"`

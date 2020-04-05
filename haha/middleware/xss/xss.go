@@ -29,7 +29,9 @@ func (s *XssHandler) SanitizeMiddleware(next http.Handler) http.Handler {
 		content := r.Header.Get("Content-Type")
 		method := r.Method
 
-		if !strings.Contains(content, "multipart/form-data") && (method == "POST" || method == "GET") {
+		golog.Debug("Body before XSS: ", r.Body)
+
+		if !strings.Contains(content, "multipart/form-data") && (method == "POST" || method == "PUT") {
 			var jsonBod interface{}
 			d := json.NewDecoder(r.Body)
 			d.UseNumber()
@@ -43,11 +45,10 @@ func (s *XssHandler) SanitizeMiddleware(next http.Handler) http.Handler {
 				enc := json.NewEncoder(ioutil.Discard)
 				err = enc.Encode(&bodOut)
 				r.Body = ioutil.NopCloser(bytes.NewBuffer([]byte(bodOut)))
-			} else {
-				golog.Error(err)
 			}
 		}
 
+		golog.Debug("Body after XSS: ", r.Body)
 		next.ServeHTTP(w, r)
 	})
 }
@@ -66,7 +67,9 @@ func (s *XssHandler) ConstructJson(xmj map[string]interface{}, buff bytes.Buffer
 		apndBuff := s.buildJsonApplyPolicy(v, b)
 		buff.WriteString(apndBuff.String())
 	}
-	buff.Truncate(buff.Len() - 1) // remove last ','
+	if len(m) > 0 {
+		buff.Truncate(buff.Len() - 1) // remove last ','
+	}
 	buff.WriteByte('}')
 
 	return buff
@@ -118,9 +121,25 @@ func (s *XssHandler) unravelSlice(slce []interface{}) bytes.Buffer {
 		case string:
 			buff.WriteString(fmt.Sprintf("%q", s.defaultPolicy.Sanitize(nn)))
 			buff.WriteByte(',')
+		case json.Number:
+			buff.WriteString(s.defaultPolicy.Sanitize(fmt.Sprintf("%v", nn)))
+			buff.WriteByte(',')
+		case float64:
+			buff.WriteString(s.defaultPolicy.Sanitize(strconv.FormatFloat(nn, 'g', 0, 64)))
+			buff.WriteByte(',')
+		default:
+			if nn == nil {
+				buff.WriteString(fmt.Sprintf("%s", "null"))
+				buff.WriteByte(',')
+			} else {
+				buff.WriteString(s.defaultPolicy.Sanitize(fmt.Sprintf("%v", nn)))
+				buff.WriteByte(',')
+			}
 		}
 	}
-	buff.Truncate(buff.Len() - 1) // remove last ','
+	if len(slce) > 0 {
+		buff.Truncate(buff.Len() - 1) // remove last ','
+	}
 	buff.WriteByte(']')
 	return buff
 }

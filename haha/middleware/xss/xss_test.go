@@ -22,7 +22,7 @@ type testStruct struct {
 	Avatar string `json:"avatar,omitempty"`
 	Name string `json:"name,omitempty"`
 	Site string `json:"site,omitempty"`
-	Experiences []nestedArray `json:"experiences,omitempty"`
+	Experiences []nestedArray `json:"experiences"`
 }
 
 type nestedArray struct {
@@ -83,6 +83,7 @@ func (suite *userSuite) SetupTest() {
 			},
 		},
 	}
+
 	organizationJSON, err := json.Marshal(organization)
 	organizationByte := bytes.NewBuffer(organizationJSON)
 	assert.NoError(suite.T(), err)

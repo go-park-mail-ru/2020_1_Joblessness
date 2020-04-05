@@ -14,5 +14,6 @@ type SummaryRepository interface {
 	RefreshSummary(summaryID, vacancyID uint64) (err error)
 	IsOrganizationVacancy(vacancyID, userID uint64) (res bool, err error)
 	ResponseSummary(sendSummary *models.SendSummary) (err error)
-	GetOrgSummaries(userID uint64) (summaries models.OrgSummaries, err error)
+	GetOrgSendSummaries(userID uint64) (summaries models.OrgSummaries, err error)
+	GetUserSendSummaries(userID uint64) (summaries models.OrgSummaries, err error)
 }

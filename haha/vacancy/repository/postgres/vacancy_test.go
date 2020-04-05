@@ -108,7 +108,7 @@ func (suite *vacancySuite) TestGetVacancy() {
 			suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax, suite.vacancy.Responsibilities,
 			suite.vacancy.Conditions, suite.vacancy.Keywords)
 	suite.mock.
-		ExpectQuery("SELECT id, organization_id, name, description, salary_from, salary_to, with_tax").
+		ExpectQuery("SELECT v.id, v.organization_id, v.name, v.description, v.salary_from").
 		WithArgs(suite.vacancy.ID).
 		WillReturnRows(rows)
 
@@ -166,7 +166,7 @@ func (suite *vacancySuite) TestGetVacancies() {
 			suite.vacancy.Conditions, suite.vacancy.Keywords)
 	suite.mock.
 		ExpectQuery("SELECT id, organization_id, name, description, salary_from, salary_to, with_tax").
-		WithArgs(10, 9).
+		WithArgs(9, 10).
 		WillReturnRows(rows)
 
 	rows = sqlmock.NewRows([]string{"organization_id", "tag", "email", "phone", "avatar", "name", "site"}).
@@ -252,5 +252,27 @@ func (suite *vacancySuite) TestDeleteVacancyFailed() {
 		WillReturnError(errors.New(""))
 
 	err := suite.rep.DeleteVacancy(suite.vacancy.ID)
+	assert.Error(suite.T(), err)
+}
+
+func (suite *vacancySuite) TestGetOrgVacancies() {
+	rows := sqlmock.NewRows([]string{"id", "name", "salary_from", "salary_to", "with_tax", "keywords"}).
+		AddRow(suite.vacancy.ID, suite.vacancy.Name, suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo,
+			suite.vacancy.WithTax, suite.vacancy.Keywords)
+	suite.mock.
+		ExpectQuery("SELECT id, name, salary_from, salary_to, with_tax").
+		WithArgs(1).
+		WillReturnRows(rows)
+
+	_, err := suite.rep.GetOrgVacancies(1)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *vacancySuite) TestGetOrgVacanciesFailedOne() {
+	suite.mock.
+		ExpectQuery("SELECT id, name, salary_from, salary_to, with_tax").
+		WillReturnError(errors.New(""))
+
+	_, err := suite.rep.GetVacancies(1)
 	assert.Error(suite.T(), err)
 }

@@ -105,9 +105,9 @@ func (r *VacancyRepository) GetVacancyOrganization(organizationID uint64) (*User
 	var organization Organization
 
 	getUser := `SELECT organization_id, tag, email, phone, avatar, name, site
-				FROM users
-				JOIN organization o on users.organization_id = o.id
-				WHERE id = $1 AND organization_id IS NOT NULL`
+				FROM users u
+				JOIN organization o on u.organization_id = o.id
+				WHERE u.id = $1 AND organization_id IS NOT NULL`
 	err := r.db.QueryRow(getUser, user.ID).
 		Scan(&user.OrganizationID, &user.Tag, &user.Email, &user.Phone, &user.Avatar, &organization.Name, &organization.Site)
 	if err != nil {
@@ -121,9 +121,9 @@ func (r *VacancyRepository) GetVacancyOrganization(organizationID uint64) (*User
 func (r *VacancyRepository) GetVacancy(vacancyID uint64) (vacancy *models.Vacancy, err error) {
 	var vacancyDB Vacancy
 
-	getVacancy := `SELECT id, organization_id, name, description, salary_from, salary_to, with_tax, responsibilities,
-       					  conditions, keywords
-				   FROM vacancy WHERE id = $1;`
+	getVacancy := `SELECT v.id, v.organization_id, v.name, v.description, v.salary_from, v.salary_to, v.with_tax, v.responsibilities,
+       					  v.conditions, v.keywords
+				   FROM vacancy v WHERE v.id = $1;`
 	err = r.db.QueryRow(getVacancy, vacancyID).Scan(&vacancyDB.ID, &vacancyDB.OrganizationID, &vacancyDB.Name,
 		&vacancyDB.Description, &vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
 		&vacancyDB.Conditions, &vacancyDB.Keywords)
@@ -144,11 +144,13 @@ func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, 
        						conditions, keywords
 					 FROM vacancy
 					LIMIT $1 OFFSET $2;`
-	rows, err := r.db.Query(getVacancies, page*10, 9)
+	rows, err := r.db.Query(getVacancies, 9, page*10)
 	if err != nil {
 		return vacancies, err
 	}
 	defer rows.Close()
+
+	vacancies = make([]models.Vacancy, 0)
 
 	for rows.Next() {
 		var vacancyDB Vacancy
@@ -172,10 +174,9 @@ func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, 
 
 func (r *VacancyRepository) ChangeVacancy(vacancy *models.Vacancy) (err error) {
 	vacancyDB := toPostgres(vacancy)
-	//TODO проверять автора
 
 	changeVacancy := `UPDATE vacancy
-					  SET name = $1, description = $2, salary_from = $3, salary_to = $5,
+					  SET name = $1, description = $2, salary_from = $3, salary_to = $4,
 						  with_tax = $5, responsibilities = $6, conditions = $7, keywords = $8
 					  WHERE id = $9;`
 	_, err = r.db.Exec(changeVacancy, vacancyDB.Name, vacancyDB.Description,
@@ -206,6 +207,8 @@ func (r *VacancyRepository) GetOrgVacancies(userID uint64) (vacancies []models.V
 		return vacancies, err
 	}
 	defer rows.Close()
+
+	vacancies = make([]models.Vacancy, 0)
 
 	for rows.Next() {
 		var vacancyDB models.Vacancy

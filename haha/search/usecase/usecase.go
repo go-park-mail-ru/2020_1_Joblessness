@@ -23,6 +23,16 @@ func (a *SearchUseCase) Search(searchType, request, since, desc string) (result 
 		result.Organizations, err = a.searchRepo.SearchOrganizations(request, since, desc)
 	case "vacancy":
 		result.Vacancies, err = a.searchRepo.SearchVacancies(request, since, desc)
+	case "":
+		result.Persons, err = a.searchRepo.SearchPersons(request, since, desc)
+		if err != nil {
+			break
+		}
+		result.Organizations, err = a.searchRepo.SearchOrganizations(request, since, desc)
+		if err != nil {
+			break
+		}
+		result.Vacancies, err = a.searchRepo.SearchVacancies(request, since, desc)
 	default:
 		return result, searchInterfaces.ErrUnknownRequest
 	}

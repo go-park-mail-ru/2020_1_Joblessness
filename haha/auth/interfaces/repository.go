@@ -19,5 +19,6 @@ type AuthRepository interface {
 	GetListOfOrgs(page int) ([]models.Organization, error)
 	SaveAvatarLink(link string, userID uint64) error
 	SetOrDeleteLike(userID, favoriteID uint64) (bool, error)
+	LikeExists(userID, favoriteID uint64) (bool, error)
 	GetUserFavorite(userID uint64) (models.Favorites, error)
 }

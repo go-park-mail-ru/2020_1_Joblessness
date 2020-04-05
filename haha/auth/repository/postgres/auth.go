@@ -39,7 +39,10 @@ type Organization struct {
 }
 
 func toPostgresPerson(p *models.Person) (*User, *Person) {
-	name := p.FirstName + " " + p.LastName
+	name := p.FirstName
+	if p.LastName != "" {
+		name += " " + p.LastName
+	}
 
 	return &User{
 		ID:             p.ID,
@@ -144,18 +147,6 @@ func (r UserRepository) DoesUserExists(login string) (err error) {
 }
 
 func (r UserRepository) CreateUser(user *User) (err error) {
-	var personIdSql sql.NullInt64
-	var orgIdSql sql.NullInt64
-	if user.PersonID != 0 {
-		personIdSql.Valid = true
-		personIdSql.Int64 = int64(user.PersonID)
-	} else if user.OrganizationID != 0 {
-		orgIdSql.Valid = true
-		orgIdSql.Int64 = int64(user.OrganizationID)
-	} else {
-		return errors.New("inserted id is 0")
-	}
-
 	user.Password, err = salt.HashAndSalt(user.Password)
 
 	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone, tag) 
@@ -276,11 +267,15 @@ func (r UserRepository) GetRole(userID uint64) (string, error) {
 func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	user := User{ID: userID}
 
-	getUser := "SELECT login, person_id, email, phone, avatar, tag FROM users WHERE id = $1;"
+	getUser := "SELECT login, COALESCE(person_id, 0), email, phone, avatar, tag FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, userID).
 		Scan(&user.Login, &user.PersonID, &user.Email, &user.Phone, &user.Avatar, &user.Tag)
 	if err != nil {
 		golog.Error(err)
+		return nil, err
+	}
+
+	if user.PersonID == 0 {
 		return nil, authInterfaces.ErrUserNotPerson
 	}
 
@@ -338,13 +333,12 @@ func (r UserRepository) ChangePerson(p models.Person) error {
 	return err
 }
 
-
 func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, error) {
 	user := User{ID: userID}
 
-	getUser := "SELECT login, password, organization_id, email, phone, avatar FROM users WHERE id = $1;"
+	getUser := "SELECT login, COALESCE(organization_id, 0), email, phone, avatar, tag FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, userID).
-		Scan(&user.Login, &user.Password, &user.OrganizationID, &user.Email, &user.Phone, &user.Avatar)
+		Scan(&user.Login, &user.OrganizationID, &user.Email, &user.Phone, &user.Avatar, &user.Tag)
 	if err != nil {
 		return nil, err
 	}
@@ -394,10 +388,10 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 				ORDER BY registered desc
 				LIMIT $1 OFFSET $2`
 
-	rows, err := r.db.Query(getOrgs, page*10, 9)
+	rows, err := r.db.Query(getOrgs, 9, page*10)
 
 	if err != nil {
-		return nil, err
+		return nil, authInterfaces.ErrUserNotFound
 	}
 	defer rows.Close()
 
@@ -405,6 +399,7 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 		userId uint64
 		name, site string
 	)
+	result = make([]models.Organization, 0)
 
 	for rows.Next() {
 		err := rows.Scan(&userId, &name, &site)
@@ -434,7 +429,7 @@ func (r UserRepository) SetOrDeleteLike(userID, favoriteID uint64) (res bool, er
 				ON CONFLICT DO NOTHING;`
 	rows, err := r.db.Exec(setLike, userID, favoriteID)
 	if err != nil {
-		return false, err
+		return false, authInterfaces.ErrUserNotFound
 	}
 	if rowsAf, err := rows.RowsAffected(); rowsAf != 0 {
 		return true, err
@@ -445,6 +440,20 @@ func (r UserRepository) SetOrDeleteLike(userID, favoriteID uint64) (res bool, er
 	_, err = r.db.Exec(deleteLike, userID, favoriteID)
 
 	return false, err
+}
+
+func (r UserRepository) LikeExists(userID, favoriteID uint64) (res bool, err error) {
+	setLike := `SELECT count(*)
+				FROM favorite f
+				WHERE f.user_id = $1
+				AND f.favorite_id = $2;`
+	rows, err := r.db.Query(setLike, userID, favoriteID)
+	if err != nil {
+		return false, err
+	}
+	defer rows.Close()
+
+	return rows.Next(), nil
 }
 
 func (r UserRepository) GetUserFavorite(userID uint64) (res models.Favorites, err error) {
@@ -461,6 +470,8 @@ func (r UserRepository) GetUserFavorite(userID uint64) (res models.Favorites, er
 	var (
 		personID sql.NullInt64
 	)
+	res = make(models.Favorites, 0)
+
 	for rows.Next() {
 		var favorite models.Favorite
 		err := rows.Scan(&favorite.ID, &favorite.Tag, &personID)
