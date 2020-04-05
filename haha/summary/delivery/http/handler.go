@@ -271,6 +271,8 @@ func (h *Handler) GetUserSendSummaries(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	userID, err := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 
+	golog.Errorf("#%s: %d",  rID, userID)
+
 	summaries, err := h.useCase.GetUserSendSummaries(userID)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
