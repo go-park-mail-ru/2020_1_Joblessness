@@ -153,13 +153,11 @@ func (r SearchRepository) SearchPersons(request, since, desc string) (result []*
 			return nil, err
 		}
 
-		golog.Error("Name in base: ", personDB.FirstName)
 		index := strings.Index(personDB.FirstName, " ")
 		if index > -1 {
 			personDB.LastName = personDB.FirstName[index+1:]
 			personDB.FirstName = personDB.FirstName[:index]
 		}
-		golog.Error("Name after:",  personDB.FirstName, " ", personDB.LastName)
 
 		result= append(result, &personDB)
 	}
