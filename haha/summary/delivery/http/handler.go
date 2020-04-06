@@ -180,7 +180,7 @@ func (h *Handler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
 
 	err := h.useCase.DeleteSummary(summaryID, authorID)
 	switch err {
-	case sql.ErrNoRows :
+	case sql.ErrNoRows:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 	case summaryInterfaces.ErrPersonIsNotOwner:
