@@ -84,7 +84,7 @@ func (suite *userSuite) TestSearchPersons() {
 			suite.person.Avatar)
 	suite.mock.
 		ExpectQuery("SELECT users.id as userId, p.name, tag, avatar").
-		WithArgs("req", 9, 10).
+		WithArgs("req", 10, 10).
 		WillReturnRows(rows)
 
 	_, err := suite.rep.SearchPersons("req", "1", "true")
@@ -94,7 +94,7 @@ func (suite *userSuite) TestSearchPersons() {
 func (suite *userSuite) TestSearchPersonsFailed() {
 	suite.mock.
 		ExpectQuery("SELECT users.id as userId, p.name, tag, avatar").
-		WithArgs("req", 9, 10).
+		WithArgs("req", 10, 10).
 		WillReturnError(errors.New(""))
 
 	_, err := suite.rep.SearchPersons("req", "1", "true")
@@ -106,7 +106,7 @@ func (suite *userSuite) TestSearchOrganization() {
 		AddRow(suite.organization.ID, suite.organization.Name, suite.organization.Tag, suite.organization.Avatar)
 	suite.mock.
 		ExpectQuery("SELECT users.id as userId, name, tag, avatar").
-		WithArgs("req", 9, 10).
+		WithArgs("req", 10, 10).
 		WillReturnRows(rows)
 
 	_, err := suite.rep.SearchOrganizations("req", "1", "true")
@@ -116,7 +116,7 @@ func (suite *userSuite) TestSearchOrganization() {
 func (suite *userSuite) TestSearchOrganizationFailed() {
 	suite.mock.
 		ExpectQuery("SELECT users.id as userId, name, tag, avatar").
-		WithArgs("req", 9, 10).
+		WithArgs("req", 10, 10).
 		WillReturnError(errors.New(""))
 
 	_, err := suite.rep.SearchOrganizations("req", "1", "true")
@@ -129,7 +129,7 @@ func (suite *userSuite) TestSearchVacancy() {
 			suite.vacancy.Keywords, suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax )
 	suite.mock.
 		ExpectQuery("SELECT users.id, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax").
-		WithArgs("req", 9, 10).
+		WithArgs("req", 10, 10).
 		WillReturnRows(rows)
 
 	_, err := suite.rep.SearchVacancies("req", "1", "true")
@@ -139,7 +139,7 @@ func (suite *userSuite) TestSearchVacancy() {
 func (suite *userSuite) TestSearchVacancyFailed() {
 	suite.mock.
 		ExpectQuery("SELECT users.id, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax").
-		WithArgs("req", 9, 10).
+		WithArgs("req", 10, 10).
 		WillReturnError(errors.New(""))
 
 	_, err := suite.rep.SearchVacancies("req", "1", "true")

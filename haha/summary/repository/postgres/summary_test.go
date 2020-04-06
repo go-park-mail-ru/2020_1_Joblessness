@@ -310,7 +310,7 @@ func (suite *summarySuite) TestGetSummaries() {
 			suite.summary.SalaryFrom, suite.summary.SalaryTo)
 	suite.mock.
 		ExpectQuery("SELECT id, author, keywords").
-		WithArgs(9, uint64(10)).
+		WithArgs(10, uint64(10)).
 		WillReturnRows(rows)
 
 	rows = sqlmock.NewRows([]string{"institution", "speciality", "graduated", "type"}).
@@ -349,7 +349,7 @@ func (suite *summarySuite) TestGetUserSummaries() {
 			suite.summary.SalaryFrom, suite.summary.SalaryTo)
 	suite.mock.
 		ExpectQuery("SELECT id, author, keywords").
-		WithArgs(suite.summary.Author.ID, 9, uint64(0)).
+		WithArgs(suite.summary.Author.ID, 10, uint64(0)).
 		WillReturnRows(rows)
 
 	rows = sqlmock.NewRows([]string{"institution", "speciality", "graduated", "type"}).
@@ -377,7 +377,7 @@ func (suite *summarySuite) TestGetUserSummaries() {
 		WithArgs(suite.summary.Author.ID).
 		WillReturnRows(rows)
 
-	summaries, err := suite.rep.GetUserSummaries(uint64(12))
+	summaries, err := suite.rep.GetUserSummaries(0, uint64(12))
 	assert.NoError(suite.T(), err)
 	assert.Equal(suite.T(), suite.summary, summaries[0])
 }

@@ -261,14 +261,16 @@ func (r *SummaryRepository) GetSummaryAuthor(authorID uint64) (*User, *Person, e
 }
 
 func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, error) {
-	var rows *sql.Rows
-	var err error
+	var (
+		rows *sql.Rows
+		err error
+	)
 
 	if opt.userID == 0 {
 		getSummaries := `SELECT id, author, keywords, name, salary_from, salary_to
 					 	 FROM summary
 					 	 LIMIT $1 OFFSET $2;`
-		rows, err = r.db.Query(getSummaries, 9,  opt.page*10)
+		rows, err = r.db.Query(getSummaries, 10,  opt.page*10)
 		if err != nil {
 			return nil, err
 		}
@@ -276,7 +278,7 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, err
 		getSummaries := `SELECT id, author, keywords, name, salary_from, salary_to
 					 	 FROM summary WHERE author = $1
 						LIMIT $2 OFFSET $3;`
-		rows, err = r.db.Query(getSummaries, opt.userID, 9,  opt.page*10)
+		rows, err = r.db.Query(getSummaries, opt.userID, 10,  opt.page*10)
 		if err != nil {
 			return nil, err
 		}
@@ -319,8 +321,8 @@ func (r *SummaryRepository) GetAllSummaries(page int) (summaries []models.Summar
 	return r.GetSummaries(&GetOptions{0, page})
 }
 
-func (r *SummaryRepository) GetUserSummaries(userID uint64) (summaries []models.Summary, err error) {
-	return r.GetSummaries(&GetOptions{userID, 0})
+func (r *SummaryRepository) GetUserSummaries(page int, userID uint64) (summaries []models.Summary, err error) {
+	return r.GetSummaries(&GetOptions{userID, page})
 }
 
 func (r *SummaryRepository) GetSummary(summaryID uint64) (*models.Summary, error) {
