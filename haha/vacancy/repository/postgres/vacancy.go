@@ -3,6 +3,7 @@ package vacancyRepoPostgres
 import (
 	"database/sql"
 	"joblessness/haha/models"
+	vacancyInterfaces "joblessness/haha/vacancy/interfaces"
 	"time"
 )
 
@@ -170,6 +171,17 @@ func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, 
 	}
 
 	return vacancies, nil
+}
+
+func (r *VacancyRepository) CheckAuthor(vacancyID, authorID uint64) (err error) {
+	var isAuthor bool
+
+	checkAuthor := `SELECT organization_id = $1 FROM vacancy WHERE id = $2`
+	if err = r.db.QueryRow(checkAuthor, authorID, vacancyID).Scan(&isAuthor); err != nil {
+		return vacancyInterfaces.ErrOrgIsNotOwner
+	}
+
+	return err
 }
 
 func (r *VacancyRepository) ChangeVacancy(vacancy *models.Vacancy) (err error) {

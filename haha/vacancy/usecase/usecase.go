@@ -27,11 +27,19 @@ func (u *VacancyUseCase) GetVacancy(vacancyID uint64) (*models.Vacancy, error) {
 	return u.vacancyRepo.GetVacancy(vacancyID)
 }
 
-func (u *VacancyUseCase) ChangeVacancy(vacancy *models.Vacancy) error {
+func (u *VacancyUseCase) ChangeVacancy(vacancy *models.Vacancy) (err error) {
+	if err = u.vacancyRepo.CheckAuthor(vacancy.ID, vacancy.Organization.ID); err != nil {
+		return err
+	}
+
 	return u.vacancyRepo.ChangeVacancy(vacancy)
 }
 
-func (u *VacancyUseCase) DeleteVacancy(vacancyID uint64) error {
+func (u *VacancyUseCase) DeleteVacancy(vacancyID, authorID uint64) (err error) {
+	if err = u.vacancyRepo.CheckAuthor(vacancyID, authorID); err != nil {
+		return err
+	}
+
 	return u.vacancyRepo.DeleteVacancy(vacancyID)
 }
 

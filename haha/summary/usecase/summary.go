@@ -33,10 +33,18 @@ func (u *SummaryUseCase) GetSummary(summaryID uint64) (summary *models.Summary, 
 }
 
 func (u *SummaryUseCase) ChangeSummary(summary *models.Summary) (err error) {
+	if err = u.summaryRepo.CheckAuthor(summary.ID, summary.Author.ID); err != nil {
+		return err
+	}
+
 	return u.summaryRepo.ChangeSummary(summary)
 }
 
-func (u *SummaryUseCase) DeleteSummary(summaryID uint64) (err error) {
+func (u *SummaryUseCase) DeleteSummary(summaryID uint64, authorID uint64) (err error) {
+	if err = u.summaryRepo.CheckAuthor(summaryID, authorID); err != nil {
+		return err
+	}
+
 	return u.summaryRepo.DeleteSummary(summaryID)
 }
 

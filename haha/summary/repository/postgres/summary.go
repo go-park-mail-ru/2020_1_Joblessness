@@ -350,6 +350,21 @@ func (r *SummaryRepository) GetSummary(summaryID uint64) (*models.Summary, error
 	return toModel(&summaryDB, educationDBs, experienceDBs, userDB, personDB), err
 }
 
+func (r *SummaryRepository) CheckAuthor(summaryID uint64, authorID uint64) (err error) {
+	var isAuthor bool
+
+	checkAuthor := `SELECT author = $1 FROM summary WHERE id = $2`
+	if err = r.db.QueryRow(checkAuthor, authorID, summaryID).Scan(&isAuthor); err != nil {
+		return err
+	}
+
+	if !isAuthor {
+		return summaryInterfaces.ErrPersonIsNotOwner
+	}
+
+	return err
+}
+
 func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 	// TODO Переделать, неправлиьные запросы
 	summaryDB, educationDBs, experienceDBs := toPostgres(summary)
@@ -528,7 +543,6 @@ func (r *SummaryRepository) GetOrgSendSummaries(userID uint64) (summaries models
 	}
 	return summaries, nil
 }
-
 
 func (r *SummaryRepository) GetUserSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
 	getSummary := `SELECT v.id, s.id, s.keywords, s.name, v.name, r.approved, r.rejected

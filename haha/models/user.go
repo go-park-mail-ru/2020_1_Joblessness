@@ -48,3 +48,8 @@ type ResponseRole struct {
 	ID uint64 `json:"id"`
 	Role string `json:"role"`
 }
+
+type Role struct {
+	Person bool
+	Organization bool
+}

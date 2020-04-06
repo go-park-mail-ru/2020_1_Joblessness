@@ -2,7 +2,7 @@ FROM golang AS build
 
 ADD ./ /opt/build/2020_1_Joblessness/
 WORKDIR /opt/build/2020_1_Joblessness/
-RUN go mod tidy && go build cmd/api/main.go
+RUN go build cmd/api/main.go
 
 FROM ubuntu:18.04 AS release
 
@@ -25,7 +25,7 @@ RUN echo "host all  all    0.0.0.0/0  md5\n\
 host all all 0.0.0.0/0  md5\
 " >> /etc/postgresql/$PGVER/main/pg_hba.conf
 RUN /etc/init.d/postgresql start &&\
-    psql base postgres -h 127.0.0.1 -f sql/db.sql &&\
+    psql base postgres -h 127.0.0.1 -f sql/dbV4 &&\
     /etc/init.d/postgresql stop
 RUN echo "listen_addresses='*'" >> /etc/postgresql/$PGVER/main/postgresql.conf
 EXPOSE 5432

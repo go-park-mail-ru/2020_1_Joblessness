@@ -113,6 +113,8 @@ func (h *Handler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newVacancy.ID = vacancyID
+	newVacancy.Organization.ID = r.Context().Value("userID").(uint64)
+
 	err = h.useCase.ChangeVacancy(&newVacancy)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)

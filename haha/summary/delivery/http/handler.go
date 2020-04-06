@@ -161,6 +161,9 @@ func (h *Handler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	case sql.ErrNoRows :
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
+	case summaryInterfaces.ErrPersonIsNotOwner:
+		golog.Errorf("#%s: %w", rID, err)
+		w.WriteHeader(http.StatusForbidden)
 	case nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
@@ -173,12 +176,16 @@ func (h *Handler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
 	summaryID, _ := strconv.ParseUint(mux.Vars(r)["summary_id"], 10, 64)
+	authorID := r.Context().Value("userID").(uint64)
 
-	err := h.useCase.DeleteSummary(summaryID)
+	err := h.useCase.DeleteSummary(summaryID, authorID)
 	switch err {
 	case sql.ErrNoRows :
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
+	case summaryInterfaces.ErrPersonIsNotOwner:
+		golog.Errorf("#%s: %w", rID, err)
+		w.WriteHeader(http.StatusForbidden)
 	case nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
