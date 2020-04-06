@@ -129,7 +129,9 @@ func (h *Handler) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	vacancyID, _ := strconv.ParseUint(mux.Vars(r)["vacancy_id"], 10, 64)
 
-	err := h.useCase.DeleteVacancy(vacancyID)
+	authorID := r.Context().Value("userID").(uint64)
+
+	err := h.useCase.DeleteVacancy(vacancyID, authorID)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
