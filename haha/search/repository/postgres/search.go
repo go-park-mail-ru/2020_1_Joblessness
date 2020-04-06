@@ -61,7 +61,7 @@ func (r SearchRepository) SearchPersons(request, since, desc string) (result []*
 					      OR tag LIKE '%' || $1 || '%'
 					ORDER BY p.name ` + desc + `, registered 
  					LIMIT $2 OFFSET $3`
-	rows, err := r.db.Query(getPersons, request, 9, page*10)
+	rows, err := r.db.Query(getPersons, request, 10, page*10)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (r SearchRepository) SearchOrganizations(request, since, desc string) (resu
 					ORDER BY o.name ` + desc + `, registered
 					LIMIT $2 OFFSET $3`
 
-	rows, err := r.db.Query(getOrgs, request, 9, page*10)
+	rows, err := r.db.Query(getOrgs, request, 10, page*10)
 	if err != nil {
 		return nil, err
 	}
@@ -145,7 +145,7 @@ func (r SearchRepository) SearchVacancies(request, since, desc string) (result [
 					ORDER BY o.name ` + desc + `, v.name
 					LIMIT $2 OFFSET $3`
 
-	rows, err := r.db.Query(getVacancies, request, 9, page*10)
+	rows, err := r.db.Query(getVacancies, request, 10, page*10)
 	if err != nil {
 		return nil, err
 	}

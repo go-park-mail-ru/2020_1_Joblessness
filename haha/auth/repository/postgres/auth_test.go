@@ -485,7 +485,7 @@ func (suite *userSuite) TestGetOrgList() {
 
 	suite.mock.
 		ExpectQuery("SELECT users.id as userId, name, site").
-		WithArgs(9, 10).
+		WithArgs(10, 10).
 		WillReturnRows(rows)
 
 	result, err := suite.rep.GetListOfOrgs(1)

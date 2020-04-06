@@ -388,7 +388,7 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 				ORDER BY registered desc
 				LIMIT $1 OFFSET $2`
 
-	rows, err := r.db.Query(getOrgs, 9, page*10)
+	rows, err := r.db.Query(getOrgs, 10, page*10)
 
 	if err != nil {
 		return nil, authInterfaces.ErrUserNotFound
