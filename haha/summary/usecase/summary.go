@@ -23,8 +23,9 @@ func (u *SummaryUseCase) GetAllSummaries(page string) (summaries []models.Summar
 	return u.summaryRepo.GetAllSummaries(pageInt)
 }
 
-func (u *SummaryUseCase) GetUserSummaries(userID uint64) (summaries []models.Summary, err error) {
-	return u.summaryRepo.GetUserSummaries(userID)
+func (u *SummaryUseCase) GetUserSummaries(page string, userID uint64) (summaries []models.Summary, err error) {
+	pageInt, _ := strconv.Atoi(page)
+	return u.summaryRepo.GetUserSummaries(pageInt, userID)
 }
 
 func (u *SummaryUseCase) GetSummary(summaryID uint64) (summary *models.Summary, err error) {
@@ -67,6 +68,10 @@ func (u *SummaryUseCase) ResponseSummary(sendSummary *models.SendSummary)  (err 
 	return err
 }
 
-func (u *SummaryUseCase) GetOrgSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
-	return u.summaryRepo.GetOrgSummaries(userID)
+func (u *SummaryUseCase) GetOrgSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
+	return u.summaryRepo.GetOrgSendSummaries(userID)
+}
+
+func (u *SummaryUseCase) GetUserSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
+	return u.summaryRepo.GetUserSendSummaries(userID)
 }

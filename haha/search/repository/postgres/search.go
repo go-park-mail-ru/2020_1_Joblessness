@@ -34,82 +34,6 @@ type Organization struct {
 	Site string
 }
 
-func toPostgresPerson(p *models.Person) (*User, *Person) {
-	name := p.FirstName + " " + p.LastName
-
-	return &User{
-		ID:             p.ID,
-		Login:          p.Login,
-		Password:       p.Password,
-		Tag:            p.Tag,
-		Email:          p.Email,
-		Phone:          p.Phone,
-		Registered:     p.Registered,
-		Avatar:         p.Avatar,
-	},
-	&Person{
-		Name:     name,
-		Gender:   p.Gender,
-		Birthday: p.Birthday,
-	}
-}
-
-func toPostgresOrg(o *models.Organization) (*User, *Organization) {
-	return &User{
-		ID:             o.ID,
-		Login:          o.Login,
-		Password:       o.Password,
-		Tag:            o.Tag,
-		Email:          o.Email,
-		Phone:          o.Phone,
-		Registered:     o.Registered,
-		Avatar:         o.Avatar,
-	},
-	&Organization{
-		Name: o.Name,
-		Site: o.Site,
-	}
-}
-
-func toModelPerson(u *User, p *Person) *models.Person {
-	name := strings.Split(p.Name, " ")
-	firstName := name[0]
-	var lastName string
-	if len(name) > 1 {
-		lastName = p.Name[(len(p.Name)) -len(name[0]):]
-	}
-
-	return &models.Person{
-		ID:         u.ID,
-		Login:      u.Login,
-		Password:   u.Password,
-		Tag:        u.Tag,
-		Email:      u.Email,
-		Phone:      u.Phone,
-		Registered: u.Registered,
-		Avatar:     u.Avatar,
-		FirstName:  firstName,
-		LastName:   lastName,
-		Gender:     p.Gender,
-		Birthday:   p.Birthday,
-	}
-}
-
-func toModelOrganization(u *User, o *Organization) *models.Organization {
-	return &models.Organization{
-		ID:         u.ID,
-		Login:      u.Login,
-		Password:   u.Password,
-		Tag:        u.Tag,
-		Email:      u.Email,
-		Phone:      u.Phone,
-		Registered: u.Registered,
-		Avatar:     u.Avatar,
-		Name:       o.Name,
-		Site:       o.Site,
-	}
-}
-
 type SearchRepository struct {
 	db *sql.DB
 }
@@ -130,19 +54,20 @@ func (r SearchRepository) SearchPersons(request, since, desc string) (result []*
 
 	page, _ := strconv.Atoi(since)
 
-	getPersons := 	`SELECT users.id as userId, name, tag, avatar
+	getPersons := 	`SELECT users.id as userId, p.name, tag, avatar
 					FROM users
 					JOIN person p on users.person_id = p.id
 					WHERE name LIKE '%' || $1 || '%'
 					      OR tag LIKE '%' || $1 || '%'
-					ORDER BY name ` + desc + `, registered 
+					ORDER BY p.name ` + desc + `, registered 
  					LIMIT $2 OFFSET $3`
-	rows, err := r.db.Query(getPersons, request, (page - 1)*10, 9)
-
+	rows, err := r.db.Query(getPersons, request, 10, page*10)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
+	result = make([]*models.Person, 0)
 
 	for rows.Next() {
 		var personDB models.Person
@@ -178,15 +103,16 @@ func (r SearchRepository) SearchOrganizations(request, since, desc string) (resu
 					JOIN organization o on users.organization_id = o.id
 					WHERE name LIKE '%' || $1 || '%'
 					      OR tag LIKE '%' || $1 || '%'
-					ORDER BY name ` + desc + `, registered
+					ORDER BY o.name ` + desc + `, registered
 					LIMIT $2 OFFSET $3`
 
-	rows, err := r.db.Query(getOrgs, request, (page - 1)*10, 9)
-
+	rows, err := r.db.Query(getOrgs, request, 10, page*10)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
+	result = make([]*models.Organization, 0)
 
 	for rows.Next() {
 		var orgDB models.Organization
@@ -211,25 +137,26 @@ func (r SearchRepository) SearchVacancies(request, since, desc string) (result [
 
 	page, _ := strconv.Atoi(since)
 
-	getVacancies := `SELECT users.id, o.name, v.id, v.name, v.keywords
+	getVacancies := `SELECT users.id, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax
 					FROM users
 					JOIN organization o on users.organization_id = o.id
-					JOIN vacancy v on o.id = v.organization_id
+					JOIN vacancy v on users.id = v.organization_id
 					WHERE v.name LIKE '%' || $1 || '%'
-					ORDER BY name ` + desc + `, registered
+					ORDER BY o.name ` + desc + `, v.name
 					LIMIT $2 OFFSET $3`
 
-	rows, err := r.db.Query(getVacancies, request, (page - 1)*10, 9)
-
+	rows, err := r.db.Query(getVacancies, request, 10, page*10)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	result = make([]*models.Vacancy, 0)
+
 	for rows.Next() {
 		var vacancyDB models.Vacancy
 		err := rows.Scan(&vacancyDB.Organization.ID, &vacancyDB.Organization.Name, &vacancyDB.ID,
-			&vacancyDB.Name, &vacancyDB.Keywords)
+			&vacancyDB.Name, &vacancyDB.Keywords, &vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax)
 		if err != nil {
 			return nil, err
 		}

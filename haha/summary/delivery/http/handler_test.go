@@ -152,7 +152,7 @@ func (suite *userSuite) TestCreateSummaryWrongJson() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
 }
 
 func (suite *userSuite) TestCreateSummaryFailed() {
@@ -209,7 +209,7 @@ func (suite *userSuite) TestGetSummaryWrongUrl() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
 func (suite *userSuite) TestGetSummaries() {
@@ -274,16 +274,16 @@ func (suite *userSuite) TestPrintSummariesWrongUrl() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
 func (suite *userSuite) TestGetUserSummaries() {
 	suite.uc.EXPECT().
-		GetUserSummaries(suite.summary.Author.ID).
+		GetUserSummaries("", suite.summary.Author.ID).
 		Return([]models.Summary{suite.summary}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/user/12/summaries", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/users/12/summaries", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -292,24 +292,24 @@ func (suite *userSuite) TestGetUserSummaries() {
 
 func (suite *userSuite) TestGetUserSummariesWrongUrl() {
 	suite.uc.EXPECT().
-		GetUserSummaries(suite.summary.Author.ID).
+		GetUserSummaries("", suite.summary.Author.ID).
 		Return([]models.Summary{suite.summary}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/user/a/summaries", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/users/a/summaries", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
 func (suite *userSuite) TestGetUserSummariesFailed() {
 	suite.uc.EXPECT().
-		GetUserSummaries(suite.summary.Author.ID).
+		GetUserSummaries("", suite.summary.Author.ID).
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/user/12/summaries", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/users/12/summaries", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -349,7 +349,7 @@ func (suite *userSuite) TestChangeSummaryWrongUrl() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
 func (suite *userSuite) TestChangeSummaryWrongJson() {
@@ -367,7 +367,7 @@ func (suite *userSuite) TestChangeSummaryWrongJson() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
 }
 
 func (suite *userSuite) TestChangeSummaryFailed() {
@@ -421,7 +421,7 @@ func (suite *userSuite) TestDeleteSummaryWrongUrl() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
 func (suite *userSuite) TestDeleteSummaryFailed() {
@@ -452,7 +452,7 @@ func (suite *userSuite) TestSendSummary() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/summaries/7/response", suite.sendSumByte)
+	r, _ := http.NewRequest("POST", "/api/vacancies/7/response", suite.sendSumByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -470,7 +470,7 @@ func (suite *userSuite) TestSendSummaryNotOwner() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/summaries/7/response", suite.sendSumByte)
+	r, _ := http.NewRequest("POST", "/api/vacancies/7/response", suite.sendSumByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -488,7 +488,7 @@ func (suite *userSuite) TestSendSummaryNoSummary() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/summaries/7/response", suite.sendSumByte)
+	r, _ := http.NewRequest("POST", "/api/vacancies/7/response", suite.sendSumByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -506,7 +506,7 @@ func (suite *userSuite) TestSendSummaryDefaultErr() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/summaries/7/response", suite.sendSumByte)
+	r, _ := http.NewRequest("POST", "/api/vacancies/7/response", suite.sendSumByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -524,12 +524,12 @@ func (suite *userSuite) TestSendSummaryWrongJson() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/summaries/7/response", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/api/vacancies/7/response", bytes.NewBuffer([]byte{}))
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
 }
 
 func (suite *userSuite) TestSendSummaryWrongUrl() {
@@ -542,12 +542,12 @@ func (suite *userSuite) TestSendSummaryWrongUrl() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/summaries/7a/response", suite.sendSumByte)
+	r, _ := http.NewRequest("POST", "/api/vacancies/7a/response", suite.sendSumByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
 func (suite *userSuite) TestResponseSummary() {
@@ -583,7 +583,7 @@ func (suite *userSuite) TestResponseSummaryWrongJSON() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
 }
 
 func (suite *userSuite) TestResponseSummaryWrongURL() {
@@ -601,7 +601,7 @@ func (suite *userSuite) TestResponseSummaryWrongURL() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
 func (suite *userSuite) TestResponseSummaryNotOwner() {
@@ -658,13 +658,13 @@ func (suite *userSuite) TestResponseSummaryDefaultErr() {
 	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
 }
 
-func (suite *userSuite) TestGetOrgSummaries() {
+func (suite *userSuite) TestGetOrgSendSummaries() {
 	suite.uc.EXPECT().
-		GetOrgSummaries(suite.sendSum.UserID).
+		GetOrgSendSummaries(suite.sendSum.UserID).
 		Return([]*models.VacancyResponse{&suite.response}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations/12/summaries", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/organizations/12/response", bytes.NewBuffer([]byte{}))
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -672,26 +672,67 @@ func (suite *userSuite) TestGetOrgSummaries() {
 	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
 }
 
-func (suite *userSuite) TestGetOrgSummariesWrongURL() {
+func (suite *userSuite) TestGetOrgSendSummariesWrongURL() {
 	suite.uc.EXPECT().
-		GetOrgSummaries(suite.sendSum.UserID).
+		GetOrgSendSummaries(suite.sendSum.UserID).
 		Times(0)
 
-	r, _ := http.NewRequest("GET", "/api/organizations/12a/summaries", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/organizations/12a/response", bytes.NewBuffer([]byte{}))
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
-func (suite *userSuite) TestGetOrgSummariesFailed() {
+func (suite *userSuite) TestGetOrgSendSummariesFailed() {
 	suite.uc.EXPECT().
-		GetOrgSummaries(suite.sendSum.UserID).
+		GetOrgSendSummaries(suite.sendSum.UserID).
 		Return([]*models.VacancyResponse{}, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations/12/summaries", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/organizations/12/response", bytes.NewBuffer([]byte{}))
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+}
+
+func (suite *userSuite) TestGetUserSendSummaries() {
+	suite.uc.EXPECT().
+		GetUserSendSummaries(suite.sendSum.UserID).
+		Return([]*models.VacancyResponse{&suite.response}, nil).
+		Times(1)
+
+	r, _ := http.NewRequest("GET", "/api/users/12/response", bytes.NewBuffer([]byte{}))
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
+
+func (suite *userSuite) TestGetUserSendSummariesWrongURL() {
+	suite.uc.EXPECT().
+		GetUserSendSummaries(suite.sendSum.UserID).
+		Times(0)
+
+	r, _ := http.NewRequest("GET", "/api/users/12a/response", bytes.NewBuffer([]byte{}))
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
+}
+
+func (suite *userSuite) TestGetUserSendSummariesFailed() {
+	suite.uc.EXPECT().
+		GetUserSendSummaries(suite.sendSum.UserID).
+		Return([]*models.VacancyResponse{}, errors.New("")).
+		Times(1)
+
+	r, _ := http.NewRequest("GET", "/api/users/12/response", bytes.NewBuffer([]byte{}))
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)

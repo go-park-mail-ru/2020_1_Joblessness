@@ -46,7 +46,7 @@ func (m *RecoveryHandler) RecoveryMiddleware(next http.Handler) http.Handler {
 			err := recover()
 			if err != nil {
 				if ok {
-					golog.Errorf("#%s: %w",  rID, err)
+					golog.Errorf("#%s Panic: %w",  rID, err)
 				} else {
 					golog.Errorf("Panic with no id: %w", err)
 				}

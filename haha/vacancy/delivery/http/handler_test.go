@@ -141,7 +141,7 @@ func (suite *userSuite) TestCreateVacancyWrongJson() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
 }
 
 func (suite *userSuite) TestCreateVacancyFailed() {
@@ -198,7 +198,7 @@ func (suite *userSuite) TestGetVacancyWrongUrl() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
 func (suite *userSuite) TestGetVacancies() {
@@ -273,7 +273,7 @@ func (suite *userSuite) TestChangeVacancyWrongUrl() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
 func (suite *userSuite) TestChangeVacancyWrongJson() {
@@ -287,31 +287,6 @@ func (suite *userSuite) TestChangeVacancyWrongJson() {
 		Times(1)
 
 	r, _ := http.NewRequest("PUT", "/api/vacancies/3", bytes.NewBuffer([]byte{}))
-	r.AddCookie(suite.cookie)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
-}
-
-func (suite *userSuite) TestChangeVacancyEmptyName() {
-	vacancy := suite.vacancy
-	vacancy.Name = ""
-	var err error
-	vacancyJSON, err := json.Marshal(vacancy)
-	vacancyByte := bytes.NewBuffer(vacancyJSON)
-	assert.NoError(suite.T(), err)
-
-	suite.uc.EXPECT().
-		ChangeVacancy(&suite.vacancy).
-		Return(nil).
-		Times(1)
-	suite.authUseCase.EXPECT().
-		OrganizationSession("username").
-		Return(uint64(12), nil).
-		Times(1)
-
-	r, _ := http.NewRequest("PUT", "/api/vacancies/3", vacancyByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -370,7 +345,7 @@ func (suite *userSuite) TestDeleteVacancyWrongUrl() {
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
 func (suite *userSuite) TestDeleteVacancyFailed() {
@@ -385,6 +360,45 @@ func (suite *userSuite) TestDeleteVacancyFailed() {
 
 	r, _ := http.NewRequest("DELETE", "/api/vacancies/3", bytes.NewBuffer([]byte{}))
 	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+}
+
+func (suite *userSuite) TestGetOrgVacancies() {
+	suite.uc.EXPECT().
+		GetOrgVacancies(uint64(1)).
+		Return([]models.Vacancy{suite.vacancy}, nil).
+		Times(1)
+
+	r, _ := http.NewRequest("GET", "/api/organizations/1/vacancies", bytes.NewBuffer([]byte{}))
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
+
+func (suite *userSuite) TestGetOrgVacanciesEmpty() {
+	suite.uc.EXPECT().
+		GetOrgVacancies(uint64(1)).
+		Return([]models.Vacancy{}, nil).
+		Times(1)
+
+	r, _ := http.NewRequest("GET", "/api/organizations/1/vacancies", bytes.NewBuffer([]byte{}))
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
+
+func (suite *userSuite) TestGetOrgVacanciesFailed() {
+	suite.uc.EXPECT().
+		GetOrgVacancies(uint64(1)).
+		Return(nil, errors.New("")).
+		Times(1)
+
+	r, _ := http.NewRequest("GET", "/api/organizations/1/vacancies", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
