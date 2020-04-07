@@ -1,5 +1,7 @@
 package httpSummary
 
+//go:generate mockgen -destination=../../usecase/mock/summary.go -package=mock joblessness/haha/summary/interfaces SummaryUseCase
+
 import (
 	"bytes"
 	"encoding/json"
@@ -390,7 +392,7 @@ func (suite *userSuite) TestChangeSummaryFailed() {
 
 func (suite *userSuite) TestDeleteSummary() {
 	suite.uc.EXPECT().
-		DeleteSummary(uint64(3)).
+		DeleteSummary(uint64(3), uint64(12)).
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
@@ -408,7 +410,7 @@ func (suite *userSuite) TestDeleteSummary() {
 
 func (suite *userSuite) TestDeleteSummaryWrongUrl() {
 	suite.uc.EXPECT().
-		DeleteSummary(uint64(3)).
+		DeleteSummary(uint64(12), uint64(3)).
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
@@ -426,7 +428,7 @@ func (suite *userSuite) TestDeleteSummaryWrongUrl() {
 
 func (suite *userSuite) TestDeleteSummaryFailed() {
 	suite.uc.EXPECT().
-		DeleteSummary(uint64(3)).
+		DeleteSummary(uint64(3), uint64(12)).
 		Return(errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().

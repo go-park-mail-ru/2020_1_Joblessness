@@ -49,11 +49,8 @@ func (u *SummaryUseCase) DeleteSummary(summaryID uint64, authorID uint64) (err e
 }
 
 func (u *SummaryUseCase) SendSummary(sendSummary *models.SendSummary) (err error) {
-	res, err := u.summaryRepo.IsPersonSummary(sendSummary.SummaryID, sendSummary.UserID)
-	if err != nil {
+	if err := u.summaryRepo.CheckAuthor(sendSummary.SummaryID, sendSummary.UserID); err != nil {
 		return err
-	} else if !res {
-		return summaryInterfaces.ErrPersonIsNotOwner
 	}
 
 	err = u.summaryRepo.SendSummary(sendSummary)
@@ -65,12 +62,11 @@ func (u *SummaryUseCase) SendSummary(sendSummary *models.SendSummary) (err error
 }
 
 func (u *SummaryUseCase) ResponseSummary(sendSummary *models.SendSummary)  (err error) {
-	res, err := u.summaryRepo.IsOrganizationVacancy(sendSummary.VacancyID, sendSummary.OrganizationID)
+	err = u.summaryRepo.IsOrganizationVacancy(sendSummary.VacancyID, sendSummary.OrganizationID)
 	if err != nil {
 		return err
-	} else if !res {
-		return summaryInterfaces.ErrOrgIsNotOwner
 	}
+
 	err = u.summaryRepo.ResponseSummary(sendSummary)
 
 	return err

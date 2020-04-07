@@ -22,7 +22,7 @@ func NewHandler(useCase summaryInterfaces.SummaryUseCase) *Handler {
 
 func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-	var newSummary models.Summary
+   	var newSummary models.Summary
 	newSummary.Author.ID =  r.Context().Value("userID").(uint64)
 
 	err := json.NewDecoder(r.Body).Decode(&newSummary)

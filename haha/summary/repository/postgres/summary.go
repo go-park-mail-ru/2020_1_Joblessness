@@ -366,7 +366,6 @@ func (r *SummaryRepository) CheckAuthor(summaryID uint64, authorID uint64) (err 
 }
 
 func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
-	// TODO Переделать, неправлиьные запросы
 	summaryDB, educationDBs, experienceDBs := toPostgres(summary)
 
 	changeSummary := `UPDATE summary
@@ -424,24 +423,6 @@ func (r *SummaryRepository) DeleteSummary(summaryID uint64) (err error) {
 	return nil
 }
 
-func (r *SummaryRepository) IsPersonSummary(summaryID, userID uint64) (res bool, err error) {
-	findSummary := `SELECT u.id
-				FROM users u 
-				JOIN summary s on u.id = s.author
-				WHERE s.id = $1
-				AND s.author = $2`
-	rows, err := r.db.Query(findSummary, summaryID, userID)
-	if err != nil {
-		return false, err
-	}
-	defer rows.Close()
-
-	if !rows.Next() {
-		return false, nil
-	}
-	return true, nil
-}
-
 func (r *SummaryRepository) SendSummary(sendSummary *models.SendSummary) (err error) {
 	setLike := `INSERT INTO response (summary_id, vacancy_id)
 				VALUES ($1, $2)
@@ -475,22 +456,20 @@ func (r *SummaryRepository) RefreshSummary(summaryID, vacancyID uint64) (err err
 	return nil
 }
 
-func (r *SummaryRepository) IsOrganizationVacancy(vacancyID, userID uint64) (res bool, err error) {
-	findSummary := `SELECT u.id
-				FROM users u 
-				JOIN vacancy v on u.id = v.organization_id
-				WHERE v.id = $1
-				AND v.organization_id = $2`
-	rows, err := r.db.Query(findSummary, vacancyID, userID)
-	if err != nil {
-		return false, err
+func (r *SummaryRepository) IsOrganizationVacancy(vacancyID, userID uint64) (err error) {
+	var isAuthor bool
+	checkAuthor := `SELECT v.organization_id = $2
+				FROM vacancy v 
+				WHERE v.id = $1`
+	if err = r.db.QueryRow(checkAuthor, vacancyID, userID).Scan(&isAuthor); err != nil {
+		return err
 	}
-	defer rows.Close()
 
-	if !rows.Next() {
-		return false, nil
+	if !isAuthor {
+		return summaryInterfaces.ErrOrgIsNotOwner
 	}
-	return true, nil
+
+	return err
 }
 
 func (r *SummaryRepository) ResponseSummary(sendSummary *models.SendSummary)  (err error) {

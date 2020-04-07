@@ -37,8 +37,6 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 		}
 	}
 
-	result = true
-
 	if result {
 		golog.Info("Allowed")
 		(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Origin, " +

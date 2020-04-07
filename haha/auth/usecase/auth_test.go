@@ -1,5 +1,7 @@
 package authUseCase
 
+//go:generate mockgen -destination=../repository/mock/auth.go -package=mock joblessness/haha/auth/interfaces AuthRepository
+
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"

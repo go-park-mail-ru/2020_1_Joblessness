@@ -1,5 +1,7 @@
 package httpSearch
 
+//go:generate mockgen -destination=../../usecase/mock/search.go -package=mock joblessness/haha/search/interfaces SearchUseCase
+
 import (
 	"bytes"
 	"errors"
