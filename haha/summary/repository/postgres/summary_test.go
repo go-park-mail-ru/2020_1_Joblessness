@@ -405,7 +405,7 @@ func (suite *summarySuite) TestCheckAuthorNotOwner() {
 		WillReturnRows(rows)
 
 	err := suite.rep.CheckAuthor(suite.summary.ID, suite.summary.Author.ID)
-	assert.Equal(suite.T(), summaryInterfaces.ErrPersonIsNotOwner, err)
+	assert.Equal(suite.T(), summaryInterfaces.NewErrorPersonIsNotOwner(uint64(12), uint64(3)), err)
 }
 
 func (suite *summarySuite) TestChangeSummary() {
@@ -521,7 +521,7 @@ func (suite *summarySuite) TestIsOrganizationSummaryFalse() {
 		WillReturnRows(rows)
 
 	err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
-	assert.Equal(suite.T(), summaryInterfaces.ErrOrgIsNotOwner, err)
+	assert.Equal(suite.T(), summaryInterfaces.NewErrorOrganizationIsNotOwner(), err)
 }
 
 func (suite *summarySuite) TestIsOrganizationSummaryFailed() {
@@ -551,7 +551,7 @@ func (suite *summarySuite) TestSendSummaryAlreadySend() {
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
 	err := suite.rep.SendSummary(&suite.sendSum)
-	assert.Equal(suite.T(), summaryInterfaces.ErrSummaryAlreadySend, err)
+	assert.Equal(suite.T(), summaryInterfaces.NewErrorSummaryAlreadySent(), err)
 }
 
 func (suite *summarySuite) TestSendSummaryFailed() {
@@ -581,7 +581,7 @@ func (suite *summarySuite) TestRefreshSummaryNoSummary() {
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
 	err := suite.rep.RefreshSummary(suite.sendSum.SummaryID, suite.sendSum.VacancyID)
-	assert.Equal(suite.T(), summaryInterfaces.ErrNoSummaryToRefresh, err)
+	assert.Equal(suite.T(), summaryInterfaces.NewErrorNoSummaryToRefresh(), err)
 }
 
 func (suite *summarySuite) TestRefreshSummaryFailed() {
@@ -611,7 +611,7 @@ func (suite *summarySuite) TestResponseSummaryNo() {
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
 	err := suite.rep.ResponseSummary(&suite.sendSum)
-	assert.Equal(suite.T(), summaryInterfaces.ErrNoSummaryToRefresh, err)
+	assert.Equal(suite.T(), summaryInterfaces.NewErrorNoSummaryToRefresh(), err)
 }
 
 func (suite *summarySuite) TestResponseSummaryFailed() {

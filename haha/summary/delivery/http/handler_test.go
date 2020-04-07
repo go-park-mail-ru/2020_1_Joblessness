@@ -465,7 +465,7 @@ func (suite *userSuite) TestSendSummary() {
 func (suite *userSuite) TestSendSummaryNotOwner() {
 	suite.uc.EXPECT().
 		SendSummary(&suite.sendSum).
-		Return(summaryInterfaces.ErrPersonIsNotOwner).
+		Return(summaryInterfaces.NewErrorPersonIsNotOwner(uint64(1), uint64(1))).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		PersonSession("username").
@@ -483,7 +483,7 @@ func (suite *userSuite) TestSendSummaryNotOwner() {
 func (suite *userSuite) TestSendSummaryNoSummary() {
 	suite.uc.EXPECT().
 		SendSummary(&suite.sendSum).
-		Return(summaryInterfaces.ErrNoSummaryToRefresh).
+		Return(summaryInterfaces.NewErrorNoSummaryToRefresh()).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		PersonSession("username").
@@ -519,7 +519,6 @@ func (suite *userSuite) TestSendSummaryDefaultErr() {
 func (suite *userSuite) TestSendSummaryWrongJson() {
 	suite.uc.EXPECT().
 		SendSummary(&suite.sendSum).
-		Return(summaryInterfaces.ErrNoSummaryToRefresh).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		PersonSession("username").
@@ -537,7 +536,6 @@ func (suite *userSuite) TestSendSummaryWrongJson() {
 func (suite *userSuite) TestSendSummaryWrongUrl() {
 	suite.uc.EXPECT().
 		SendSummary(&suite.sendSum).
-		Return(summaryInterfaces.ErrNoSummaryToRefresh).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		PersonSession("username").
@@ -609,7 +607,7 @@ func (suite *userSuite) TestResponseSummaryWrongURL() {
 func (suite *userSuite) TestResponseSummaryNotOwner() {
 	suite.uc.EXPECT().
 		ResponseSummary(&suite.sendSum).
-		Return(summaryInterfaces.ErrOrgIsNotOwner).
+		Return(summaryInterfaces.NewErrorOrganizationIsNotOwner()).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		OrganizationSession("username").
@@ -627,7 +625,7 @@ func (suite *userSuite) TestResponseSummaryNotOwner() {
 func (suite *userSuite) TestResponseSummaryNoSummary() {
 	suite.uc.EXPECT().
 		ResponseSummary(&suite.sendSum).
-		Return(summaryInterfaces.ErrNoSummaryToRefresh).
+		Return(summaryInterfaces.NewErrorNoSummaryToRefresh()).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		OrganizationSession("username").

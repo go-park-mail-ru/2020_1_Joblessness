@@ -53,8 +53,9 @@ func (suite *userSuite) SetupTest() {
 		Password:    "NewPassword123",
 		FirstName:   "new first name",
 		LastName:    "new last name",
-		Email:       "new email",
+		Email:       "new@email.ru",
 		Phone: "new phone number",
+		Tag: "awdawdawd",
 	}
 	var err error
 	personJSON, err := json.Marshal(suite.person)
@@ -67,8 +68,9 @@ func (suite *userSuite) SetupTest() {
 		Password:    "NewPassword123",
 		Name:   "new name",
 		Site:    "new site",
-		Email:       "new email",
+		Email:       "new@email.ru",
 		Phone: "new phone number",
+		Tag: "awdawdawd",
 	}
 	organizationJSON, err := json.Marshal(suite.organization)
 	suite.organizationByte = bytes.NewBuffer(organizationJSON)
@@ -203,7 +205,7 @@ func (suite *userSuite) TestRegistrationPerson() {
 func (suite *userSuite) TestFailedRegistrationPerson() {
 	suite.uc.EXPECT().
 		RegisterPerson(&suite.person).
-		Return(authInterfaces.ErrUserAlreadyExists).
+		Return(authInterfaces.NewErrorUserAlreadyExists("")).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users", suite.personByte)
@@ -229,7 +231,7 @@ func (suite *userSuite) TestRegistrationOrganization() {
 func (suite *userSuite) TestFailedRegistrationOrganization() {
 	suite.uc.EXPECT().
 		RegisterOrganization(&suite.organization).
-		Return(authInterfaces.ErrUserAlreadyExists).
+		Return(authInterfaces.NewErrorUserAlreadyExists("")).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/organizations", suite.organizationByte)
@@ -271,7 +273,7 @@ func (suite *userSuite) TestFailedLoginNotFound() {
 
 	suite.uc.EXPECT().
 		Login(userLogin.Login, userLogin.Password).
-		Return(uint64(0), "organization", "", authInterfaces.ErrWrongLogPas).
+		Return(uint64(0), "organization", "", authInterfaces.NewErrorWrongLoginOrPassword()).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(userJSON))
@@ -383,7 +385,7 @@ func (suite *userSuite) TestCheckWrongSid() {
 
 	suite.uc.EXPECT().
 		SessionExists(cookie.Value).
-		Return(uint64(0), authInterfaces.ErrWrongSID).
+		Return(uint64(0), authInterfaces.NewErrorWrongSID()).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))

@@ -54,7 +54,7 @@ func (u *SummaryUseCase) SendSummary(sendSummary *models.SendSummary) (err error
 	}
 
 	err = u.summaryRepo.SendSummary(sendSummary)
-	if err == summaryInterfaces.ErrSummaryAlreadySend {
+	if err == summaryInterfaces.NewErrorSummaryAlreadySent() {
 		err = u.summaryRepo.RefreshSummary(sendSummary.SummaryID, sendSummary.VacancyID)
 	}
 

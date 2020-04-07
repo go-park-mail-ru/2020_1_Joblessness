@@ -466,7 +466,7 @@ func (r *SummaryRepository) IsOrganizationVacancy(vacancyID, userID uint64) (err
 	}
 
 	if !isAuthor {
-		return summaryInterfaces.ErrOrgIsNotOwner
+		return summaryInterfaces.NewErrorOrganizationIsNotOwner()
 	}
 
 	return err
