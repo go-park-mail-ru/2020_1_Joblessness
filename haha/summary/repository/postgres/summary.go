@@ -359,7 +359,7 @@ func (r *SummaryRepository) CheckAuthor(summaryID uint64, authorID uint64) (err 
 	}
 
 	if !isAuthor {
-		return summaryInterfaces.ErrPersonIsNotOwner
+		return summaryInterfaces.NewErrorPersonIsNotOwner(authorID, summaryID)
 	}
 
 	return err
@@ -373,7 +373,7 @@ func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 					  WHERE id = $2`
 	_, err = r.db.Exec(changeSummary, summaryDB.Keywords, summaryDB.ID)
 	if err != nil {
-		return err
+		return summaryInterfaces.NewErrorSummaryNotFound(summaryDB.ID)
 	}
 
 	changeEducation := `UPDATE education
@@ -416,7 +416,7 @@ func (r *SummaryRepository) DeleteSummary(summaryID uint64) (err error) {
 					  WHERE id = $1`
 	_, err = r.db.Exec(deleteSummary, summaryID)
 	if err != nil {
-		return err
+		return summaryInterfaces.NewErrorSummaryNotFound(summaryID)
 	}
 
 	//TODO Убрал удаление связанных строк CASCADE есть в бд
@@ -432,7 +432,7 @@ func (r *SummaryRepository) SendSummary(sendSummary *models.SendSummary) (err er
 		return err
 	}
 	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
-		return summaryInterfaces.ErrSummaryAlreadySend
+		return summaryInterfaces.NewErrorSummaryAlreadySent()
 	}
 
 	return nil
@@ -450,7 +450,7 @@ func (r *SummaryRepository) RefreshSummary(summaryID, vacancyID uint64) (err err
 		return err
 	}
 	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
-		return summaryInterfaces.ErrNoSummaryToRefresh
+		return summaryInterfaces.NewErrorNoSummaryToRefresh()
 	}
 
 	return nil
@@ -484,7 +484,7 @@ func (r *SummaryRepository) ResponseSummary(sendSummary *models.SendSummary)  (e
 		return err
 	}
 	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
-		return summaryInterfaces.ErrNoSummaryToRefresh
+		return summaryInterfaces.NewErrorNoSummaryToRefresh()
 	}
 
 	return nil

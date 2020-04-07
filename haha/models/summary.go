@@ -3,15 +3,15 @@ package models
 import "time"
 
 type Education struct {
-	Institution string `json:"institution,omitempty"`
-	Speciality  string `json:"speciality,omitempty"`
+	Institution string `json:"institution,omitempty" validate:"max=60"`
+	Speciality  string `json:"speciality,omitempty" validate:"max=60"`
 	Graduated   time.Time   `json:"graduated,omitempty"`
-	Type        string `json:"type,omitempty"`
+	Type        string `json:"type,omitempty" validate:"max=60"`
 }
 
 type Experience struct {
-	CompanyName string `json:"companyName,omitempty"`
-	Role string `json:"role,omitempty"`
+	CompanyName string `json:"companyName,omitempty" validate:"max=60"`
+	Role string `json:"role,omitempty" validate:"max=120"`
 	Responsibilities string `json:"responsibilities,omitempty"`
 	Start time.Time `json:"start,omitempty"`
 	Stop time.Time `json:"stop,omitempty"`
@@ -32,7 +32,7 @@ type Author struct {
 type Summary struct {
 	ID uint64 `json:"id,omitempty"`
 	Author Author `json:"author,omitempty" validate:"required"`
-	Name string `json:"summaryName,omitempty"`
+	Name string `json:"summaryName,omitempty" validate:"max=120"`
 	SalaryFrom int `json:"salaryFrom,omitempty"`
 	SalaryTo int `json:"salaryTo,omitempty"`
 	Keywords string `json:"keywords,omitempty"`

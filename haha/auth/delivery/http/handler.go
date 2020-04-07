@@ -45,16 +45,20 @@ func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 
 	err = h.useCase.SetAvatar(form, userID)
 
-	switch err {
-	case authInterfaces.ErrUploadAvatar:
+	switch err.(type) {
+	case *authInterfaces.ErrorUploadAvatar:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusFailedDependency)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	case nil:
 		golog.Infof("#%s: %s",  rID, "Успешно")
 		w.WriteHeader(http.StatusCreated)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -76,16 +80,20 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.useCase.RegisterPerson(&user)
-	switch err {
-	case authInterfaces.ErrUserAlreadyExists:
+	switch err.(type) {
+	case *authInterfaces.ErrorUserAlreadyExists:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	case nil:
 		golog.Infof("#%s: %s",  rID, "Успешно")
 		w.WriteHeader(http.StatusCreated)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -107,16 +115,20 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.useCase.RegisterOrganization(&org)
-	switch err {
-	case authInterfaces.ErrUserAlreadyExists:
+	switch err.(type) {
+	case *authInterfaces.ErrorUserAlreadyExists:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	case nil:
 		golog.Infof("#%s: %s",  rID, "success")
 		w.WriteHeader(http.StatusCreated)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -139,17 +151,19 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userId, role, sessionId, err := h.useCase.Login(user.Login, user.Password)
-	switch err {
-	case authInterfaces.ErrWrongLogPas:
+	switch err.(type) {
+	case *authInterfaces.ErrorWrongLoginOrPassword:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
-		return
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	case nil:
 		golog.Infof("#%s: %s",  rID, "success")
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		return
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	}
 
 	cookie := &http.Cookie {
@@ -200,6 +214,8 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 	case sql.ErrNoRows :
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	case nil:
 		jsonData, _ := json.Marshal(models.ResponseRole{ID: userID, Role: role})
 		w.WriteHeader(http.StatusCreated)
@@ -207,6 +223,8 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -215,10 +233,12 @@ func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
 	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 
 	user, err := h.useCase.GetPerson(userID)
-	switch err {
-	case authInterfaces.ErrUserNotPerson :
+	switch err.(type) {
+	case *authInterfaces.ErrorUserNotPerson :
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	case nil:
 		jsonData, _ := json.Marshal(user)
 		w.WriteHeader(http.StatusOK)
@@ -226,6 +246,8 @@ func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -249,15 +271,19 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 
 	person.ID = userID
 	err = h.useCase.ChangePerson(person)
-	switch err {
-	case authInterfaces.ErrUserNotPerson :
+	switch err.(type) {
+	case *authInterfaces.ErrorUserNotPerson :
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	case nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -266,10 +292,12 @@ func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
 	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 
 	user, err := h.useCase.GetOrganization(userID)
-	switch err {
-	case authInterfaces.ErrUserNotOrg :
+	switch err.(type) {
+	case *authInterfaces.ErrorUserNotOrganization :
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	case nil:
 		jsonData, _ := json.Marshal(user)
 		w.WriteHeader(http.StatusOK)
@@ -277,6 +305,8 @@ func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -300,15 +330,19 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 
 	org.ID = userID
 	err = h.useCase.ChangeOrganization(org)
-	switch err {
-	case authInterfaces.ErrUserNotOrg :
+	switch err.(type) {
+	case *authInterfaces.ErrorUserNotOrganization:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	case nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -317,10 +351,12 @@ func (h *Handler) GetListOfOrgs(w http.ResponseWriter, r *http.Request) {
 	page, err := strconv.Atoi(r.FormValue("page"))
 
 	listOrgs, err := h.useCase.GetListOfOrgs(page)
-	switch err {
-	case authInterfaces.ErrUserNotFound :
+	switch err.(type) {
+	case *authInterfaces.ErrorUserNotFound:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	case nil:
 		jsonData, _ := json.Marshal(listOrgs)
 		w.WriteHeader(http.StatusOK)
@@ -328,6 +364,8 @@ func (h *Handler) GetListOfOrgs(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -341,12 +379,13 @@ func (h *Handler) LikeUser(w http.ResponseWriter, r *http.Request) {
 		err error
 	)
 	favoriteID, _ = strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
-
 	response.Like, err = h.useCase.LikeUser(userID, favoriteID)
-	switch err {
-	case authInterfaces.ErrUserNotFound :
+	switch err.(type) {
+	case *authInterfaces.ErrorUserNotFound:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	case nil:
 		jsonData, _ := json.Marshal(response)
 		w.WriteHeader(http.StatusOK)
@@ -354,6 +393,8 @@ func (h *Handler) LikeUser(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -369,7 +410,7 @@ func (h *Handler) LikeExists(w http.ResponseWriter, r *http.Request) {
 	favoriteID, _ = strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 
 	response.Like, err = h.useCase.LikeExists(userID, favoriteID)
-	switch err {
+	switch err.(type) {
 	case nil:
 		jsonData, _ := json.Marshal(response)
 		w.WriteHeader(http.StatusOK)
@@ -377,6 +418,8 @@ func (h *Handler) LikeExists(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 

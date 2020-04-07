@@ -141,7 +141,7 @@ func (r UserRepository) DoesUserExists(login string) (err error) {
 	}
 
 	if columnCount != 0 {
-		return authInterfaces.ErrUserAlreadyExists
+		return authInterfaces.NewErrorUserAlreadyExists(login)
 	}
 	return nil
 }
@@ -206,7 +206,7 @@ func (r UserRepository) Login(login, password, SID string) (userId uint64, err e
 	rows := r.db.QueryRow(checkUser, login)
 	err = rows.Scan(&userId, &hashedPwd)
 	if err != nil || !salt.ComparePasswords(hashedPwd, password) {
-		return 0, authInterfaces.ErrWrongLogPas
+		return 0, authInterfaces.NewErrorWrongLoginOrPassword()
 	}
 
 	insertSession := `INSERT INTO session (user_id, session_id, expires) 
@@ -232,7 +232,7 @@ func (r UserRepository) SessionExists(sessionId string) (userId uint64, err erro
 	var expires time.Time
 	err = r.db.QueryRow(checkUser, sessionId).Scan(&userId,  &expires)
 	if err != nil {
-		return 0, authInterfaces.ErrWrongSID
+		return 0, authInterfaces.NewErrorWrongSID()
 	}
 
 	if expires.Before(time.Now()) {
@@ -242,7 +242,7 @@ func (r UserRepository) SessionExists(sessionId string) (userId uint64, err erro
 			return 0, err
 		}
 		userId = 0
-		return userId, authInterfaces.ErrWrongSID
+		return userId, authInterfaces.NewErrorWrongSID()
 	}
 
 	return userId, err
@@ -276,7 +276,7 @@ func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	}
 
 	if user.PersonID == 0 {
-		return nil, authInterfaces.ErrUserNotPerson
+		return nil, authInterfaces.NewErrorUserNotPerson(userID)
 	}
 
 	var person Person
@@ -308,7 +308,7 @@ func (r UserRepository) ChangePerson(p models.Person) error {
 	getUser := "SELECT person_id FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, user.ID).Scan(&user.PersonID)
 	if err != nil {
-		return authInterfaces.ErrUserNotPerson
+		return authInterfaces.NewErrorUserNotPerson(user.ID)
 	}
 
 	var birthday sql.NullTime
@@ -344,7 +344,7 @@ func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, er
 	}
 
 	if user.OrganizationID == 0 {
-		return nil, authInterfaces.ErrUserNotOrg
+		return nil, authInterfaces.NewErrorUserNotOrganization(userID)
 	}
 
 	var org Organization
@@ -364,7 +364,7 @@ func (r UserRepository) ChangeOrganization(o models.Organization) error {
 	getUser := "SELECT organization_id FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, user.ID).Scan(&user.OrganizationID)
 	if err != nil {
-		return authInterfaces.ErrUserNotOrg
+		return authInterfaces.NewErrorUserNotOrganization(user.ID)
 	}
 
 	changeOrg := `UPDATE organization 
@@ -391,7 +391,7 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 	rows, err := r.db.Query(getOrgs, 10, page*10)
 
 	if err != nil {
-		return nil, authInterfaces.ErrUserNotFound
+		return result, err
 	}
 	defer rows.Close()
 
@@ -404,7 +404,7 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 	for rows.Next() {
 		err := rows.Scan(&userId, &name, &site)
 		if err != nil {
-			return nil, err
+			return result, err
 		}
 
 		result= append(result, models.Organization{
@@ -429,7 +429,7 @@ func (r UserRepository) SetOrDeleteLike(userID, favoriteID uint64) (res bool, er
 				ON CONFLICT DO NOTHING;`
 	rows, err := r.db.Exec(setLike, userID, favoriteID)
 	if err != nil {
-		return false, authInterfaces.ErrUserNotFound
+		return false, authInterfaces.NewErrorUserNotFound(userID)
 	}
 	if rowsAf, err := rows.RowsAffected(); rowsAf != 0 {
 		return true, err
