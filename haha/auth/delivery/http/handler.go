@@ -158,28 +158,26 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
 	case nil:
-		golog.Infof("#%s: %s",  rID, "success")
+		cookie := &http.Cookie {
+			Name: "session_id",
+			Value: sessionId,
+			Expires: time.Now().Add(time.Hour),
+			MaxAge: 100000,
+			Path: "/",
+			HttpOnly: true,
+			SameSite: http.SameSiteStrictMode,
+		}
+		http.SetCookie(w, cookie)
+
+		jsonData, _ := json.Marshal(models.ResponseRole{ID: userId, Role: role})
+		w.WriteHeader(http.StatusCreated)
+		w.Write(jsonData)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
 	}
-
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: sessionId,
-		Expires: time.Now().Add(time.Hour),
-		MaxAge: 100000,
-		Path: "/",
-		HttpOnly: true,
-		SameSite: http.SameSiteStrictMode,
-	}
-	http.SetCookie(w, cookie)
-
-	jsonData, _ := json.Marshal(models.ResponseRole{ID: userId, Role: role})
-	w.WriteHeader(http.StatusCreated)
-	w.Write(jsonData)
 }
 
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
