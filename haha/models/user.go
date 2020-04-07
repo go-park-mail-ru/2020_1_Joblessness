@@ -6,8 +6,8 @@ type Person struct {
 	ID uint64 `json:"id,omitempty"`
 	Login string `json:"login,omitempty" validate:"required,max=60"`
 	Password string `json:"password,omitempty" validate:"required,max=60"`
-	Tag string `json:"tag,omitempty" validate:"min=6,max=20"`
-	Email string `json:"email,omitempty" validate:"max=60,email"`
+	Tag string `json:"tag,omitempty" validate:"omitempty,min=6,max=20"`
+	Email string `json:"email,omitempty" validate:"omitempty,max=60,email"`
 	Phone string `json:"phone,omitempty" validate:"max=20"`
 	Registered time.Time `json:"registered,omitempty"`
 	Avatar string `json:"avatar,omitempty"`
@@ -21,7 +21,7 @@ type Organization struct {
 	ID uint64 `json:"id,omitempty"`
 	Login string `json:"login,omitempty" validate:"required,max=60"`
 	Password string `json:"password,omitempty" validate:"required,max=60"`
-	Tag string `json:"tag,omitempty" validate:"min=6,max=20"`
+	Tag string `json:"tag,omitempty" validate:"omitempty,min=6,max=20"`
 	Email string `json:"email,omitempty" validate:"max=60"`
 	Phone string `json:"phone,omitempty" validate:"max=20"`
 	Registered time.Time `json:"registered,omitempty"`

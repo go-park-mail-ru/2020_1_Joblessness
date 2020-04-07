@@ -55,7 +55,6 @@ func (suite *userSuite) SetupTest() {
 		LastName:    "new last name",
 		Email:       "new@email.ru",
 		Phone: "new phone number",
-		Tag: "awdawdawd",
 	}
 	var err error
 	personJSON, err := json.Marshal(suite.person)
