@@ -83,7 +83,7 @@ func (a *AuthUseCase) PersonSession(sessionId string) (uint64, error) {
 	if role == "person" {
 		return userID, nil
 	}
-	return userID, authInterfaces.ErrUserNotPerson
+	return userID, authInterfaces.NewErrorUserNotPerson(userID)
 }
 
 func (a *AuthUseCase) OrganizationSession(sessionId string) (uint64, error) {
@@ -100,7 +100,7 @@ func (a *AuthUseCase) OrganizationSession(sessionId string) (uint64, error) {
 	if role == "organization" {
 		return userID, nil
 	}
-	return userID, authInterfaces.ErrUserNotOrg
+	return userID, authInterfaces.NewErrorUserNotOrganization(userID)
 }
 
 func (a *AuthUseCase) GetPerson(userID uint64) (*models.Person, error) {

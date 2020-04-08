@@ -172,7 +172,7 @@ func (r *SummaryRepository) CreateSummary(summary *models.Summary) (summaryID ui
 
 	for _, educationDB := range educationDBs {
 		_, err = r.db.Exec(createEducation, summaryDB.ID, educationDB.Institution, educationDB.Speciality,
-						   educationDB.Graduated, educationDB.Type)
+			educationDB.Graduated, educationDB.Type)
 		if err != nil {
 			return summaryID, err
 		}
@@ -183,7 +183,7 @@ func (r *SummaryRepository) CreateSummary(summary *models.Summary) (summaryID ui
 
 	for _, experienceDB := range experienceDBs {
 		_, err = r.db.Exec(createExperience, summaryDB.ID, experienceDB.CompanyName, experienceDB.Role,
-						   experienceDB.Responsibilities, experienceDB.Start, experienceDB.Stop)
+			experienceDB.Responsibilities, experienceDB.Start, experienceDB.Stop)
 		if err != nil {
 			return summaryID, err
 		}
@@ -350,8 +350,22 @@ func (r *SummaryRepository) GetSummary(summaryID uint64) (*models.Summary, error
 	return toModel(&summaryDB, educationDBs, experienceDBs, userDB, personDB), err
 }
 
+func (r *SummaryRepository) CheckAuthor(summaryID uint64, authorID uint64) (err error) {
+	var isAuthor bool
+
+	checkAuthor := `SELECT author = $1 FROM summary WHERE id = $2`
+	if err = r.db.QueryRow(checkAuthor, authorID, summaryID).Scan(&isAuthor); err != nil {
+		return err
+	}
+
+	if !isAuthor {
+		return summaryInterfaces.NewErrorPersonIsNotOwner(authorID, summaryID)
+	}
+
+	return err
+}
+
 func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
-	// TODO Переделать, неправлиьные запросы
 	summaryDB, educationDBs, experienceDBs := toPostgres(summary)
 
 	changeSummary := `UPDATE summary
@@ -359,7 +373,7 @@ func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 					  WHERE id = $2`
 	_, err = r.db.Exec(changeSummary, summaryDB.Keywords, summaryDB.ID)
 	if err != nil {
-		return err
+		return summaryInterfaces.NewErrorSummaryNotFound(summaryDB.ID)
 	}
 
 	changeEducation := `UPDATE education
@@ -371,7 +385,7 @@ func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 
 	for _, educationDB := range educationDBs {
 		_, err = r.db.Exec(changeEducation, &educationDB.Institution, &educationDB.Speciality, &educationDB.Graduated,
-						   &educationDB.Type, &educationDB.SummaryID)
+			&educationDB.Type, &educationDB.SummaryID)
 		if err != nil {
 			return err
 		}
@@ -387,8 +401,8 @@ func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 
 	for _, experienceDB := range experienceDBs {
 		_, err = r.db.Exec(changeExperience, &experienceDB.CompanyName, &experienceDB.Role,
-						   &experienceDB.Responsibilities, &experienceDB.Start, &experienceDB.Stop,
-						   &experienceDB.SummaryID)
+			&experienceDB.Responsibilities, &experienceDB.Start, &experienceDB.Stop,
+			&experienceDB.SummaryID)
 		if err != nil {
 			return err
 		}
@@ -402,29 +416,11 @@ func (r *SummaryRepository) DeleteSummary(summaryID uint64) (err error) {
 					  WHERE id = $1`
 	_, err = r.db.Exec(deleteSummary, summaryID)
 	if err != nil {
-		return err
+		return summaryInterfaces.NewErrorSummaryNotFound(summaryID)
 	}
 
 	//TODO Убрал удаление связанных строк CASCADE есть в бд
 	return nil
-}
-
-func (r *SummaryRepository) IsPersonSummary(summaryID, userID uint64) (res bool, err error) {
-	findSummary := `SELECT u.id
-				FROM users u 
-				JOIN summary s on u.id = s.author
-				WHERE s.id = $1
-				AND s.author = $2`
-	rows, err := r.db.Query(findSummary, summaryID, userID)
-	if err != nil {
-		return false, err
-	}
-	defer rows.Close()
-
-	if !rows.Next() {
-		return false, nil
-	}
-	return true, nil
 }
 
 func (r *SummaryRepository) SendSummary(sendSummary *models.SendSummary) (err error) {
@@ -436,7 +432,7 @@ func (r *SummaryRepository) SendSummary(sendSummary *models.SendSummary) (err er
 		return err
 	}
 	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
-		return summaryInterfaces.ErrSummaryAlreadySend
+		return summaryInterfaces.NewErrorSummaryAlreadySent()
 	}
 
 	return nil
@@ -454,28 +450,26 @@ func (r *SummaryRepository) RefreshSummary(summaryID, vacancyID uint64) (err err
 		return err
 	}
 	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
-		return summaryInterfaces.ErrNoSummaryToRefresh
+		return summaryInterfaces.NewErrorNoSummaryToRefresh()
 	}
 
 	return nil
 }
 
-func (r *SummaryRepository) IsOrganizationVacancy(vacancyID, userID uint64) (res bool, err error) {
-	findSummary := `SELECT u.id
-				FROM users u 
-				JOIN vacancy v on u.id = v.organization_id
-				WHERE v.id = $1
-				AND v.organization_id = $2`
-	rows, err := r.db.Query(findSummary, vacancyID, userID)
-	if err != nil {
-		return false, err
+func (r *SummaryRepository) IsOrganizationVacancy(vacancyID, userID uint64) (err error) {
+	var isAuthor bool
+	checkAuthor := `SELECT v.organization_id = $2
+				FROM vacancy v 
+				WHERE v.id = $1`
+	if err = r.db.QueryRow(checkAuthor, vacancyID, userID).Scan(&isAuthor); err != nil {
+		return err
 	}
-	defer rows.Close()
 
-	if !rows.Next() {
-		return false, nil
+	if !isAuthor {
+		return summaryInterfaces.NewErrorOrganizationIsNotOwner()
 	}
-	return true, nil
+
+	return err
 }
 
 func (r *SummaryRepository) ResponseSummary(sendSummary *models.SendSummary)  (err error) {
@@ -490,7 +484,7 @@ func (r *SummaryRepository) ResponseSummary(sendSummary *models.SendSummary)  (e
 		return err
 	}
 	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
-		return summaryInterfaces.ErrNoSummaryToRefresh
+		return summaryInterfaces.NewErrorNoSummaryToRefresh()
 	}
 
 	return nil
@@ -528,7 +522,6 @@ func (r *SummaryRepository) GetOrgSendSummaries(userID uint64) (summaries models
 	}
 	return summaries, nil
 }
-
 
 func (r *SummaryRepository) GetUserSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
 	getSummary := `SELECT v.id, s.id, s.keywords, s.name, v.name, r.approved, r.rejected

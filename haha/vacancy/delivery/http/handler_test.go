@@ -1,5 +1,7 @@
 package httpVacancy
 
+//go:generate  mockgen -destination=../../usecase/mock/vacancy.go -package=mock joblessness/haha/vacancy/interfaces VacancyUseCase
+
 import (
 	"bytes"
 	"encoding/json"
@@ -314,7 +316,7 @@ func (suite *userSuite) TestChangeVacancyFailed() {
 
 func (suite *userSuite) TestDeleteVacancy() {
 	suite.uc.EXPECT().
-		DeleteVacancy(uint64(3)).
+		DeleteVacancy(uint64(3), uint64(12)).
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
@@ -332,7 +334,7 @@ func (suite *userSuite) TestDeleteVacancy() {
 
 func (suite *userSuite) TestDeleteVacancyWrongUrl() {
 	suite.uc.EXPECT().
-		DeleteVacancy(uint64(3)).
+		DeleteVacancy(uint64(3), uint64(12)).
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
@@ -350,7 +352,7 @@ func (suite *userSuite) TestDeleteVacancyWrongUrl() {
 
 func (suite *userSuite) TestDeleteVacancyFailed() {
 	suite.uc.EXPECT().
-		DeleteVacancy(uint64(3)).
+		DeleteVacancy(uint64(3), uint64(12)).
 		Return(errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().

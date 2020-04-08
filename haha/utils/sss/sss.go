@@ -8,7 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"io"
-	"joblessness/haha/auth/interfaces"
 	"mime/multipart"
 	"strconv"
 	"strings"
@@ -50,7 +49,7 @@ func UploadAvatar(form *multipart.Form, userID uint64) (link string, err error) 
 	})
 
 	if err != nil {
-		return "", authInterfaces.ErrUploadAvatar
+		return "", err
 	}
 
 	link = "https://hb.bizmrg.com/imgs-hh/" + link

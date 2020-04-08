@@ -1,5 +1,7 @@
 package httpSummary
 
+//go:generate mockgen -destination=../../usecase/mock/summary.go -package=mock joblessness/haha/summary/interfaces SummaryUseCase
+
 import (
 	"bytes"
 	"encoding/json"
@@ -390,7 +392,7 @@ func (suite *userSuite) TestChangeSummaryFailed() {
 
 func (suite *userSuite) TestDeleteSummary() {
 	suite.uc.EXPECT().
-		DeleteSummary(uint64(3)).
+		DeleteSummary(uint64(3), uint64(12)).
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
@@ -408,7 +410,7 @@ func (suite *userSuite) TestDeleteSummary() {
 
 func (suite *userSuite) TestDeleteSummaryWrongUrl() {
 	suite.uc.EXPECT().
-		DeleteSummary(uint64(3)).
+		DeleteSummary(uint64(12), uint64(3)).
 		Return(nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
@@ -426,7 +428,7 @@ func (suite *userSuite) TestDeleteSummaryWrongUrl() {
 
 func (suite *userSuite) TestDeleteSummaryFailed() {
 	suite.uc.EXPECT().
-		DeleteSummary(uint64(3)).
+		DeleteSummary(uint64(3), uint64(12)).
 		Return(errors.New("")).
 		Times(1)
 	suite.authUseCase.EXPECT().
@@ -463,7 +465,7 @@ func (suite *userSuite) TestSendSummary() {
 func (suite *userSuite) TestSendSummaryNotOwner() {
 	suite.uc.EXPECT().
 		SendSummary(&suite.sendSum).
-		Return(summaryInterfaces.ErrPersonIsNotOwner).
+		Return(summaryInterfaces.NewErrorPersonIsNotOwner(uint64(1), uint64(1))).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		PersonSession("username").
@@ -481,7 +483,7 @@ func (suite *userSuite) TestSendSummaryNotOwner() {
 func (suite *userSuite) TestSendSummaryNoSummary() {
 	suite.uc.EXPECT().
 		SendSummary(&suite.sendSum).
-		Return(summaryInterfaces.ErrNoSummaryToRefresh).
+		Return(summaryInterfaces.NewErrorNoSummaryToRefresh()).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		PersonSession("username").
@@ -517,7 +519,6 @@ func (suite *userSuite) TestSendSummaryDefaultErr() {
 func (suite *userSuite) TestSendSummaryWrongJson() {
 	suite.uc.EXPECT().
 		SendSummary(&suite.sendSum).
-		Return(summaryInterfaces.ErrNoSummaryToRefresh).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		PersonSession("username").
@@ -535,7 +536,6 @@ func (suite *userSuite) TestSendSummaryWrongJson() {
 func (suite *userSuite) TestSendSummaryWrongUrl() {
 	suite.uc.EXPECT().
 		SendSummary(&suite.sendSum).
-		Return(summaryInterfaces.ErrNoSummaryToRefresh).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		PersonSession("username").
@@ -607,7 +607,7 @@ func (suite *userSuite) TestResponseSummaryWrongURL() {
 func (suite *userSuite) TestResponseSummaryNotOwner() {
 	suite.uc.EXPECT().
 		ResponseSummary(&suite.sendSum).
-		Return(summaryInterfaces.ErrOrgIsNotOwner).
+		Return(summaryInterfaces.NewErrorOrganizationIsNotOwner()).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		OrganizationSession("username").
@@ -625,7 +625,7 @@ func (suite *userSuite) TestResponseSummaryNotOwner() {
 func (suite *userSuite) TestResponseSummaryNoSummary() {
 	suite.uc.EXPECT().
 		ResponseSummary(&suite.sendSum).
-		Return(summaryInterfaces.ErrNoSummaryToRefresh).
+		Return(summaryInterfaces.NewErrorNoSummaryToRefresh()).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		OrganizationSession("username").

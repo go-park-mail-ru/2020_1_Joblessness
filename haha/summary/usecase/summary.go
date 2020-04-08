@@ -33,23 +33,28 @@ func (u *SummaryUseCase) GetSummary(summaryID uint64) (summary *models.Summary, 
 }
 
 func (u *SummaryUseCase) ChangeSummary(summary *models.Summary) (err error) {
+	if err = u.summaryRepo.CheckAuthor(summary.ID, summary.Author.ID); err != nil {
+		return err
+	}
+
 	return u.summaryRepo.ChangeSummary(summary)
 }
 
-func (u *SummaryUseCase) DeleteSummary(summaryID uint64) (err error) {
+func (u *SummaryUseCase) DeleteSummary(summaryID uint64, authorID uint64) (err error) {
+	if err = u.summaryRepo.CheckAuthor(summaryID, authorID); err != nil {
+		return err
+	}
+
 	return u.summaryRepo.DeleteSummary(summaryID)
 }
 
 func (u *SummaryUseCase) SendSummary(sendSummary *models.SendSummary) (err error) {
-	res, err := u.summaryRepo.IsPersonSummary(sendSummary.SummaryID, sendSummary.UserID)
-	if err != nil {
+	if err := u.summaryRepo.CheckAuthor(sendSummary.SummaryID, sendSummary.UserID); err != nil {
 		return err
-	} else if !res {
-		return summaryInterfaces.ErrPersonIsNotOwner
 	}
 
 	err = u.summaryRepo.SendSummary(sendSummary)
-	if err == summaryInterfaces.ErrSummaryAlreadySend {
+	if err == summaryInterfaces.NewErrorSummaryAlreadySent() {
 		err = u.summaryRepo.RefreshSummary(sendSummary.SummaryID, sendSummary.VacancyID)
 	}
 
@@ -57,12 +62,11 @@ func (u *SummaryUseCase) SendSummary(sendSummary *models.SendSummary) (err error
 }
 
 func (u *SummaryUseCase) ResponseSummary(sendSummary *models.SendSummary)  (err error) {
-	res, err := u.summaryRepo.IsOrganizationVacancy(sendSummary.VacancyID, sendSummary.OrganizationID)
+	err = u.summaryRepo.IsOrganizationVacancy(sendSummary.VacancyID, sendSummary.OrganizationID)
 	if err != nil {
 		return err
-	} else if !res {
-		return summaryInterfaces.ErrOrgIsNotOwner
 	}
+
 	err = u.summaryRepo.ResponseSummary(sendSummary)
 
 	return err

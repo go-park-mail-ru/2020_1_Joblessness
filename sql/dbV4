@@ -597,6 +597,9 @@ ALTER TABLE ONLY public.vacancy
     ADD CONSTRAINT vacancy_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.users(id) ON DELETE CASCADE;
 
 
+ALTER TABLE favorite ADD CONSTRAINT unique_like UNIQUE (user_id, favorite_id);
+
+ALTER TABLE response ADD CONSTRAINT unique_response UNIQUE (summary_id, vacancy_id);
 --
 -- PostgreSQL database dump complete
 --

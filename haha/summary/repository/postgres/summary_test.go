@@ -382,6 +382,32 @@ func (suite *summarySuite) TestGetUserSummaries() {
 	assert.Equal(suite.T(), suite.summary, summaries[0])
 }
 
+func (suite *summarySuite) TestCheckAuthor() {
+	rows := sqlmock.NewRows([]string{"author"}).
+		AddRow(true)
+
+	suite.mock.
+		ExpectQuery("SELECT author").
+		WithArgs(suite.summary.Author.ID, suite.summary.ID).
+		WillReturnRows(rows)
+
+	err := suite.rep.CheckAuthor(suite.summary.ID, suite.summary.Author.ID)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *summarySuite) TestCheckAuthorNotOwner() {
+	rows := sqlmock.NewRows([]string{"author"}).
+		AddRow(false)
+
+	suite.mock.
+		ExpectQuery("SELECT author").
+		WithArgs(suite.summary.Author.ID, suite.summary.ID).
+		WillReturnRows(rows)
+
+	err := suite.rep.CheckAuthor(suite.summary.ID, suite.summary.Author.ID)
+	assert.Equal(suite.T(), summaryInterfaces.NewErrorPersonIsNotOwner(uint64(12), uint64(3)), err)
+}
+
 func (suite *summarySuite) TestChangeSummary() {
 	suite.mock.
 		ExpectExec("UPDATE summary").
@@ -474,74 +500,38 @@ func (suite *summarySuite) TestDeleteSummaryFailed() {
 	assert.Error(suite.T(), err)
 }
 
-func (suite *summarySuite) TestIsPersonSummaryTrue() {
-	rows := sqlmock.NewRows([]string{"id"}).
-		AddRow(suite.summary.Author.ID)
-	suite.mock.
-		ExpectQuery("SELECT u.id").
-		WithArgs(suite.summary.ID, suite.summary.Author.ID).
-		WillReturnRows(rows)
-
-	res, err := suite.rep.IsPersonSummary(suite.summary.ID, suite.summary.Author.ID)
-	assert.NoError(suite.T(), err)
-	assert.True(suite.T(), res)
-}
-
-func (suite *summarySuite) TestIsPersonSummaryFalse() {
-	rows := sqlmock.NewRows([]string{"id"})
-	suite.mock.
-		ExpectQuery("SELECT u.id").
-		WithArgs(suite.summary.ID, suite.summary.Author.ID).
-		WillReturnRows(rows)
-
-	res, err := suite.rep.IsPersonSummary(suite.summary.ID, suite.summary.Author.ID)
-	assert.NoError(suite.T(), err)
-	assert.False(suite.T(), res)
-}
-
-func (suite *summarySuite) TestIsPersonSummaryFailed() {
-	suite.mock.
-		ExpectQuery("SELECT u.id").
-		WithArgs(suite.summary.Author.ID, suite.summary.ID).
-		WillReturnError(errors.New(""))
-
-	_, err := suite.rep.IsPersonSummary(suite.summary.ID, suite.summary.Author.ID)
-	assert.Error(suite.T(), err)
-}
-
 func (suite *summarySuite) TestIsOrganizationSummaryTrue() {
 	rows := sqlmock.NewRows([]string{"id"}).
-		AddRow(suite.summary.Author.ID)
+		AddRow(true)
 	suite.mock.
-		ExpectQuery("SELECT u.id").
+		ExpectQuery("SELECT v.organization_id").
 		WithArgs(suite.summary.ID, suite.summary.Author.ID).
 		WillReturnRows(rows)
 
-	res, err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
+	err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
 	assert.NoError(suite.T(), err)
-	assert.True(suite.T(), res)
 }
 
 func (suite *summarySuite) TestIsOrganizationSummaryFalse() {
-	rows := sqlmock.NewRows([]string{"id"})
+	rows := sqlmock.NewRows([]string{"id"}).
+		AddRow(false)
 	suite.mock.
-		ExpectQuery("SELECT u.id").
+		ExpectQuery("SELECT v.organization_id").
 		WithArgs(suite.summary.ID, suite.summary.Author.ID).
 		WillReturnRows(rows)
 
-	res, err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
-	assert.NoError(suite.T(), err)
-	assert.False(suite.T(), res)
+	err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
+	assert.Equal(suite.T(), summaryInterfaces.NewErrorOrganizationIsNotOwner(), err)
 }
 
 func (suite *summarySuite) TestIsOrganizationSummaryFailed() {
 	suite.mock.
-		ExpectQuery("SELECT u.id").
-		WithArgs(suite.summary.Author.ID, suite.summary.ID).
+		ExpectQuery("SELECT v.organization_id").
+		WithArgs(suite.summary.ID, suite.summary.Author.ID).
 		WillReturnError(errors.New(""))
 
-	_, err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
-	assert.Error(suite.T(), err)
+	err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
+	assert.EqualError(suite.T(), err, "")
 }
 
 func (suite *summarySuite) TestSendSummary() {
@@ -561,7 +551,7 @@ func (suite *summarySuite) TestSendSummaryAlreadySend() {
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
 	err := suite.rep.SendSummary(&suite.sendSum)
-	assert.Equal(suite.T(), summaryInterfaces.ErrSummaryAlreadySend, err)
+	assert.Equal(suite.T(), summaryInterfaces.NewErrorSummaryAlreadySent(), err)
 }
 
 func (suite *summarySuite) TestSendSummaryFailed() {
@@ -591,7 +581,7 @@ func (suite *summarySuite) TestRefreshSummaryNoSummary() {
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
 	err := suite.rep.RefreshSummary(suite.sendSum.SummaryID, suite.sendSum.VacancyID)
-	assert.Equal(suite.T(), summaryInterfaces.ErrNoSummaryToRefresh, err)
+	assert.Equal(suite.T(), summaryInterfaces.NewErrorNoSummaryToRefresh(), err)
 }
 
 func (suite *summarySuite) TestRefreshSummaryFailed() {
@@ -621,7 +611,7 @@ func (suite *summarySuite) TestResponseSummaryNo() {
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
 	err := suite.rep.ResponseSummary(&suite.sendSum)
-	assert.Equal(suite.T(), summaryInterfaces.ErrNoSummaryToRefresh, err)
+	assert.Equal(suite.T(), summaryInterfaces.NewErrorNoSummaryToRefresh(), err)
 }
 
 func (suite *summarySuite) TestResponseSummaryFailed() {
