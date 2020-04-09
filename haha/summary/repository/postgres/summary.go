@@ -328,9 +328,10 @@ func (r *SummaryRepository) GetUserSummaries(page int, userID uint64) (summaries
 func (r *SummaryRepository) GetSummary(summaryID uint64) (*models.Summary, error) {
 	summaryDB := Summary{ID: summaryID}
 
-	getSummary := `SELECT author, keywords
+	getSummary := `SELECT author, keywords, name, salary_from, salary_to
 				   FROM summary WHERE id = $1`
-	err := r.db.QueryRow(getSummary, summaryID).Scan(&summaryDB.AuthorID, &summaryDB.Keywords)
+	err := r.db.QueryRow(getSummary, summaryID).Scan(&summaryDB.AuthorID, &summaryDB.Keywords, &summaryDB.Name,
+		&summaryDB.SalaryFrom, &summaryDB.SalaryTo)
 	if err != nil {
 		return &models.Summary{}, err
 	}

@@ -181,8 +181,9 @@ func (suite *summarySuite) TestCreateSummaryFailedThree() {
 }
 
 func (suite *summarySuite) TestGetSummary() {
-	rows := sqlmock.NewRows([]string{"author", "keywords"}).
-		AddRow(suite.summary.Author.ID, suite.summary.Keywords)
+	rows := sqlmock.NewRows([]string{"author", "keywords", "name", "salary_from", "salary_to"}).
+		AddRow(suite.summary.Author.ID, suite.summary.Keywords, suite.summary.Name, suite.summary.SalaryFrom,
+			suite.summary.SalaryFrom)
 	suite.mock.
 		ExpectQuery("SELECT author, keywords").
 		WithArgs(suite.summary.ID).
