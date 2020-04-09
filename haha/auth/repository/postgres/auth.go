@@ -97,7 +97,7 @@ func (r AuthRepository) CreateUser(user *User) (err error) {
 	return err
 }
 
-func (r AuthRepository) CreatePerson(user *models.Person) (err error) {
+func (r *AuthRepository) CreatePerson(user *models.Person) (err error) {
 	dbUser, dbPerson := toPostgresPerson(user)
 
 	err = r.db.QueryRow("INSERT INTO person (name, gender, birthday) VALUES($1, $2, $3) RETURNING id",
@@ -112,7 +112,7 @@ func (r AuthRepository) CreatePerson(user *models.Person) (err error) {
 	return err
 }
 
-func (r AuthRepository) CreateOrganization(org *models.Organization) (err error) {
+func (r *AuthRepository) CreateOrganization(org *models.Organization) (err error) {
 	dbUser, dbOrg := toPostgresOrg(org)
 
 	err = r.db.QueryRow("INSERT INTO organization (name, site, about) VALUES($1, $2, $3) RETURNING id",
@@ -127,7 +127,7 @@ func (r AuthRepository) CreateOrganization(org *models.Organization) (err error)
 	return err
 }
 
-func (r AuthRepository) Login(login, password, SID string) (userId uint64, err error) {
+func (r *AuthRepository) Login(login, password, SID string) (userId uint64, err error) {
 	//TODO user_id, session_id уникальные
 
 	checkUser := "SELECT id, password FROM users WHERE login = $1"
@@ -145,7 +145,7 @@ func (r AuthRepository) Login(login, password, SID string) (userId uint64, err e
 	return userId, err
 }
 
-func (r AuthRepository) Logout(sessionId string) (err error) {
+func (r *AuthRepository) Logout(sessionId string) (err error) {
 	//TODO user_id, session_id уникальные
 
 	deleteRow := "DELETE FROM session WHERE session_id = $1;"
@@ -154,7 +154,7 @@ func (r AuthRepository) Logout(sessionId string) (err error) {
 	return err
 }
 
-func (r AuthRepository) SessionExists(sessionId string) (userId uint64, err error) {
+func (r *AuthRepository) SessionExists(sessionId string) (userId uint64, err error) {
 	//TODO session_id - pk, возвращать тип сессии
 
 	checkUser := "SELECT user_id, expires FROM session WHERE session_id = $1;"
@@ -177,7 +177,7 @@ func (r AuthRepository) SessionExists(sessionId string) (userId uint64, err erro
 	return userId, err
 }
 
-func (r AuthRepository) DoesUserExists(login string) (err error) {
+func (r *AuthRepository) DoesUserExists(login string) (err error) {
 	var columnCount int
 	checkUser := "SELECT count(*) FROM users WHERE login = $1"
 	err = r.db.QueryRow(checkUser, login).Scan(&columnCount)
@@ -192,7 +192,7 @@ func (r AuthRepository) DoesUserExists(login string) (err error) {
 	return nil
 }
 
-func (r AuthRepository) GetRole(userID uint64) (string, error) {
+func (r *AuthRepository) GetRole(userID uint64) (string, error) {
 	var personID, organizationID sql.NullInt64
 	checkUser := "SELECT person_id, organization_id FROM users WHERE id = $1;"
 	err := r.db.QueryRow(checkUser, userID).Scan(&personID, &organizationID)

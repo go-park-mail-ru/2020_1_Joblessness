@@ -77,10 +77,10 @@ func (mr *MockVacancyUseCaseMockRecorder) DeleteVacancy(arg0, arg1 interface{}) 
 }
 
 // GetOrgVacancies mocks base method
-func (m *MockVacancyUseCase) GetOrgVacancies(arg0 uint64) ([]models.Vacancy, error) {
+func (m *MockVacancyUseCase) GetOrgVacancies(arg0 uint64) (models.Vacancies, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrgVacancies", arg0)
-	ret0, _ := ret[0].([]models.Vacancy)
+	ret0, _ := ret[0].(models.Vacancies)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -92,10 +92,10 @@ func (mr *MockVacancyUseCaseMockRecorder) GetOrgVacancies(arg0 interface{}) *gom
 }
 
 // GetVacancies mocks base method
-func (m *MockVacancyUseCase) GetVacancies(arg0 string) ([]models.Vacancy, error) {
+func (m *MockVacancyUseCase) GetVacancies(arg0 string) (models.Vacancies, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVacancies", arg0)
-	ret0, _ := ret[0].([]models.Vacancy)
+	ret0, _ := ret[0].(models.Vacancies)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

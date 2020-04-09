@@ -1,6 +1,7 @@
 package summaryUseCase
 
 import (
+	"github.com/microcosm-cc/bluemonday"
 	"joblessness/haha/models"
 	"joblessness/haha/summary/interfaces"
 	"strconv"
@@ -8,28 +9,50 @@ import (
 
 type SummaryUseCase struct {
 	summaryRepo summaryInterfaces.SummaryRepository
+	policy *bluemonday.Policy
 }
 
-func NewSummaryUseCase(summaryRepo summaryInterfaces.SummaryRepository) *SummaryUseCase {
-	return &SummaryUseCase{summaryRepo}
+func NewSummaryUseCase(summaryRepo summaryInterfaces.SummaryRepository, policy *bluemonday.Policy) *SummaryUseCase {
+	return &SummaryUseCase{
+		summaryRepo: summaryRepo,
+		policy: policy,
+	}
 }
 
 func (u *SummaryUseCase) CreateSummary(summary *models.Summary) (summaryID uint64, err error) {
 	return u.summaryRepo.CreateSummary(summary)
 }
 
-func (u *SummaryUseCase) GetAllSummaries(page string) (summaries []models.Summary, err error) {
+func (u *SummaryUseCase) GetAllSummaries(page string) (summaries models.Summaries, err error) {
 	pageInt, _ := strconv.Atoi(page)
-	return u.summaryRepo.GetAllSummaries(pageInt)
+	res, err := u.summaryRepo.GetAllSummaries(pageInt)
+	if err != nil {
+		return nil, err
+	}
+
+	res.Sanitize(u.policy)
+	return res, nil
 }
 
-func (u *SummaryUseCase) GetUserSummaries(page string, userID uint64) (summaries []models.Summary, err error) {
+func (u *SummaryUseCase) GetUserSummaries(page string, userID uint64) (summaries models.Summaries, err error) {
 	pageInt, _ := strconv.Atoi(page)
-	return u.summaryRepo.GetUserSummaries(pageInt, userID)
+	res, err := u.summaryRepo.GetUserSummaries(pageInt, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	res.Sanitize(u.policy)
+	return res, nil
 }
 
 func (u *SummaryUseCase) GetSummary(summaryID uint64) (summary *models.Summary, err error) {
-	return u.summaryRepo.GetSummary(summaryID)
+	res, err := u.summaryRepo.GetSummary(summaryID)
+	if err != nil {
+		return nil, err
+	}
+
+	res.Sanitize(u.policy)
+	return res, nil
 }
 
 func (u *SummaryUseCase) ChangeSummary(summary *models.Summary) (err error) {
@@ -73,9 +96,21 @@ func (u *SummaryUseCase) ResponseSummary(sendSummary *models.SendSummary)  (err 
 }
 
 func (u *SummaryUseCase) GetOrgSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
-	return u.summaryRepo.GetOrgSendSummaries(userID)
+	res, err := u.summaryRepo.GetOrgSendSummaries(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	res.Sanitize(u.policy)
+	return res, nil
 }
 
 func (u *SummaryUseCase) GetUserSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
-	return u.summaryRepo.GetUserSendSummaries(userID)
+	res, err := u.summaryRepo.GetUserSendSummaries(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	res.Sanitize(u.policy)
+	return res, nil
 }

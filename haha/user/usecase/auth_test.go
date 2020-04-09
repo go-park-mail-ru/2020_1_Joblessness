@@ -4,6 +4,7 @@ package userUseCase
 
 import (
 	"github.com/golang/mock/gomock"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/stretchr/testify/assert"
 	"joblessness/haha/user/repository/mock"
 	"joblessness/haha/models"
@@ -16,7 +17,8 @@ func TestAuthPersonFlow(t *testing.T) {
 	defer controller.Finish()
 
 	repo := mock.NewMockUserRepository(controller)
-	uc := NewUserUseCase(repo)
+	policy := bluemonday.UGCPolicy()
+	uc := NewUserUseCase(repo, policy)
 
 	login := "user"
 	password := "password"
@@ -39,8 +41,8 @@ func TestAuthPersonFlow(t *testing.T) {
 	//ChangePerson
 	lastName := "NaNa"
 	person.LastName = lastName
-	repo.EXPECT().ChangePerson(*person).Return(nil).Times(1)
-	err = uc.ChangePerson(*person)
+	repo.EXPECT().ChangePerson(person).Return(nil).Times(1)
+	err = uc.ChangePerson(person)
 	assert.NoError(t, err)
 }
 
@@ -49,7 +51,8 @@ func TestAuthOrganizationFlow(t *testing.T) {
 	defer controller.Finish()
 
 	repo := mock.NewMockUserRepository(controller)
-	uc := NewUserUseCase(repo)
+	policy := bluemonday.UGCPolicy()
+	uc := NewUserUseCase(repo, policy)
 
 	login := "user"
 	password := "password"
@@ -72,8 +75,8 @@ func TestAuthOrganizationFlow(t *testing.T) {
 	//ChangeOrganization
 	newName := "NaNa"
 	organization.Name = newName
-	repo.EXPECT().ChangeOrganization(*organization).Return(nil).Times(1)
-	err = uc.ChangeOrganization(*organization)
+	repo.EXPECT().ChangeOrganization(organization).Return(nil).Times(1)
+	err = uc.ChangeOrganization(organization)
 	assert.NoError(t, err)
 }
 
@@ -82,7 +85,8 @@ func TestSetAvatarNoFile(t *testing.T) {
 	defer controller.Finish()
 
 	repo := mock.NewMockUserRepository(controller)
-	uc := NewUserUseCase(repo)
+	policy := bluemonday.UGCPolicy()
+	uc := NewUserUseCase(repo, policy)
 
 	link := "link"
 	form := multipart.Form{
@@ -98,9 +102,10 @@ func TestListOrgs(t *testing.T) {
 	defer controller.Finish()
 
 	repo := mock.NewMockUserRepository(controller)
-	uc := NewUserUseCase(repo)
+	policy := bluemonday.UGCPolicy()
+	uc := NewUserUseCase(repo, policy)
 
-	repo.EXPECT().GetListOfOrgs(1).Return([]models.Organization{}, nil).Times(1)
+	repo.EXPECT().GetListOfOrgs(1).Return(models.Organizations{}, nil).Times(1)
 	_, err := uc.GetListOfOrgs(1)
 	assert.NoError(t, err)
 }
@@ -110,7 +115,8 @@ func TestLike(t *testing.T) {
 	defer controller.Finish()
 
 	repo := mock.NewMockUserRepository(controller)
-	uc := NewUserUseCase(repo)
+	policy := bluemonday.UGCPolicy()
+	uc := NewUserUseCase(repo, policy)
 
 	repo.EXPECT().SetOrDeleteLike(uint64(1), uint64(5)).Return(true, nil).Times(1)
 	_, err := uc.LikeUser(uint64(1), uint64(5))

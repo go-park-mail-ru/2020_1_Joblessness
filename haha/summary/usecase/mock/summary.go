@@ -77,10 +77,10 @@ func (mr *MockSummaryUseCaseMockRecorder) DeleteSummary(arg0, arg1 interface{}) 
 }
 
 // GetAllSummaries mocks base method
-func (m *MockSummaryUseCase) GetAllSummaries(arg0 string) ([]models.Summary, error) {
+func (m *MockSummaryUseCase) GetAllSummaries(arg0 string) (models.Summaries, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllSummaries", arg0)
-	ret0, _ := ret[0].([]models.Summary)
+	ret0, _ := ret[0].(models.Summaries)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -137,10 +137,10 @@ func (mr *MockSummaryUseCaseMockRecorder) GetUserSendSummaries(arg0 interface{})
 }
 
 // GetUserSummaries mocks base method
-func (m *MockSummaryUseCase) GetUserSummaries(arg0 string, arg1 uint64) ([]models.Summary, error) {
+func (m *MockSummaryUseCase) GetUserSummaries(arg0 string, arg1 uint64) (models.Summaries, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserSummaries", arg0, arg1)
-	ret0, _ := ret[0].([]models.Summary)
+	ret0, _ := ret[0].(models.Summaries)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

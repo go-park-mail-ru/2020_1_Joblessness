@@ -11,7 +11,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	"joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
-	"joblessness/haha/middleware/xss"
 	"joblessness/haha/models"
 	searchInterfaces "joblessness/haha/search/interfaces"
 	searchUseCaseMock "joblessness/haha/search/usecase/mock"
@@ -25,7 +24,6 @@ type userSuite struct {
 	router *mux.Router
 	mainMiddleware *middleware.RecoveryHandler
 	authMiddleware *middleware.SessionHandler
-	xssMiddleware *xss.XssHandler
 	controller *gomock.Controller
 	authUseCase *mock.MockAuthUseCase
 	uc *searchUseCaseMock.MockSearchUseCase
@@ -38,8 +36,6 @@ type userSuite struct {
 func (suite *userSuite) SetupTest() {
 	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
-	suite.xssMiddleware = xss.NewXssHandler()
-	suite.router.Use(suite.xssMiddleware.SanitizeMiddleware)
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())

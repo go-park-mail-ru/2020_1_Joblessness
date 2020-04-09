@@ -341,7 +341,7 @@ func (suite *summarySuite) TestGetSummaries() {
 
 	summaries, err := suite.rep.GetAllSummaries(1)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), suite.summary, summaries[0])
+	assert.Equal(suite.T(), &suite.summary, summaries[0])
 }
 
 func (suite *summarySuite) TestGetUserSummaries() {
@@ -380,7 +380,7 @@ func (suite *summarySuite) TestGetUserSummaries() {
 
 	summaries, err := suite.rep.GetUserSummaries(0, uint64(12))
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), suite.summary, summaries[0])
+	assert.Equal(suite.T(), &suite.summary, summaries[0])
 }
 
 func (suite *summarySuite) TestCheckAuthor() {

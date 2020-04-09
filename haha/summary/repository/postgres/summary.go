@@ -54,7 +54,7 @@ type Person struct {
 	Birthday time.Time
 }
 
-func toPostgres(s *models.Summary) (summary *Summary, educations []Education, experiences []Experience) {
+func toPostgres(s *models.Summary) (summary *Summary, educations []*Education, experiences []*Experience) {
 	summary = &Summary{
 		ID:       s.ID,
 		AuthorID: s.Author.ID,
@@ -65,7 +65,7 @@ func toPostgres(s *models.Summary) (summary *Summary, educations []Education, ex
 	}
 
 	for _, education := range s.Educations {
-		educations = append(educations, Education{
+		educations = append(educations, &Education{
 			SummaryID:   summary.ID,
 			Institution: education.Institution,
 			Speciality:  education.Speciality,
@@ -75,7 +75,7 @@ func toPostgres(s *models.Summary) (summary *Summary, educations []Education, ex
 	}
 
 	for _, experience := range s.Experiences {
-		experiences = append(experiences, Experience{
+		experiences = append(experiences, &Experience{
 			SummaryID:        summary.ID,
 			CompanyName:      experience.CompanyName,
 			Role:             experience.Role,
@@ -88,7 +88,7 @@ func toPostgres(s *models.Summary) (summary *Summary, educations []Education, ex
 	return summary, educations, experiences
 }
 
-func toModel(s *Summary, eds []Education, exs []Experience, u *User, p *Person) *models.Summary {
+func toModel(s *Summary, eds []*Education, exs []*Experience, u *User, p *Person) *models.Summary {
 	var educations []models.Education
 
 	for _, ed := range eds {
@@ -192,7 +192,7 @@ func (r *SummaryRepository) CreateSummary(summary *models.Summary) (summaryID ui
 	return summaryDB.ID, nil
 }
 
-func (r *SummaryRepository) GetEducationsBySummaryID(summaryID uint64) ([]Education, error) {
+func (r *SummaryRepository) GetEducationsBySummaryID(summaryID uint64) ([]*Education, error) {
 	getEducations := `SELECT institution, speciality, graduated, type
 					  FROM education WHERE summary_id = $1`
 
@@ -202,7 +202,7 @@ func (r *SummaryRepository) GetEducationsBySummaryID(summaryID uint64) ([]Educat
 	}
 	defer rows.Close()
 
-	educationDBs := make([]Education, 0)
+	educationDBs := make([]*Education, 0)
 
 	for rows.Next() {
 		educationDB := Education{SummaryID: summaryID}
@@ -213,13 +213,13 @@ func (r *SummaryRepository) GetEducationsBySummaryID(summaryID uint64) ([]Educat
 			return nil, err
 		}
 
-		educationDBs = append(educationDBs, educationDB)
+		educationDBs = append(educationDBs, &educationDB)
 	}
 
 	return educationDBs, nil
 }
 
-func (r *SummaryRepository) GetExperiencesBySummaryID(summaryID uint64) ([]Experience, error) {
+func (r *SummaryRepository) GetExperiencesBySummaryID(summaryID uint64) ([]*Experience, error) {
 	getExperience := `SELECT company_name, role, responsibilities, start, stop
 					  FROM experience WHERE summary_id = $1`
 
@@ -229,7 +229,7 @@ func (r *SummaryRepository) GetExperiencesBySummaryID(summaryID uint64) ([]Exper
 	}
 	defer rows.Close()
 
-	experienceDBs := make([]Experience, 0)
+	experienceDBs := make([]*Experience, 0)
 
 	for rows.Next() {
 		experienceDB := Experience{SummaryID: summaryID}
@@ -240,7 +240,7 @@ func (r *SummaryRepository) GetExperiencesBySummaryID(summaryID uint64) ([]Exper
 			return nil, err
 		}
 
-		experienceDBs = append(experienceDBs, experienceDB)
+		experienceDBs = append(experienceDBs, &experienceDB)
 	}
 
 	return experienceDBs, nil
@@ -260,7 +260,7 @@ func (r *SummaryRepository) GetSummaryAuthor(authorID uint64) (*User, *Person, e
 	return &user, &person, err
 }
 
-func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, error) {
+func (r *SummaryRepository) GetSummaries(opt *GetOptions) (models.Summaries, error) {
 	var (
 		rows *sql.Rows
 		err error
@@ -285,7 +285,7 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, err
 	}
 	defer rows.Close()
 
-	summaries := make([]models.Summary, 0)
+	summaries := make(models.Summaries, 0)
 
 	for rows.Next() {
 		var summaryDB Summary
@@ -311,17 +311,17 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) ([]models.Summary, err
 			return nil, err
 		}
 
-		summaries = append(summaries, *toModel(&summaryDB, educationDBs, experienceDBs, userDB, personDB))
+		summaries = append(summaries, toModel(&summaryDB, educationDBs, experienceDBs, userDB, personDB))
 	}
 
 	return summaries, nil
 }
 
-func (r *SummaryRepository) GetAllSummaries(page int) (summaries []models.Summary, err error) {
+func (r *SummaryRepository) GetAllSummaries(page int) (summaries models.Summaries, err error) {
 	return r.GetSummaries(&GetOptions{0, page})
 }
 
-func (r *SummaryRepository) GetUserSummaries(page int, userID uint64) (summaries []models.Summary, err error) {
+func (r *SummaryRepository) GetUserSummaries(page int, userID uint64) (summaries models.Summaries, err error) {
 	return r.GetSummaries(&GetOptions{userID, page})
 }
 

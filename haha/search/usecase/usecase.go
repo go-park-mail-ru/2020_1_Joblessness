@@ -1,17 +1,20 @@
 package searchUseCase
 
 import (
+	"github.com/microcosm-cc/bluemonday"
 	"joblessness/haha/models"
 	searchInterfaces "joblessness/haha/search/interfaces"
 )
 
 type SearchUseCase struct {
 	searchRepo searchInterfaces.SearchRepository
+	policy *bluemonday.Policy
 }
 
-func NewSearchUseCase(userRepo searchInterfaces.SearchRepository) *SearchUseCase {
+func NewSearchUseCase(userRepo searchInterfaces.SearchRepository, policy *bluemonday.Policy) *SearchUseCase {
 	return &SearchUseCase{
 		searchRepo:userRepo,
+		policy: policy,
 	}
 }
 
@@ -37,5 +40,6 @@ func (a *SearchUseCase) Search(searchType, request, since, desc string) (result 
 		return result, searchInterfaces.ErrUnknownRequest
 	}
 
+	result.Sanitize(a.policy)
 	return result, err
 }

@@ -179,7 +179,7 @@ func (suite *vacancySuite) TestGetVacancies() {
 
 	vacancy, err := suite.rep.GetVacancies(1)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), suite.vacancy, vacancy[0])
+	assert.Equal(suite.T(), &suite.vacancy, vacancy[0])
 }
 
 func (suite *vacancySuite) TestGetVacanciesFailedOne() {

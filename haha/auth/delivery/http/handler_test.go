@@ -13,7 +13,6 @@ import (
 	authInterfaces "joblessness/haha/auth/interfaces"
 	"joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
-	"joblessness/haha/middleware/xss"
 	"joblessness/haha/models"
 	"net/http"
 	"net/http/httptest"
@@ -27,7 +26,6 @@ type userSuite struct {
 	router *mux.Router
 	mainMiddleware *middleware.RecoveryHandler
 	authMiddleware *middleware.SessionHandler
-	xssMiddleware *xss.XssHandler
 	controller *gomock.Controller
 	uc *mock.MockAuthUseCase
 	person models.Person
@@ -39,8 +37,6 @@ type userSuite struct {
 func (suite *userSuite) SetupTest() {
 	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
-	suite.xssMiddleware = xss.NewXssHandler()
-	suite.router.Use(suite.xssMiddleware.SanitizeMiddleware)
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())

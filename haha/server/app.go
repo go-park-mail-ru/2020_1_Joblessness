@@ -3,12 +3,12 @@ package server
 import (
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
+	"github.com/microcosm-cc/bluemonday"
 	httpAuth "joblessness/haha/auth/delivery/http"
 	"joblessness/haha/auth/interfaces"
 	postgresAuth "joblessness/haha/auth/repository/postgres"
 	authUseCase "joblessness/haha/auth/usecase"
 	"joblessness/haha/middleware"
-	"joblessness/haha/middleware/xss"
 	"joblessness/haha/search/delivery/http"
 	"joblessness/haha/search/interfaces"
 	"joblessness/haha/search/repository/postgres"
@@ -51,13 +51,14 @@ func NewApp(c *middleware.CorsHandler) *App {
 	vacancyRepo := vacancyRepoPostgres.NewVacancyRepository(db)
 	summaryRepo := summaryRepoPostgres.NewSummaryRepository(db)
 	searchRepo := searchRepoPostgres.NewSearchRepository(db)
+	policy := bluemonday.UGCPolicy()
 
 	return &App{
-		userUse: userUseCase.NewUserUseCase(userRepo),
+		userUse: userUseCase.NewUserUseCase(userRepo, policy),
 		authUse: authUseCase.NewAuthUseCase(authRepo),
-		vacancyUse: vacancyUseCase.NewVacancyUseCase(vacancyRepo),
-		summaryUse: summaryUseCase.NewSummaryUseCase(summaryRepo),
-		searchUse: searchUseCase.NewSearchUseCase(searchRepo),
+		vacancyUse: vacancyUseCase.NewVacancyUseCase(vacancyRepo, policy),
+		summaryUse: summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
+		searchUse: searchUseCase.NewSearchUseCase(searchRepo, policy),
 		corsHandler: c,
 	}
 }
@@ -67,12 +68,10 @@ func (app *App) StartRouter() {
 
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
-	mXss := xss.NewXssHandler()
 
 	router.Use(m.RecoveryMiddleware)
 	router.Use(app.corsHandler.CorsMiddleware)
 	router.Use(m.LogMiddleware)
-	router.Use(mXss.SanitizeMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
 	// auth

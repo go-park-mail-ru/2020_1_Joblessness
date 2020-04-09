@@ -34,7 +34,7 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 }
 
 // ChangeOrganization mocks base method
-func (m *MockUserRepository) ChangeOrganization(arg0 models.Organization) error {
+func (m *MockUserRepository) ChangeOrganization(arg0 *models.Organization) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangeOrganization", arg0)
 	ret0, _ := ret[0].(error)
@@ -48,7 +48,7 @@ func (mr *MockUserRepositoryMockRecorder) ChangeOrganization(arg0 interface{}) *
 }
 
 // ChangePerson mocks base method
-func (m *MockUserRepository) ChangePerson(arg0 models.Person) error {
+func (m *MockUserRepository) ChangePerson(arg0 *models.Person) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangePerson", arg0)
 	ret0, _ := ret[0].(error)
@@ -62,10 +62,10 @@ func (mr *MockUserRepositoryMockRecorder) ChangePerson(arg0 interface{}) *gomock
 }
 
 // GetListOfOrgs mocks base method
-func (m *MockUserRepository) GetListOfOrgs(arg0 int) ([]models.Organization, error) {
+func (m *MockUserRepository) GetListOfOrgs(arg0 int) (models.Organizations, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetListOfOrgs", arg0)
-	ret0, _ := ret[0].([]models.Organization)
+	ret0, _ := ret[0].(models.Organizations)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

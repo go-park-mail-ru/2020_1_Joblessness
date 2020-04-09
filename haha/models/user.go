@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"github.com/microcosm-cc/bluemonday"
+	"time"
+)
 
 type Person struct {
 	ID uint64 `json:"id,omitempty"`
@@ -17,6 +20,24 @@ type Person struct {
 	Birthday time.Time `json:"birthday,omitempty"`
 }
 
+func (s *Person) Sanitize(policy *bluemonday.Policy) {
+	s.Login = policy.Sanitize(s.Login)
+	s.Tag = policy.Sanitize(s.Tag)
+	s.Email = policy.Sanitize(s.Email)
+	s.Phone = policy.Sanitize(s.Phone)
+	s.FirstName = policy.Sanitize(s.FirstName)
+	s.LastName = policy.Sanitize(s.LastName)
+	s.Gender = policy.Sanitize(s.Gender)
+}
+
+type Persons []*Person
+
+func (s *Persons) Sanitize(policy *bluemonday.Policy) {
+	for _, v := range *s {
+		v.Sanitize(policy)
+	}
+}
+
 type Organization struct {
 	ID uint64 `json:"id,omitempty"`
 	Login string `json:"login,omitempty" validate:"required,max=60"`
@@ -29,6 +50,24 @@ type Organization struct {
 	Name string `json:"name,omitempty"`
 	About string `json:"about,omitempty"`
 	Site string `json:"site,omitempty"`
+}
+
+func (s *Organization) Sanitize(policy *bluemonday.Policy) {
+	s.Login = policy.Sanitize(s.Login)
+	s.Tag = policy.Sanitize(s.Tag)
+	s.Email = policy.Sanitize(s.Email)
+	s.Phone = policy.Sanitize(s.Phone)
+	s.Name = policy.Sanitize(s.Name)
+	s.About = policy.Sanitize(s.About)
+	s.Site = policy.Sanitize(s.Site)
+}
+
+type Organizations []*Organization
+
+func (s *Organizations) Sanitize(policy *bluemonday.Policy) {
+	for _, v := range *s {
+		v.Sanitize(policy)
+	}
 }
 
 type UserLogin struct {

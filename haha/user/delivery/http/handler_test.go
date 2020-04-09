@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	mockAuth "joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
-	"joblessness/haha/middleware/xss"
 	"joblessness/haha/models"
 	"joblessness/haha/user/usecase/mock"
 	"net/http"
@@ -27,7 +26,6 @@ type userSuite struct {
 	router *mux.Router
 	mainMiddleware *middleware.RecoveryHandler
 	authMiddleware *middleware.SessionHandler
-	xssMiddleware *xss.XssHandler
 	controller *gomock.Controller
 	uc *mock.MockUserUseCase
 	ucAuth *mockAuth.MockAuthUseCase
@@ -40,8 +38,6 @@ type userSuite struct {
 func (suite *userSuite) SetupTest() {
 	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
-	suite.xssMiddleware = xss.NewXssHandler()
-	suite.router.Use(suite.xssMiddleware.SanitizeMiddleware)
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())
@@ -221,7 +217,7 @@ func (suite *userSuite) TestChangePerson() {
 		Return(uint64(12), nil).
 		Times(1)
 	suite.uc.EXPECT().
-		ChangePerson(suite.person).
+		ChangePerson(&suite.person).
 		Return(nil).
 		Times(1)
 
@@ -245,7 +241,7 @@ func (suite *userSuite) TestChangePersonNoCookie() {
 		Return(uint64(12), nil).
 		Times(1)
 	suite.uc.EXPECT().
-		ChangePerson(suite.person).
+		ChangePerson(&suite.person).
 		Return(nil).
 		Times(1)
 
@@ -262,7 +258,7 @@ func (suite *userSuite) TestChangePersonWrongId() {
 		Return(uint64(12), nil).
 		Times(1)
 	suite.uc.EXPECT().
-		ChangePerson(suite.person).
+		ChangePerson(&suite.person).
 		Return(nil).
 		Times(0)
 
@@ -312,7 +308,7 @@ func (suite *userSuite) TestChangeOrganization() {
 		Return(uint64(12), nil).
 		Times(1)
 	suite.uc.EXPECT().
-		ChangeOrganization(suite.organization).
+		ChangeOrganization(&suite.organization).
 		Return(nil).
 		Times(1)
 
@@ -374,7 +370,7 @@ func (suite *userSuite) TestChangeOrganizationWrongId() {
 func (suite *userSuite) TestListOrgs() {
 	suite.uc.EXPECT().
 		GetListOfOrgs(1).
-		Return([]models.Organization{}, nil).
+		Return(models.Organizations{}, nil).
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/organizations?page=1", bytes.NewBuffer([]byte{}))

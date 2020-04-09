@@ -147,7 +147,7 @@ func (suite *userSuite) TestChangePerson() {
 		WithArgs(suite.person.Password, suite.person.Tag, suite.person.Email, suite.person.Phone, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := suite.rep.ChangePerson(suite.person)
+	err := suite.rep.ChangePerson(&suite.person)
 
 	assert.NoError(suite.T(), err)
 }
@@ -160,7 +160,7 @@ func (suite *userSuite) TestChangePersonFailedOne() {
 		WithArgs(suite.person.ID).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.ChangePerson(suite.person)
+	err := suite.rep.ChangePerson(&suite.person)
 
 	assert.Error(suite.T(), err)
 }
@@ -178,7 +178,7 @@ func (suite *userSuite) TestChangePersonFailedTwo() {
 		WithArgs(suite.person.FirstName + " " + suite.person.LastName, 12).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.ChangePerson(suite.person)
+	err := suite.rep.ChangePerson(&suite.person)
 
 	assert.Error(suite.T(), err)
 }
@@ -255,7 +255,7 @@ func (suite *userSuite) TestChangeOrganization() {
 		WithArgs(suite.organization.Password, suite.organization.Tag, suite.organization.Email, suite.organization.Phone, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := suite.rep.ChangeOrganization(suite.organization)
+	err := suite.rep.ChangeOrganization(&suite.organization)
 
 	assert.NoError(suite.T(), err)
 }
@@ -268,7 +268,7 @@ func (suite *userSuite) TestChangeOrganizationFailedOne() {
 		WithArgs(suite.organization.ID).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.ChangeOrganization(suite.organization)
+	err := suite.rep.ChangeOrganization(&suite.organization)
 
 	assert.Error(suite.T(), err)
 }
@@ -286,7 +286,7 @@ func (suite *userSuite) TestChangeOrganizationFailedTwo() {
 		WithArgs(suite.organization.Name, 12).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.ChangeOrganization(suite.organization)
+	err := suite.rep.ChangeOrganization(&suite.organization)
 
 	assert.Error(suite.T(), err)
 }

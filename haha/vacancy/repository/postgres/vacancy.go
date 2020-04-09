@@ -140,7 +140,7 @@ func (r *VacancyRepository) GetVacancy(vacancyID uint64) (vacancy *models.Vacanc
 	return toModel(&vacancyDB, userDB, organizationDB), nil
 }
 
-func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, err error) {
+func (r *VacancyRepository) GetVacancies(page int) (vacancies models.Vacancies, err error) {
 	getVacancies := `SELECT id, organization_id, name, description, salary_from, salary_to, with_tax, responsibilities,
        						conditions, keywords
 					 FROM vacancy
@@ -151,7 +151,7 @@ func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, 
 	}
 	defer rows.Close()
 
-	vacancies = make([]models.Vacancy, 0)
+	vacancies = make(models.Vacancies, 0)
 
 	for rows.Next() {
 		var vacancyDB Vacancy
@@ -167,7 +167,7 @@ func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, 
 			return nil, err
 		}
 
-		vacancies = append(vacancies, *toModel(&vacancyDB, userDB, organizationDB))
+		vacancies = append(vacancies, toModel(&vacancyDB, userDB, organizationDB))
 	}
 
 	return vacancies, nil
@@ -210,7 +210,7 @@ func (r *VacancyRepository) DeleteVacancy(vacancyID uint64) (err error) {
 	return nil
 }
 
-func (r *VacancyRepository) GetOrgVacancies(userID uint64) (vacancies []models.Vacancy, err error) {
+func (r *VacancyRepository) GetOrgVacancies(userID uint64) (vacancies models.Vacancies, err error) {
 	getVacancies := `SELECT id, name, salary_from, salary_to, with_tax, keywords
 					 FROM vacancy
 					WHERE organization_id = $1;`
@@ -220,7 +220,7 @@ func (r *VacancyRepository) GetOrgVacancies(userID uint64) (vacancies []models.V
 	}
 	defer rows.Close()
 
-	vacancies = make([]models.Vacancy, 0)
+	vacancies = make(models.Vacancies, 0)
 
 	for rows.Next() {
 		var vacancyDB models.Vacancy
@@ -230,7 +230,7 @@ func (r *VacancyRepository) GetOrgVacancies(userID uint64) (vacancies []models.V
 			return vacancies, err
 		}
 
-		vacancies = append(vacancies, vacancyDB)
+		vacancies = append(vacancies, &vacancyDB)
 	}
 
 	return vacancies, nil

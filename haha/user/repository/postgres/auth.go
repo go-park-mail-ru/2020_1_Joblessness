@@ -129,7 +129,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-func (r UserRepository) SaveAvatarLink(link string, userID uint64) (err error) {
+func (r *UserRepository) SaveAvatarLink(link string, userID uint64) (err error) {
 	if link == "" {
 		return errors.New("no link to save")
 	}
@@ -140,7 +140,7 @@ func (r UserRepository) SaveAvatarLink(link string, userID uint64) (err error) {
 	return err
 }
 
-func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
+func (r *UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	user := User{ID: userID}
 
 	getUser := "SELECT login, COALESCE(person_id, 0), email, phone, avatar, tag FROM users WHERE id = $1;"
@@ -165,7 +165,7 @@ func (r UserRepository) GetPerson(userID uint64) (*models.Person, error) {
 	return toModelPerson(&user, &person), nil
 }
 
-func (r UserRepository) changeUser(user *User) error {
+func (r *UserRepository) changeUser(user *User) error {
 	changeUser := `UPDATE users 
 					SET password = COALESCE(NULLIF($1, ''), password), 
 					    tag = COALESCE(NULLIF($2, ''), tag), 
@@ -177,8 +177,8 @@ func (r UserRepository) changeUser(user *User) error {
 	return err
 }
 
-func (r UserRepository) ChangePerson(p models.Person) error {
-	user, dbPerson := toPostgresPerson(&p)
+func (r *UserRepository) ChangePerson(p *models.Person) error {
+	user, dbPerson := toPostgresPerson(p)
 
 	getUser := "SELECT person_id FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, user.ID).Scan(&user.PersonID)
@@ -208,7 +208,7 @@ func (r UserRepository) ChangePerson(p models.Person) error {
 	return err
 }
 
-func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, error) {
+func (r *UserRepository) GetOrganization(userID uint64) (*models.Organization, error) {
 	user := User{ID: userID}
 
 	getUser := "SELECT login, COALESCE(organization_id, 0), email, phone, avatar, tag FROM users WHERE id = $1;"
@@ -233,8 +233,8 @@ func (r UserRepository) GetOrganization(userID uint64) (*models.Organization, er
 	return toModelOrganization(&user, &org), nil
 }
 
-func (r UserRepository) ChangeOrganization(o models.Organization) error {
-	user, dbOrg := toPostgresOrg(&o)
+func (r *UserRepository) ChangeOrganization(o *models.Organization) error {
+	user, dbOrg := toPostgresOrg(o)
 
 	getUser := "SELECT organization_id FROM users WHERE id = $1;"
 	err := r.db.QueryRow(getUser, user.ID).Scan(&user.OrganizationID)
@@ -256,7 +256,7 @@ func (r UserRepository) ChangeOrganization(o models.Organization) error {
 	return err
 }
 
-func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, err error) {
+func (r *UserRepository) GetListOfOrgs(page int) (result models.Organizations, err error) {
 	getOrgs := `SELECT users.id as userId, name, site
 				FROM users, organization
 				WHERE users.organization_id = organization.id
@@ -274,7 +274,7 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 		userId uint64
 		name, site string
 	)
-	result = make([]models.Organization, 0)
+	result = make(models.Organizations, 0)
 
 	for rows.Next() {
 		err := rows.Scan(&userId, &name, &site)
@@ -282,7 +282,7 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 			return result, err
 		}
 
-		result= append(result, models.Organization{
+		result= append(result, &models.Organization{
 			ID:          userId,
 			Login:       "",
 			Password:    "",
@@ -298,7 +298,7 @@ func (r UserRepository) GetListOfOrgs(page int) (result []models.Organization, e
 	return result, rows.Err()
 }
 
-func (r UserRepository) SetOrDeleteLike(userID, favoriteID uint64) (res bool, err error) {
+func (r *UserRepository) SetOrDeleteLike(userID, favoriteID uint64) (res bool, err error) {
 	setLike := `INSERT INTO favorite (user_id, favorite_id)
 				VALUES ($1, $2)
 				ON CONFLICT DO NOTHING;`
@@ -317,7 +317,7 @@ func (r UserRepository) SetOrDeleteLike(userID, favoriteID uint64) (res bool, er
 	return false, err
 }
 
-func (r UserRepository) LikeExists(userID, favoriteID uint64) (res bool, err error) {
+func (r *UserRepository) LikeExists(userID, favoriteID uint64) (res bool, err error) {
 	setLike := `SELECT count(*)
 				FROM favorite f
 				WHERE f.user_id = $1
@@ -331,7 +331,7 @@ func (r UserRepository) LikeExists(userID, favoriteID uint64) (res bool, err err
 	return rows.Next(), nil
 }
 
-func (r UserRepository) GetUserFavorite(userID uint64) (res models.Favorites, err error) {
+func (r *UserRepository) GetUserFavorite(userID uint64) (res models.Favorites, err error) {
 	getFavorite := `SELECT u.id, u.tag, u.person_id
 				FROM favorite f, users u 
 				WHERE f.favorite_id = u.id

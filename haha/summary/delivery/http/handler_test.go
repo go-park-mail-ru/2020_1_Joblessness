@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/suite"
 	mockAuth "joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
-	"joblessness/haha/middleware/xss"
 	"joblessness/haha/models"
 	summaryInterfaces "joblessness/haha/summary/interfaces"
 	summaryUseCaseMock "joblessness/haha/summary/usecase/mock"
@@ -27,7 +26,6 @@ type userSuite struct {
 	router *mux.Router
 	mainMiddleware *middleware.RecoveryHandler
 	authMiddleware *middleware.SessionHandler
-	xssMiddleware *xss.XssHandler
 	controller *gomock.Controller
 	authUseCase *mockAuth.MockAuthUseCase
 	uc *summaryUseCaseMock.MockSummaryUseCase
@@ -43,8 +41,6 @@ type userSuite struct {
 func (suite *userSuite) SetupTest() {
 	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
-	suite.xssMiddleware = xss.NewXssHandler()
-	suite.router.Use(suite.xssMiddleware.SanitizeMiddleware)
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())
@@ -217,7 +213,7 @@ func (suite *userSuite) TestGetSummaryWrongUrl() {
 func (suite *userSuite) TestGetSummaries() {
 	suite.uc.EXPECT().
 		GetAllSummaries("").
-		Return([]models.Summary{suite.summary}, nil).
+		Return(models.Summaries{&suite.summary}, nil).
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/summaries", bytes.NewBuffer([]byte{}))
@@ -282,7 +278,7 @@ func (suite *userSuite) TestPrintSummariesWrongUrl() {
 func (suite *userSuite) TestGetUserSummaries() {
 	suite.uc.EXPECT().
 		GetUserSummaries("", suite.summary.Author.ID).
-		Return([]models.Summary{suite.summary}, nil).
+		Return(models.Summaries{&suite.summary}, nil).
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/users/12/summaries", bytes.NewBuffer([]byte{}))
@@ -295,7 +291,7 @@ func (suite *userSuite) TestGetUserSummaries() {
 func (suite *userSuite) TestGetUserSummariesWrongUrl() {
 	suite.uc.EXPECT().
 		GetUserSummaries("", suite.summary.Author.ID).
-		Return([]models.Summary{suite.summary}, nil).
+		Return(models.Summaries{&suite.summary}, nil).
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/users/a/summaries", bytes.NewBuffer([]byte{}))

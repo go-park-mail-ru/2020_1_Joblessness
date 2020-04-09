@@ -92,7 +92,7 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var person models.Person
+	var person *models.Person
 	err := json.NewDecoder(r.Body).Decode(&person)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
@@ -151,7 +151,7 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var org models.Organization
+	var org *models.Organization
 	err := json.NewDecoder(r.Body).Decode(&org)
 	if err != nil {
 		golog.Errorf("#%s: %w",  rID, err)
