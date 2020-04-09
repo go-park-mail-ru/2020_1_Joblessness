@@ -57,8 +57,8 @@ func (r SearchRepository) SearchPersons(request, since, desc string) (result []*
 	getPersons := 	`SELECT users.id as userId, p.name, tag, avatar
 					FROM users
 					JOIN person p on users.person_id = p.id
-					WHERE name LIKE '%' || $1 || '%'
-					      OR tag LIKE '%' || $1 || '%'
+					WHERE lower(name) LIKE lower('%' || $1 || '%')
+					      OR lower(tag) LIKE lower('%' || $1 || '%')
 					ORDER BY p.name ` + desc + `, registered 
  					LIMIT $2 OFFSET $3`
 	rows, err := r.db.Query(getPersons, request, 10, page*10)
@@ -101,8 +101,8 @@ func (r SearchRepository) SearchOrganizations(request, since, desc string) (resu
 	getOrgs := 	`SELECT users.id as userId, name, tag, avatar
 					FROM users
 					JOIN organization o on users.organization_id = o.id
-					WHERE name LIKE '%' || $1 || '%'
-					      OR tag LIKE '%' || $1 || '%'
+					WHERE lower(name) LIKE lower('%' || $1 || '%')
+					      OR lower(tag) LIKE lower('%' || $1 || '%')
 					ORDER BY o.name ` + desc + `, registered
 					LIMIT $2 OFFSET $3`
 
@@ -141,7 +141,7 @@ func (r SearchRepository) SearchVacancies(request, since, desc string) (result [
 					FROM users
 					JOIN organization o on users.organization_id = o.id
 					JOIN vacancy v on users.id = v.organization_id
-					WHERE v.name LIKE '%' || $1 || '%'
+					WHERE lower(v.name) LIKE lower('%' || $1 || '%')
 					ORDER BY o.name ` + desc + `, v.name
 					LIMIT $2 OFFSET $3`
 

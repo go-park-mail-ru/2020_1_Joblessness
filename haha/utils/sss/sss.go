@@ -13,14 +13,14 @@ import (
 	"strings"
 )
 
-var Sess = session.Must(session.NewSession(&aws.Config{
+var sess = session.Must(session.NewSession(&aws.Config{
 	Region: aws.String("ru-msk"),
 	Credentials: credentials.NewStaticCredentials("orFNtcQG9pi8NvqcFhLAj4",
 		"33CiuS769M4u1wHAk42HhdtCrCb795MGuez3biaE3CeK", ""),
 	Endpoint: aws.String("https://hb.bizmrg.com"),
 }))
 
-var Svc = s3.New(Sess)
+var svc = s3.New(sess)
 
 func UploadAvatar(form *multipart.Form, userID uint64) (link string, err error) {
 	fileHeaders := form.File["file"]
@@ -41,7 +41,7 @@ func UploadAvatar(form *multipart.Form, userID uint64) (link string, err error) 
 
 	link = strconv.FormatUint(userID, 10) + "-avatar." + ext
 
-	_, err = Svc.PutObject(&s3.PutObjectInput{
+	_, err = svc.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String("imgs-hh"),
 		Key:    aws.String(link),
 		Body:   strings.NewReader(buf.String()),
