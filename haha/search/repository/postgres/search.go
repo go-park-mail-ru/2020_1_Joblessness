@@ -38,7 +38,7 @@ type SearchRepository struct {
 	db *sql.DB
 }
 
-func NewAuthRepository(db *sql.DB) *SearchRepository {
+func NewSearchRepository(db *sql.DB) *SearchRepository {
 	return &SearchRepository{
 		db: db,
 	}

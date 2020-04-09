@@ -24,7 +24,7 @@ func (suite *userSuite) SetupTest() {
 	var err error
 	suite.db, suite.mock, err = sqlmock.New()
 	assert.NoError(suite.T(), err)
-	suite.rep = NewAuthRepository(suite.db)
+	suite.rep = NewSearchRepository(suite.db)
 
 	suite.vacancy = models.Vacancy{
 		ID:              3,

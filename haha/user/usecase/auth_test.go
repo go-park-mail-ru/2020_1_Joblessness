@@ -1,11 +1,11 @@
-package authUseCase
+package userUseCase
 
-//go:generate mockgen -destination=../repository/mock/auth.go -package=mock joblessness/haha/auth/interfaces AuthRepository
+//go:generate mockgen -destination=../repository/mock/user.go -package=mock joblessness/haha/user/interfaces AuthRepository
 
 import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"joblessness/haha/auth/repository/mock"
+	"joblessness/haha/user/repository/mock"
 	"joblessness/haha/models"
 	"mime/multipart"
 	"testing"
@@ -16,7 +16,7 @@ func TestAuthPersonFlow(t *testing.T) {
 	defer controller.Finish()
 
 	repo := mock.NewMockAuthRepository(controller)
-	uc := NewAuthUseCase(repo)
+	uc := NewUserUseCase(repo)
 
 	login := "user"
 	password := "password"
@@ -75,7 +75,7 @@ func TestAuthOrganizationFlow(t *testing.T) {
 	defer controller.Finish()
 
 	repo := mock.NewMockAuthRepository(controller)
-	uc := NewAuthUseCase(repo)
+	uc := NewUserUseCase(repo)
 
 	login := "user"
 	password := "password"
@@ -114,7 +114,7 @@ func TestSetAvatarNoFile(t *testing.T) {
 	defer controller.Finish()
 
 	repo := mock.NewMockAuthRepository(controller)
-	uc := NewAuthUseCase(repo)
+	uc := NewUserUseCase(repo)
 
 	link := "link"
 	form := multipart.Form{
@@ -130,7 +130,7 @@ func TestListOrgs(t *testing.T) {
 	defer controller.Finish()
 
 	repo := mock.NewMockAuthRepository(controller)
-	uc := NewAuthUseCase(repo)
+	uc := NewUserUseCase(repo)
 
 	repo.EXPECT().GetListOfOrgs(1).Return([]models.Organization{}, nil).Times(1)
 	_, err := uc.GetListOfOrgs(1)
@@ -142,7 +142,7 @@ func TestLike(t *testing.T) {
 	defer controller.Finish()
 
 	repo := mock.NewMockAuthRepository(controller)
-	uc := NewAuthUseCase(repo)
+	uc := NewUserUseCase(repo)
 
 	repo.EXPECT().SetOrDeleteLike(uint64(1), uint64(5)).Return(true, nil).Times(1)
 	_, err := uc.LikeUser(uint64(1), uint64(5))

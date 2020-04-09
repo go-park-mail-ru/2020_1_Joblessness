@@ -22,8 +22,8 @@ go_build_golang_server_
 app/app
 
 # Generated
-/haha/auth/repository/mock
-/haha/auth/usecase/mock
+/haha/user/repository/mock
+/haha/user/usecase/mock
 /haha/search/repository/mock
 /haha/search/usecase/mock
 /haha/summary/repository/mock

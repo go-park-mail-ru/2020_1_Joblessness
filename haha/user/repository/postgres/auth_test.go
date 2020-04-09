@@ -1,4 +1,4 @@
-package authRepoPostgres
+package postgresUser
 
 import (
 	"database/sql"
@@ -6,7 +6,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/auth/interfaces"
+	"joblessness/haha/user/interfaces"
 	"joblessness/haha/models"
 	"joblessness/haha/utils/salt"
 	"testing"

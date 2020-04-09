@@ -1,6 +1,6 @@
-package httpAuth
+package httpUser
 
-//go:generate mockgen -destination=../../usecase/mock/auth.go -package=mock joblessness/haha/auth/interfaces AuthUseCase
+//go:generate mockgen -destination=../../usecase/mock/user.go -package=mock joblessness/haha/user/interfaces AuthUseCase
 
 import (
 	"bytes"
@@ -10,8 +10,8 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/auth/interfaces"
-	"joblessness/haha/auth/usecase/mock"
+	"joblessness/haha/user/interfaces"
+	"joblessness/haha/user/usecase/mock"
 	"joblessness/haha/middleware"
 	"joblessness/haha/middleware/xss"
 	"joblessness/haha/models"
