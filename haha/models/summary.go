@@ -32,7 +32,7 @@ type Author struct {
 type Summary struct {
 	ID uint64 `json:"id,omitempty"`
 	Author Author `json:"author,omitempty" validate:"required"`
-	Name string `json:"summaryName,omitempty" validate:"max=120"`
+	Name string `json:"name,omitempty" validate:"max=120"`
 	SalaryFrom int `json:"salaryFrom,omitempty"`
 	SalaryTo int `json:"salaryTo,omitempty"`
 	Keywords string `json:"keywords,omitempty"`
