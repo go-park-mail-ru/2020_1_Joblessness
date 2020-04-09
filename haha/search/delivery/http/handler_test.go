@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/user/usecase/mock"
+	"joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
 	"joblessness/haha/middleware/xss"
 	"joblessness/haha/models"

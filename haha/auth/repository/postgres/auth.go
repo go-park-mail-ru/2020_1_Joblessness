@@ -1,10 +1,9 @@
-package authPostgres
+package postgresAuth
 
 import (
 	"database/sql"
 	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/models"
-	userInterfaces "joblessness/haha/user/interfaces"
 	"joblessness/haha/utils/salt"
 	"time"
 )
@@ -188,7 +187,7 @@ func (r AuthRepository) DoesUserExists(login string) (err error) {
 	}
 
 	if columnCount != 0 {
-		return userInterfaces.NewErrorUserAlreadyExists(login)
+		return authInterfaces.NewErrorUserAlreadyExists(login)
 	}
 	return nil
 }

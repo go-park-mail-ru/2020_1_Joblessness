@@ -5,7 +5,7 @@ import (
 	"github.com/kataras/golog"
 	httpAuth "joblessness/haha/auth/delivery/http"
 	"joblessness/haha/auth/interfaces"
-	"joblessness/haha/auth/repository/postgres"
+	postgresAuth "joblessness/haha/auth/repository/postgres"
 	authUseCase "joblessness/haha/auth/usecase"
 	"joblessness/haha/middleware"
 	"joblessness/haha/middleware/xss"
@@ -47,7 +47,7 @@ func NewApp(c *middleware.CorsHandler) *App {
 	}
 
 	userRepo := postgresUser.NewUserRepository(db)
-	authRepo := authPostgres.NewAuthRepository(db)
+	authRepo := postgresAuth.NewAuthRepository(db)
 	vacancyRepo := vacancyRepoPostgres.NewVacancyRepository(db)
 	summaryRepo := summaryRepoPostgres.NewSummaryRepository(db)
 	searchRepo := searchRepoPostgres.NewSearchRepository(db)

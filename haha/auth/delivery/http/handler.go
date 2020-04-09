@@ -8,7 +8,6 @@ import (
 	"gopkg.in/go-playground/validator.v9"
 	authInterfaces "joblessness/haha/auth/interfaces"
 	"joblessness/haha/models"
-	userInterfaces "joblessness/haha/user/interfaces"
 	"net/http"
 	"time"
 )
@@ -43,7 +42,7 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 
 	err = h.useCase.RegisterPerson(&user)
 	switch err.(type) {
-	case *userInterfaces.ErrorUserAlreadyExists:
+	case *authInterfaces.ErrorUserAlreadyExists:
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})

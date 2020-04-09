@@ -1,6 +1,6 @@
 package httpUser
 
-//go:generate mockgen -destination=../../usecase/mock/user.go -package=mock joblessness/haha/user/interfaces AuthUseCase
+//go:generate mockgen -destination=../../usecase/mock/user.go -package=mock joblessness/haha/user/interfaces UserUseCase
 
 import (
 	"bytes"
@@ -10,11 +10,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/user/interfaces"
-	"joblessness/haha/user/usecase/mock"
+	mockAuth "joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
 	"joblessness/haha/middleware/xss"
 	"joblessness/haha/models"
+	"joblessness/haha/user/usecase/mock"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -29,7 +29,8 @@ type userSuite struct {
 	authMiddleware *middleware.SessionHandler
 	xssMiddleware *xss.XssHandler
 	controller *gomock.Controller
-	uc *mock.MockAuthUseCase
+	uc *mock.MockUserUseCase
+	ucAuth *mockAuth.MockAuthUseCase
 	person models.Person
 	personByte *bytes.Buffer
 	organization models.Organization
@@ -44,8 +45,9 @@ func (suite *userSuite) SetupTest() {
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())
-	suite.uc = mock.NewMockAuthUseCase(suite.controller)
-	suite.authMiddleware = middleware.NewAuthMiddleware(suite.uc)
+	suite.uc = mock.NewMockUserUseCase(suite.controller)
+	suite.ucAuth = mockAuth.NewMockAuthUseCase(suite.controller)
+	suite.authMiddleware = middleware.NewAuthMiddleware(suite.ucAuth)
 
 	suite.person = models.Person{
 		ID: 12,
@@ -103,7 +105,7 @@ func (suite *userSuite) TestSetAvatar() {
 		SetAvatar(gomock.Any(), uint64(12)).
 		Return(nil).
 		Times(1)
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -127,7 +129,7 @@ func (suite *userSuite) TestSetAvatarNoCookie() {
 		SetAvatar(gomock.Any(), uint64(12)).
 		Return(nil).
 		Times(1)
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -144,7 +146,7 @@ func (suite *userSuite) TestSetAvatarWrongId() {
 		SetAvatar(gomock.Any(), uint64(12)).
 		Return(nil).
 		Times(0)
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(13), nil).
 		Times(1)
@@ -168,7 +170,7 @@ func (suite *userSuite) TestSetAvatarNotMultipart() {
 		SetAvatar(gomock.Any(), uint64(12)).
 		Return(nil).
 		Times(1)
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -185,235 +187,6 @@ func (suite *userSuite) TestSetAvatarNotMultipart() {
 	suite.router.ServeHTTP(w, r)
 
 	assert.Equal(suite.T(), 416, w.Code, "Status is not 416")
-}
-
-func (suite *userSuite) TestRegistrationPerson() {
-
-	suite.uc.EXPECT().
-		RegisterPerson(&suite.person).
-		Return(nil).
-		Times(1)
-
-	r, _ := http.NewRequest("POST", "/api/users", suite.personByte)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 201, w.Code, "Status is not 201")
-}
-
-func (suite *userSuite) TestFailedRegistrationPerson() {
-	suite.uc.EXPECT().
-		RegisterPerson(&suite.person).
-		Return(authInterfaces.NewErrorUserAlreadyExists("")).
-		Times(1)
-
-	r, _ := http.NewRequest("POST", "/api/users", suite.personByte)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
-}
-
-func (suite *userSuite) TestRegistrationOrganization() {
-	suite.uc.EXPECT().
-		RegisterOrganization(&suite.organization).
-		Return(nil).
-		Times(1)
-
-	r, _ := http.NewRequest("POST", "/api/organizations", suite.organizationByte)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 201, w.Code, "Status is not 201")
-}
-
-func (suite *userSuite) TestFailedRegistrationOrganization() {
-	suite.uc.EXPECT().
-		RegisterOrganization(&suite.organization).
-		Return(authInterfaces.NewErrorUserAlreadyExists("")).
-		Times(1)
-
-	r, _ := http.NewRequest("POST", "/api/organizations", suite.organizationByte)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
-}
-
-func (suite *userSuite) TestLogin() {
-
-	userLogin := models.UserLogin{
-		Login:    "username",
-		Password: "Password123",
-	}
-	userJSON, err := json.Marshal(userLogin)
-	assert.NoError(suite.T(), err)
-
-	suite.uc.EXPECT().
-		Login(userLogin.Login, userLogin.Password).
-		Return(uint64(1), "organization", "sid", nil).
-		Times(1)
-
-	r, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(userJSON))
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 201, w.Code, "Status is not 201")
-	assert.Equal(suite.T(), w.Result().Cookies()[0].Name, "session_id", "Cookie wasn't received")
-}
-
-func (suite *userSuite) TestFailedLoginNotFound() {
-	userLogin := models.UserLogin{
-		Login:    "username",
-		Password: "Password123",
-	}
-	userJSON, err := json.Marshal(userLogin)
-	assert.NoError(suite.T(), err)
-
-	suite.uc.EXPECT().
-		Login(userLogin.Login, userLogin.Password).
-		Return(uint64(0), "organization", "", authInterfaces.NewErrorWrongLoginOrPassword()).
-		Times(1)
-
-	r, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(userJSON))
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 400, w.Code, "Status is not 400")
-}
-
-func (suite *userSuite) TestLogout() {
-
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
-		Expires: time.Now().Add(time.Hour),
-	}
-
-	suite.uc.EXPECT().
-		Logout(cookie.Value).
-		Return(nil).
-		Times(1)
-
-	r, _ := http.NewRequest("POST", "/api/users/logout", bytes.NewBuffer([]byte{}))
-	r.AddCookie(cookie)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 201, w.Code, "Status is not 201")
-}
-
-func (suite *userSuite) TestLogoutNoCookie() {
-
-	suite.uc.EXPECT().
-		Logout(gomock.Any()).
-		Times(0)
-
-	r, _ := http.NewRequest("POST", "/api/users/logout", bytes.NewBuffer([]byte{}))
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 401, w.Code, "Status is not 401")
-}
-
-func (suite *userSuite) TestLogoutSomethingWentWrong() {
-
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
-		Expires: time.Now().Add(time.Hour),
-	}
-
-	suite.uc.EXPECT().
-		Logout(gomock.Any()).
-		Return(errors.New("err")).
-		Times(1)
-
-	r, _ := http.NewRequest("POST", "/api/users/logout", bytes.NewBuffer([]byte{}))
-	r.AddCookie(cookie)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
-}
-
-func (suite *userSuite) TestCheck() {
-
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
-		Expires: time.Now().Add(time.Hour),
-	}
-
-	suite.uc.EXPECT().
-		SessionExists(cookie.Value).
-		Return(uint64(1), nil).
-		Times(1)
-	suite.uc.EXPECT().
-		GetRole(uint64(1)).
-		Return("organization", nil).
-		Times(1)
-
-	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))
-	r.AddCookie(cookie)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 201, w.Code, "Status is not 201")
-}
-
-func (suite *userSuite) TestCheckNoCookie() {
-	suite.uc.EXPECT().
-		SessionExists(gomock.Any()).
-		Times(0)
-
-	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 401, w.Code, "Status is not 401")
-}
-
-func (suite *userSuite) TestCheckWrongSid() {
-
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
-		Expires: time.Now().Add(time.Hour),
-	}
-
-	suite.uc.EXPECT().
-		SessionExists(cookie.Value).
-		Return(uint64(0), authInterfaces.NewErrorWrongSID()).
-		Times(1)
-
-	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))
-	r.AddCookie(cookie)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 401, w.Code, "Status is not 401")
-}
-
-func (suite *userSuite) TestCheckSomethingWentWrong() {
-
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
-		Expires: time.Now().Add(time.Hour),
-	}
-
-	suite.uc.EXPECT().
-		SessionExists(cookie.Value).
-		Return(uint64(0), errors.New("err")).
-		Times(1)
-
-	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))
-	r.AddCookie(cookie)
-	w := httptest.NewRecorder()
-	suite.router.ServeHTTP(w, r)
-
-	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
 }
 
 func (suite *userSuite) TestGetPerson() {
@@ -443,7 +216,7 @@ func (suite *userSuite) TestGetPersonWentWrong() {
 }
 
 func (suite *userSuite) TestChangePerson() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -467,7 +240,7 @@ func (suite *userSuite) TestChangePerson() {
 }
 
 func (suite *userSuite) TestChangePersonNoCookie() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -484,7 +257,7 @@ func (suite *userSuite) TestChangePersonNoCookie() {
 }
 
 func (suite *userSuite) TestChangePersonWrongId() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -534,7 +307,7 @@ func (suite *userSuite) TestGetOrganizationWentWrong() {
 }
 
 func (suite *userSuite) TestChangeOrganization() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -558,7 +331,7 @@ func (suite *userSuite) TestChangeOrganization() {
 }
 
 func (suite *userSuite) TestChangeOrganizationNoCookie() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -575,7 +348,7 @@ func (suite *userSuite) TestChangeOrganizationNoCookie() {
 }
 
 func (suite *userSuite) TestChangeOrganizationWrongId() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -625,7 +398,7 @@ func (suite *userSuite) TestListOrgsFailed() {
 }
 
 func (suite *userSuite) TestLikeUser() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -649,7 +422,7 @@ func (suite *userSuite) TestLikeUser() {
 }
 
 func (suite *userSuite) TestLikeUserNoSession() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -662,7 +435,7 @@ func (suite *userSuite) TestLikeUserNoSession() {
 }
 
 func (suite *userSuite) TestLikeUserFailed() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -686,7 +459,7 @@ func (suite *userSuite) TestLikeUserFailed() {
 }
 
 func (suite *userSuite) TestLikeExists() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -710,7 +483,7 @@ func (suite *userSuite) TestLikeExists() {
 }
 
 func (suite *userSuite) TestLikeExistsFailed() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -734,7 +507,7 @@ func (suite *userSuite) TestLikeExistsFailed() {
 }
 
 func (suite *userSuite) TestGetFavorite() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -758,7 +531,7 @@ func (suite *userSuite) TestGetFavorite() {
 }
 
 func (suite *userSuite) TestGetFavoriteNoSession() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -771,7 +544,7 @@ func (suite *userSuite) TestGetFavoriteNoSession() {
 }
 
 func (suite *userSuite) TestGetFavoriteWrongId() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
@@ -791,7 +564,7 @@ func (suite *userSuite) TestGetFavoriteWrongId() {
 }
 
 func (suite *userSuite) TestGetFavoriteFailed() {
-	suite.uc.EXPECT().
+	suite.ucAuth.EXPECT().
 		SessionExists("username").
 		Return(uint64(12), nil).
 		Times(1)
