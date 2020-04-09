@@ -3,31 +3,36 @@ package server
 import (
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
-	"joblessness/haha/auth/delivery/http"
+	httpAuth "joblessness/haha/auth/delivery/http"
 	"joblessness/haha/auth/interfaces"
 	postgresAuth "joblessness/haha/auth/repository/postgres"
-	usecaseAuth "joblessness/haha/auth/usecase"
+	authUseCase "joblessness/haha/auth/usecase"
 	"joblessness/haha/middleware"
 	"joblessness/haha/middleware/xss"
-	httpSearch "joblessness/haha/search/delivery/http"
-	searchInterfaces "joblessness/haha/search/interfaces"
-	postgresSearch "joblessness/haha/search/repository/postgres"
-	usecaseSearch "joblessness/haha/search/usecase"
+	"joblessness/haha/search/delivery/http"
+	"joblessness/haha/search/interfaces"
+	"joblessness/haha/search/repository/postgres"
+	"joblessness/haha/search/usecase"
 	"joblessness/haha/summary/delivery/http"
-	summaryInterfaces "joblessness/haha/summary/interfaces"
-	postgresSummary "joblessness/haha/summary/repository/postgres"
-	usecaseSummary "joblessness/haha/summary/usecase"
+	"joblessness/haha/summary/interfaces"
+	"joblessness/haha/summary/repository/postgres"
+	"joblessness/haha/summary/usecase"
+	httpUser "joblessness/haha/user/delivery/http"
+	"joblessness/haha/user/interfaces"
+	"joblessness/haha/user/repository/postgres"
+	"joblessness/haha/user/usecase"
 	"joblessness/haha/utils/database"
 	"joblessness/haha/vacancy/delivery/http"
-	vacancyInterfaces "joblessness/haha/vacancy/interfaces"
-	postgresVacancy "joblessness/haha/vacancy/repository/postgres"
-	usecaseVacancy "joblessness/haha/vacancy/usecase"
+	"joblessness/haha/vacancy/interfaces"
+	"joblessness/haha/vacancy/repository/postgres"
+	"joblessness/haha/vacancy/usecase"
 	"net/http"
 )
 
 type App struct {
 	httpServer *http.Server
-	authUse    authInterfaces.AuthUseCase
+	userUse    userInterfaces.UserUseCase
+	authUse authInterfaces.AuthUseCase
 	vacancyUse vacancyInterfaces.VacancyUseCase
 	summaryUse summaryInterfaces.SummaryUseCase
 	searchUse  searchInterfaces.SearchUseCase
@@ -41,16 +46,18 @@ func NewApp(c *middleware.CorsHandler) *App {
 		return nil
 	}
 
-	userRepo := postgresAuth.NewUserRepository(db)
-	vacancyRepo := postgresVacancy.NewVacancyRepository(db)
-	summaryRepo := postgresSummary.NewSummaryRepository(db)
-	searchRepo := postgresSearch.NewAuthRepository(db)
+	userRepo := postgresUser.NewUserRepository(db)
+	authRepo := postgresAuth.NewAuthRepository(db)
+	vacancyRepo := vacancyRepoPostgres.NewVacancyRepository(db)
+	summaryRepo := summaryRepoPostgres.NewSummaryRepository(db)
+	searchRepo := searchRepoPostgres.NewSearchRepository(db)
 
 	return &App{
-		authUse: usecaseAuth.NewAuthUseCase(userRepo),
-		vacancyUse: usecaseVacancy.NewVacancyUseCase(vacancyRepo),
-		summaryUse: usecaseSummary.NewSummaryUseCase(summaryRepo),
-		searchUse: usecaseSearch.NewSearchUseCase(searchRepo),
+		userUse: userUseCase.NewUserUseCase(userRepo),
+		authUse: authUseCase.NewAuthUseCase(authRepo),
+		vacancyUse: vacancyUseCase.NewVacancyUseCase(vacancyRepo),
+		summaryUse: summaryUseCase.NewSummaryUseCase(summaryRepo),
+		searchUse: searchUseCase.NewSearchUseCase(searchRepo),
 		corsHandler: c,
 	}
 }
@@ -68,8 +75,11 @@ func (app *App) StartRouter() {
 	router.Use(mXss.SanitizeMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
-	// users
+	// auth
 	httpAuth.RegisterHTTPEndpoints(router, mAuth, app.authUse)
+
+	// users
+	httpUser.RegisterHTTPEndpoints(router, mAuth, app.userUse)
 
 	// vacancies
 	httpVacancy.RegisterHTTPEndpoints(router, mAuth, app.vacancyUse)

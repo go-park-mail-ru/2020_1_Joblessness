@@ -6,7 +6,7 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/aws/aws-sdk-go v1.29.24
 	github.com/go-playground/universal-translator v0.17.0 // indirect
-	github.com/golang/mock v1.4.1
+	github.com/golang/mock v1.4.3
 	github.com/gorilla/mux v1.7.4
 	github.com/juju/loggo v0.0.0-20190526231331-6e530bcce5d8
 	github.com/jung-kurt/gofpdf v1.16.2

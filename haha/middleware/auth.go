@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 	"github.com/kataras/golog"
-	authInterfaces "joblessness/haha/auth/interfaces"
+	"joblessness/haha/auth/interfaces"
 	"net/http"
 )
 
