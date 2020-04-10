@@ -16,7 +16,8 @@ func SummaryToPdf(w io.Writer, summary models.Summary) error {
 	name := fmt.Sprintf("Name: %s %s\n", summary.Author.FirstName, summary.Author.LastName)
 	personal := fmt.Sprintf("Birthday: %s\nGender: %s\n", summary.Author.Birthday, summary.Author.Gender)
 	contacts := fmt.Sprintf("Email: %s\nPhone: %s\n", summary.Author.Email, summary.Author.Phone)
-	general := fmt.Sprintf("Educatiaon:\n %s\nExpirience:\n %s\n", summary.Educations, summary.Experiences)
+	experience := experienceToStr(summary.Experiences)
+	education := educationToStr(summary.Educations)
 
 	pdf.CellFormat(190, 7, "SUMMARY", "0", 0, "CM", false, 0, "")
 	pdf.Ln(-1)
@@ -32,7 +33,27 @@ func SummaryToPdf(w io.Writer, summary models.Summary) error {
 	pdf.Ln(20)
 	pdf.CellFormat(190, 7, "GENERAL INFORMATION", "0", 0, "CM", false, 0, "")
 	pdf.Ln(-1)
-	pdf.MultiCell(190, 7, tr(general), "0", "LM", false)
+	pdf.MultiCell(190, 7, tr(experience), "0", "LM", false)
+	pdf.Ln(-1)
+	pdf.MultiCell(190, 7, tr(education), "0", "LM", false)
 
 	return pdf.Output(w)
+}
+
+func experienceToStr(experience []models.Experience) (result string) {
+	result = "Experience\n"
+	for _, v := range experience {
+		result += fmt.Sprintf("Company name: %s\nRole: %s\nResponsibilities: %s\nYears: %d-%d",
+			v.CompanyName, v.Role, v.Responsibilities, v.Start.Year(), v.Stop.Year())
+	}
+	return result
+}
+
+func educationToStr(education []models.Education) (result string) {
+	result = "Education\n"
+	for _, v := range education {
+		result += fmt.Sprintf("Institution: %s\nSpecialization: %s\nGraduated: %d\nType: %s\n",
+			v.Institution, v.Speciality, v.Graduated.Year(), v.Type)
+	}
+	return result
 }
