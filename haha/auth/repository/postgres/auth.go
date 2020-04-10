@@ -99,6 +99,9 @@ func (r AuthRepository) CreateUser(user *User) (err error) {
 
 func (r *AuthRepository) CreatePerson(user *models.Person) (err error) {
 	dbUser, dbPerson := toPostgresPerson(user)
+	if dbPerson.Birthday.IsZero() {
+		dbPerson.Birthday.AddDate(1950, 0, 0)
+	}
 
 	err = r.db.QueryRow("INSERT INTO person (name, gender, birthday) VALUES($1, $2, $3) RETURNING id",
 		dbPerson.Name, dbPerson.Gender, dbPerson.Birthday).
