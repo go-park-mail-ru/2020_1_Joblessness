@@ -2,19 +2,23 @@ package pdf
 
 import (
 	"fmt"
-	"github.com/jung-kurt/gofpdf"
+	"github.com/kpawlik/gofpdf"
 	"io"
 	"joblessness/haha/models"
 )
 
 func SummaryToPdf(w io.Writer, summary models.Summary) error {
 	pdf := gofpdf.New("P", "mm", "A4", "")
+
+	pdf.SetFontLocation("./haha/utils/pdf/")
+	pdf.AddFont("Helvetica", "", "helvetica_1251.json")
 	pdf.AddPage()
 	pdf.SetFont("Helvetica", "", 16)
-	tr := pdf.UnicodeTranslatorFromDescriptor("cp1252")
+	tr := pdf.UnicodeTranslatorFromDescriptor("cp1251")
 
 	name := fmt.Sprintf("Name: %s %s\n", summary.Author.FirstName, summary.Author.LastName)
-	personal := fmt.Sprintf("Birthday: %s\nGender: %s\n", summary.Author.Birthday, summary.Author.Gender)
+	personal := fmt.Sprintf("Birthday: %d-%d-%d\nGender: %s\n", summary.Author.Birthday.Year(),
+		summary.Author.Birthday.Month(), summary.Author.Birthday.Day(), summary.Author.Gender)
 	contacts := fmt.Sprintf("Email: %s\nPhone: %s\n", summary.Author.Email, summary.Author.Phone)
 	experience := experienceToStr(summary.Experiences)
 	education := educationToStr(summary.Educations)
