@@ -23,19 +23,19 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	router *mux.Router
+	router         *mux.Router
 	mainMiddleware *middleware.RecoveryHandler
 	authMiddleware *middleware.SessionHandler
-	controller *gomock.Controller
-	authUseCase *mockAuth.MockAuthUseCase
-	uc *summaryUseCaseMock.MockSummaryUseCase
-	summary models.Summary
-	summaryByte *bytes.Buffer
-	cookie *http.Cookie
-	response models.VacancyResponse
-	sendSum models.SendSummary
-	responseByte *bytes.Buffer
-	sendSumByte *bytes.Buffer
+	controller     *gomock.Controller
+	authUseCase    *mockAuth.MockAuthUseCase
+	uc             *summaryUseCaseMock.MockSummaryUseCase
+	summary        models.Summary
+	summaryByte    *bytes.Buffer
+	cookie         *http.Cookie
+	response       models.VacancyResponse
+	sendSum        models.SendSummary
+	responseByte   *bytes.Buffer
+	sendSumByte    *bytes.Buffer
 }
 
 func (suite *userSuite) SetupTest() {
@@ -49,8 +49,8 @@ func (suite *userSuite) SetupTest() {
 	suite.authMiddleware = middleware.NewAuthMiddleware(suite.authUseCase)
 
 	suite.summary = models.Summary{
-		ID:          3,
-		Author:      models.Author{
+		ID: 3,
+		Author: models.Author{
 			ID:        12,
 			Tag:       "tag",
 			Email:     "email",
@@ -60,8 +60,8 @@ func (suite *userSuite) SetupTest() {
 			LastName:  "name",
 			Gender:    "gender",
 		},
-		Keywords:    "key",
-		Educations:  []models.Education{
+		Keywords: "key",
+		Educations: []models.Education{
 			models.Education{
 				Institution: "was",
 				Speciality:  "is",
@@ -81,9 +81,9 @@ func (suite *userSuite) SetupTest() {
 	suite.summaryByte = bytes.NewBuffer(summaryJSON)
 	assert.NoError(suite.T(), err)
 
-	suite.cookie = &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	suite.cookie = &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
@@ -101,7 +101,7 @@ func (suite *userSuite) SetupTest() {
 	suite.sendSum = models.SendSummary{
 		VacancyID:      uint64(7),
 		SummaryID:      suite.summary.ID,
-		UserID:    		suite.summary.Author.ID,
+		UserID:         suite.summary.Author.ID,
 		OrganizationID: uint64(13),
 		Accepted:       true,
 		Denied:         false,
@@ -110,7 +110,7 @@ func (suite *userSuite) SetupTest() {
 	suite.sendSumByte = bytes.NewBuffer(sendSumJSON)
 	assert.NoError(suite.T(), err)
 
-	RegisterHTTPEndpoints(suite.router,suite.authMiddleware, suite.uc)
+	RegisterHTTPEndpoints(suite.router, suite.authMiddleware, suite.uc)
 }
 
 func TestSuite(t *testing.T) {

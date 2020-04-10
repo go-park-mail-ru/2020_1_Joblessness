@@ -3,9 +3,9 @@ package models
 import "github.com/microcosm-cc/bluemonday"
 
 type SearchResult struct {
-	Persons []*Person `json:"persons"`
+	Persons       []*Person       `json:"persons"`
 	Organizations []*Organization `json:"organizations"`
-	Vacancies []*Vacancy `json:"vacancies"`
+	Vacancies     []*Vacancy      `json:"vacancies"`
 }
 
 func (s *SearchResult) Sanitize(policy *bluemonday.Policy) {

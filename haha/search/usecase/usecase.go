@@ -8,13 +8,13 @@ import (
 
 type SearchUseCase struct {
 	searchRepo searchInterfaces.SearchRepository
-	policy *bluemonday.Policy
+	policy     *bluemonday.Policy
 }
 
 func NewSearchUseCase(userRepo searchInterfaces.SearchRepository, policy *bluemonday.Policy) *SearchUseCase {
 	return &SearchUseCase{
-		searchRepo:userRepo,
-		policy: policy,
+		searchRepo: userRepo,
+		policy:     policy,
 	}
 }
 

@@ -9,13 +9,13 @@ import (
 
 type SummaryUseCase struct {
 	summaryRepo summaryInterfaces.SummaryRepository
-	policy *bluemonday.Policy
+	policy      *bluemonday.Policy
 }
 
 func NewSummaryUseCase(summaryRepo summaryInterfaces.SummaryRepository, policy *bluemonday.Policy) *SummaryUseCase {
 	return &SummaryUseCase{
 		summaryRepo: summaryRepo,
-		policy: policy,
+		policy:      policy,
 	}
 }
 
@@ -84,7 +84,7 @@ func (u *SummaryUseCase) SendSummary(sendSummary *models.SendSummary) (err error
 	return err
 }
 
-func (u *SummaryUseCase) ResponseSummary(sendSummary *models.SendSummary)  (err error) {
+func (u *SummaryUseCase) ResponseSummary(sendSummary *models.SendSummary) (err error) {
 	err = u.summaryRepo.IsOrganizationVacancy(sendSummary.VacancyID, sendSummary.OrganizationID)
 	if err != nil {
 		return err

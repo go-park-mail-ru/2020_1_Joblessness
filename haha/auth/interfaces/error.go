@@ -2,7 +2,7 @@ package authInterfaces
 
 import "fmt"
 
-type ErrorWrongLoginOrPassword struct {}
+type ErrorWrongLoginOrPassword struct{}
 
 func NewErrorWrongLoginOrPassword() *ErrorWrongLoginOrPassword {
 	return &ErrorWrongLoginOrPassword{}
@@ -12,7 +12,7 @@ func (e *ErrorWrongLoginOrPassword) Error() string {
 	return "Wrong login or password"
 }
 
-type ErrorWrongSID struct {}
+type ErrorWrongSID struct{}
 
 func NewErrorWrongSID() *ErrorWrongSID {
 	return &ErrorWrongSID{}

@@ -23,14 +23,14 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	router *mux.Router
-	mainMiddleware *middleware.RecoveryHandler
-	authMiddleware *middleware.SessionHandler
-	controller *gomock.Controller
-	uc *mock.MockAuthUseCase
-	person models.Person
-	personByte *bytes.Buffer
-	organization models.Organization
+	router           *mux.Router
+	mainMiddleware   *middleware.RecoveryHandler
+	authMiddleware   *middleware.SessionHandler
+	controller       *gomock.Controller
+	uc               *mock.MockAuthUseCase
+	person           models.Person
+	personByte       *bytes.Buffer
+	organization     models.Organization
 	organizationByte *bytes.Buffer
 }
 
@@ -44,13 +44,13 @@ func (suite *userSuite) SetupTest() {
 	suite.authMiddleware = middleware.NewAuthMiddleware(suite.uc)
 
 	suite.person = models.Person{
-		ID: 12,
-		Login:       "new username",
-		Password:    "NewPassword123",
-		FirstName:   "new first name",
-		LastName:    "new last name",
-		Email:       "new@email.ru",
-		Phone: "new phone number",
+		ID:        12,
+		Login:     "new username",
+		Password:  "NewPassword123",
+		FirstName: "new first name",
+		LastName:  "new last name",
+		Email:     "new@email.ru",
+		Phone:     "new phone number",
 	}
 	var err error
 	personJSON, err := json.Marshal(suite.person)
@@ -58,20 +58,20 @@ func (suite *userSuite) SetupTest() {
 	assert.NoError(suite.T(), err)
 
 	suite.organization = models.Organization{
-		ID: 12,
-		Login:       "new username",
-		Password:    "NewPassword123",
-		Name:   "new name",
-		Site:    "new site",
-		Email:       "new@email.ru",
-		Phone: "new phone number",
-		Tag: "awdawdawd",
+		ID:       12,
+		Login:    "new username",
+		Password: "NewPassword123",
+		Name:     "new name",
+		Site:     "new site",
+		Email:    "new@email.ru",
+		Phone:    "new phone number",
+		Tag:      "awdawdawd",
 	}
 	organizationJSON, err := json.Marshal(suite.organization)
 	suite.organizationByte = bytes.NewBuffer(organizationJSON)
 	assert.NoError(suite.T(), err)
 
-	RegisterHTTPEndpoints(suite.router,suite.authMiddleware, suite.uc)
+	RegisterHTTPEndpoints(suite.router, suite.authMiddleware, suite.uc)
 }
 
 func TestSuite(t *testing.T) {
@@ -83,6 +83,7 @@ const message = `
 Content-Disposition: form-data; name="file"; filename="file.png"
 Content-Type: text/plain
 `
+
 func newTestMultipartRequest(t *testing.T) *http.Request {
 	b := strings.NewReader(strings.ReplaceAll(message, "\n", "\r\n"))
 	req, err := http.NewRequest("POST", "/api/users/12/avatar", b)
@@ -191,9 +192,9 @@ func (suite *userSuite) TestFailedLoginNotFound() {
 
 func (suite *userSuite) TestLogout() {
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
@@ -225,9 +226,9 @@ func (suite *userSuite) TestLogoutNoCookie() {
 
 func (suite *userSuite) TestLogoutSomethingWentWrong() {
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
@@ -246,9 +247,9 @@ func (suite *userSuite) TestLogoutSomethingWentWrong() {
 
 func (suite *userSuite) TestCheck() {
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
@@ -283,9 +284,9 @@ func (suite *userSuite) TestCheckNoCookie() {
 
 func (suite *userSuite) TestCheckWrongSid() {
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
@@ -304,9 +305,9 @@ func (suite *userSuite) TestCheckWrongSid() {
 
 func (suite *userSuite) TestCheckSomethingWentWrong() {
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 

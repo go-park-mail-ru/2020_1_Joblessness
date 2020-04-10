@@ -14,16 +14,16 @@ import (
 
 type summarySuite struct {
 	suite.Suite
-	rep *SummaryRepository
-	db *sql.DB
-	mock sqlmock.Sqlmock
-	summary models.Summary
-	education Education
+	rep        *SummaryRepository
+	db         *sql.DB
+	mock       sqlmock.Sqlmock
+	summary    models.Summary
+	education  Education
 	experience Experience
-	user User
-	person Person
-	response models.VacancyResponse
-	sendSum models.SendSummary
+	user       User
+	person     Person
+	response   models.VacancyResponse
+	sendSum    models.SendSummary
 }
 
 func (suite *summarySuite) SetupTest() {
@@ -33,8 +33,8 @@ func (suite *summarySuite) SetupTest() {
 	suite.rep = NewSummaryRepository(suite.db)
 
 	suite.summary = models.Summary{
-		ID:          3,
-		Author:      models.Author{
+		ID: 3,
+		Author: models.Author{
 			ID:        12,
 			Tag:       "tag",
 			Email:     "email",
@@ -44,8 +44,8 @@ func (suite *summarySuite) SetupTest() {
 			LastName:  "name",
 			Gender:    "gender",
 		},
-		Keywords:    "key",
-		Educations:  []models.Education{
+		Keywords: "key",
+		Educations: []models.Education{
 			models.Education{
 				Institution: "was",
 				Speciality:  "is",
@@ -92,7 +92,7 @@ func (suite *summarySuite) SetupTest() {
 	suite.sendSum = models.SendSummary{
 		VacancyID:      uint64(7),
 		SummaryID:      suite.summary.ID,
-		UserID:    		suite.person.ID,
+		UserID:         suite.person.ID,
 		OrganizationID: uint64(13),
 		Accepted:       true,
 		Denied:         false,
@@ -118,12 +118,12 @@ func (suite *summarySuite) TestCreateSummary() {
 	suite.mock.
 		ExpectExec("INSERT INTO education").
 		WithArgs(suite.summary.ID, suite.summary.Educations[0].Institution, suite.summary.Educations[0].Speciality,
-		nil , suite.summary.Educations[0].Type).
+			nil, suite.summary.Educations[0].Type).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	suite.mock.
 		ExpectExec("INSERT INTO experience").
 		WithArgs(suite.summary.ID, suite.summary.Experiences[0].CompanyName, suite.summary.Experiences[0].Role,
-		suite.summary.Experiences[0].Responsibilities, suite.summary.Experiences[0].Start, suite.summary.Experiences[0].Stop).
+			suite.summary.Experiences[0].Responsibilities, suite.summary.Experiences[0].Start, suite.summary.Experiences[0].Stop).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	summaryID, err := suite.rep.CreateSummary(&suite.summary)
@@ -151,7 +151,7 @@ func (suite *summarySuite) TestCreateSummaryFailedTwo() {
 	suite.mock.
 		ExpectExec("INSERT INTO education").
 		WithArgs(suite.summary.ID, suite.summary.Educations[0].Institution, suite.summary.Educations[0].Speciality,
-			nil , suite.summary.Educations[0].Type).
+			nil, suite.summary.Educations[0].Type).
 		WillReturnError(errors.New(""))
 
 	_, err := suite.rep.CreateSummary(&suite.summary)
@@ -168,7 +168,7 @@ func (suite *summarySuite) TestCreateSummaryFailedThree() {
 	suite.mock.
 		ExpectExec("INSERT INTO education").
 		WithArgs(suite.summary.ID, suite.summary.Educations[0].Institution, suite.summary.Educations[0].Speciality,
-			nil , suite.summary.Educations[0].Type).
+			nil, suite.summary.Educations[0].Type).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	suite.mock.
 		ExpectExec("INSERT INTO experience").
@@ -418,7 +418,7 @@ func (suite *summarySuite) TestChangeSummary() {
 	suite.mock.
 		ExpectExec("UPDATE education").
 		WithArgs(suite.summary.Educations[0].Institution, suite.summary.Educations[0].Speciality,
-		nil, suite.summary.Educations[0].Type, suite.summary.ID).
+			nil, suite.summary.Educations[0].Type, suite.summary.ID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	suite.mock.

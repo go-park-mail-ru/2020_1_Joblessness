@@ -9,13 +9,13 @@ import (
 
 type VacancyUseCase struct {
 	vacancyRepo vacancyInterfaces.VacancyRepository
-	policy *bluemonday.Policy
+	policy      *bluemonday.Policy
 }
 
 func NewVacancyUseCase(vacancyRepo vacancyInterfaces.VacancyRepository, policy *bluemonday.Policy) *VacancyUseCase {
 	return &VacancyUseCase{
 		vacancyRepo: vacancyRepo,
-		policy: policy,
+		policy:      policy,
 	}
 }
 

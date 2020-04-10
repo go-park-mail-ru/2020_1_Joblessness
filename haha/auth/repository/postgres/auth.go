@@ -32,16 +32,16 @@ type User struct {
 }
 
 type Person struct {
-	ID uint64
-	Name string
-	Gender string
+	ID       uint64
+	Name     string
+	Gender   string
 	Birthday time.Time
 }
 
 type Organization struct {
-	ID uint64
-	Name string
-	Site string
+	ID    uint64
+	Name  string
+	Site  string
 	About string
 }
 
@@ -52,14 +52,14 @@ func toPostgresPerson(p *models.Person) (*User, *Person) {
 	}
 
 	return &User{
-			ID:             p.ID,
-			Login:          p.Login,
-			Password:       p.Password,
-			Tag:            p.Tag,
-			Email:          p.Email,
-			Phone:          p.Phone,
-			Registered:     p.Registered,
-			Avatar:         p.Avatar,
+			ID:         p.ID,
+			Login:      p.Login,
+			Password:   p.Password,
+			Tag:        p.Tag,
+			Email:      p.Email,
+			Phone:      p.Phone,
+			Registered: p.Registered,
+			Avatar:     p.Avatar,
 		},
 		&Person{
 			Name:     name,
@@ -70,18 +70,18 @@ func toPostgresPerson(p *models.Person) (*User, *Person) {
 
 func toPostgresOrg(o *models.Organization) (*User, *Organization) {
 	return &User{
-			ID:             o.ID,
-			Login:          o.Login,
-			Password:       o.Password,
-			Tag:            o.Tag,
-			Email:          o.Email,
-			Phone:          o.Phone,
-			Registered:     o.Registered,
-			Avatar:         o.Avatar,
+			ID:         o.ID,
+			Login:      o.Login,
+			Password:   o.Password,
+			Tag:        o.Tag,
+			Email:      o.Email,
+			Phone:      o.Phone,
+			Registered: o.Registered,
+			Avatar:     o.Avatar,
 		},
 		&Organization{
-			Name: o.Name,
-			Site: o.Site,
+			Name:  o.Name,
+			Site:  o.Site,
 			About: o.About,
 		}
 }
@@ -159,7 +159,7 @@ func (r *AuthRepository) SessionExists(sessionId string) (userId uint64, err err
 
 	checkUser := "SELECT user_id, expires FROM session WHERE session_id = $1;"
 	var expires time.Time
-	err = r.db.QueryRow(checkUser, sessionId).Scan(&userId,  &expires)
+	err = r.db.QueryRow(checkUser, sessionId).Scan(&userId, &expires)
 	if err != nil {
 		return 0, authInterfaces.NewErrorWrongSID()
 	}

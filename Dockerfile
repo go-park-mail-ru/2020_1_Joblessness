@@ -13,6 +13,10 @@ ENV PGPASSWORD 'postgres'
 ENV HAHA_DB_USER 'postgres'
 ENV HAHA_DB_PASSWORD 'postgres'
 ENV HAHA_DB_NAME 'base'
+ENV HOTBOX_ID 'orFNtcQG9pi8NvqcFhLAj4'
+ENV HOTBOX_SECRETE '33CiuS769M4u1wHAk42HhdtCrCb795MGuez3biaE3CeK'
+ENV HOTBOX_TOKEN ''
+
 
 WORKDIR /opt/build/2020_1_Joblessness/
 COPY --from=build /opt/build/2020_1_Joblessness/ ./

@@ -19,7 +19,7 @@ func NewHandler(useCase searchInterfaces.SearchUseCase) *Handler {
 	}
 }
 
-func (h *Handler) Search (w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
 	searchType := r.FormValue("type")
@@ -31,14 +31,14 @@ func (h *Handler) Search (w http.ResponseWriter, r *http.Request) {
 
 	switch err {
 	case searchInterfaces.ErrUnknownRequest:
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 	case nil:
 		resultJSON, _ := json.Marshal(resultForum)
 		w.WriteHeader(http.StatusOK)
 		w.Write(resultJSON)
 	default:
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

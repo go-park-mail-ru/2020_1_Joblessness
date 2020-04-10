@@ -12,12 +12,12 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	rep *SearchRepository
-	db *sql.DB
-	mock sqlmock.Sqlmock
-	person models.Person
+	rep          *SearchRepository
+	db           *sql.DB
+	mock         sqlmock.Sqlmock
+	person       models.Person
 	organization models.Organization
-	vacancy models.Vacancy
+	vacancy      models.Vacancy
 }
 
 func (suite *userSuite) SetupTest() {
@@ -27,8 +27,8 @@ func (suite *userSuite) SetupTest() {
 	suite.rep = NewSearchRepository(suite.db)
 
 	suite.vacancy = models.Vacancy{
-		ID:              3,
-		Organization:     models.VacancyOrganization{
+		ID: 3,
+		Organization: models.VacancyOrganization{
 			ID:     12,
 			Tag:    "tag",
 			Email:  "email",
@@ -48,25 +48,25 @@ func (suite *userSuite) SetupTest() {
 	}
 
 	suite.person = models.Person{
-		ID: 1,
-		Login:       "login",
-		Password:    "password",
-		FirstName:   "first",
-		LastName:    "name",
-		Email:       "email",
-		Phone: "phone",
-		Tag: "tag",
+		ID:        1,
+		Login:     "login",
+		Password:  "password",
+		FirstName: "first",
+		LastName:  "name",
+		Email:     "email",
+		Phone:     "phone",
+		Tag:       "tag",
 	}
 
 	suite.organization = models.Organization{
-		ID: 1,
-		Login:       "login",
-		Password:    "password",
-		Name:   "name",
-		Site:    "site",
-		Email:       "email",
-		Phone: "phone",
-		Tag: "tag",
+		ID:       1,
+		Login:    "login",
+		Password: "password",
+		Name:     "name",
+		Site:     "site",
+		Email:    "email",
+		Phone:    "phone",
+		Tag:      "tag",
 	}
 }
 
@@ -80,7 +80,7 @@ func TestSuite(t *testing.T) {
 
 func (suite *userSuite) TestSearchPersons() {
 	rows := sqlmock.NewRows([]string{"userId", "name", "tag", "avatar"}).
-		AddRow(suite.person.ID, suite.person.FirstName + " " + suite.person.LastName, suite.person.Tag,
+		AddRow(suite.person.ID, suite.person.FirstName+" "+suite.person.LastName, suite.person.Tag,
 			suite.person.Avatar)
 	suite.mock.
 		ExpectQuery("SELECT users.id as userId, p.name, tag, avatar").
@@ -126,7 +126,7 @@ func (suite *userSuite) TestSearchOrganizationFailed() {
 func (suite *userSuite) TestSearchVacancy() {
 	rows := sqlmock.NewRows([]string{"id", "name", "id", "name", "keywords", "salary_from", "salary_to", "with_tax"}).
 		AddRow(suite.organization.ID, suite.organization.Name, suite.vacancy.ID, suite.vacancy.Name,
-			suite.vacancy.Keywords, suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax )
+			suite.vacancy.Keywords, suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax)
 	suite.mock.
 		ExpectQuery("SELECT users.id, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax").
 		WithArgs("req", 10, 10).

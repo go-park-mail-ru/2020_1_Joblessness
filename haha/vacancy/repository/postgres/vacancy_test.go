@@ -13,11 +13,11 @@ import (
 
 type vacancySuite struct {
 	suite.Suite
-	rep *VacancyRepository
-	db *sql.DB
-	mock sqlmock.Sqlmock
-	vacancy models.Vacancy
-	user User
+	rep          *VacancyRepository
+	db           *sql.DB
+	mock         sqlmock.Sqlmock
+	vacancy      models.Vacancy
+	user         User
 	organization Organization
 }
 
@@ -28,8 +28,8 @@ func (suite *vacancySuite) SetupTest() {
 	suite.rep = NewVacancyRepository(suite.db)
 
 	suite.vacancy = models.Vacancy{
-		ID:              3,
-		Organization:     models.VacancyOrganization{
+		ID: 3,
+		Organization: models.VacancyOrganization{
 			ID:     12,
 			Tag:    "tag",
 			Email:  "email",
@@ -215,8 +215,8 @@ func (suite *vacancySuite) TestChangeVacancy() {
 	suite.mock.
 		ExpectExec("UPDATE vacancy SET name =").
 		WithArgs(suite.vacancy.Name, suite.vacancy.Description,
-		suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax, suite.vacancy.Responsibilities,
-		suite.vacancy.Conditions, suite.vacancy.Keywords, suite.vacancy.ID).
+			suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax, suite.vacancy.Responsibilities,
+			suite.vacancy.Conditions, suite.vacancy.Keywords, suite.vacancy.ID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err := suite.rep.ChangeVacancy(&suite.vacancy)

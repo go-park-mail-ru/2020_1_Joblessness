@@ -24,10 +24,10 @@ func TestAuthPersonFlow(t *testing.T) {
 	sidEx := "sid"
 	userIdEx := uint64(1)
 	person := &models.Person{
-		Login:       login,
-		Password:    password,
+		Login:     login,
+		Password:  password,
 		FirstName: firstName,
-		Phone: phone,
+		Phone:     phone,
 	}
 
 	//RegisterPerson
@@ -68,10 +68,10 @@ func TestAuthOrganizationFlow(t *testing.T) {
 	phone := "phone"
 	name := "name"
 	organization := &models.Organization{
-		Login:       login,
-		Password:    password,
-		Name: name,
-		Phone: phone,
+		Login:    login,
+		Password: password,
+		Name:     name,
+		Phone:    phone,
 	}
 
 	//RegisterOrganization

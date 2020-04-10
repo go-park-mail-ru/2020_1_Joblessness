@@ -12,10 +12,10 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	rep *UserRepository
-	db *sql.DB
-	mock sqlmock.Sqlmock
-	person models.Person
+	rep          *UserRepository
+	db           *sql.DB
+	mock         sqlmock.Sqlmock
+	person       models.Person
 	organization models.Organization
 }
 
@@ -26,25 +26,25 @@ func (suite *userSuite) SetupTest() {
 	suite.rep = NewUserRepository(suite.db)
 
 	suite.person = models.Person{
-		ID: 1,
-		Login:       "login",
-		Password:    "password",
-		FirstName:   "first",
-		LastName:    "name",
-		Email:       "email",
-		Phone: "phone",
-		Tag: "tag",
+		ID:        1,
+		Login:     "login",
+		Password:  "password",
+		FirstName: "first",
+		LastName:  "name",
+		Email:     "email",
+		Phone:     "phone",
+		Tag:       "tag",
 	}
 
 	suite.organization = models.Organization{
-		ID: 1,
-		Login:       "login",
-		Password:    "password",
-		Name:   "name",
-		Site:    "site",
-		Email:       "email",
-		Phone: "phone",
-		Tag: "tag",
+		ID:       1,
+		Login:    "login",
+		Password: "password",
+		Name:     "name",
+		Site:     "site",
+		Email:    "email",
+		Phone:    "phone",
+		Tag:      "tag",
 	}
 }
 
@@ -67,7 +67,6 @@ func (suite *userSuite) TestSaveAvatar() {
 	assert.NoError(suite.T(), err)
 }
 
-
 func (suite *userSuite) TestSaveAvatarEmpty() {
 	err := suite.rep.SaveAvatarLink("", 1)
 
@@ -84,7 +83,7 @@ func (suite *userSuite) TestGetPerson() {
 		WillReturnRows(rows)
 
 	rows = sqlmock.NewRows([]string{"name", "gender", "birthday"})
-	rows = rows.AddRow(suite.person.LastName + " " + suite.person.LastName, suite.person.Gender, suite.person.Birthday)
+	rows = rows.AddRow(suite.person.LastName+" "+suite.person.LastName, suite.person.Gender, suite.person.Birthday)
 	suite.mock.
 		ExpectQuery("SELECT name").
 		WithArgs(suite.person.ID).
@@ -140,7 +139,7 @@ func (suite *userSuite) TestChangePerson() {
 
 	suite.mock.
 		ExpectExec("UPDATE person").
-		WithArgs(suite.person.FirstName + " " + suite.person.LastName, suite.person.Gender, nil, 1).
+		WithArgs(suite.person.FirstName+" "+suite.person.LastName, suite.person.Gender, nil, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	suite.mock.
 		ExpectExec("UPDATE user").
@@ -175,7 +174,7 @@ func (suite *userSuite) TestChangePersonFailedTwo() {
 
 	suite.mock.
 		ExpectExec("UPDATE person").
-		WithArgs(suite.person.FirstName + " " + suite.person.LastName, 12).
+		WithArgs(suite.person.FirstName+" "+suite.person.LastName, 12).
 		WillReturnError(errors.New(""))
 
 	err := suite.rep.ChangePerson(&suite.person)
@@ -349,7 +348,7 @@ func (suite *userSuite) TestLikeUserLikeFailed() {
 
 func (suite *userSuite) TestLikeExists() {
 	rows := sqlmock.NewRows([]string{"count"}).
-	AddRow(1)
+		AddRow(1)
 	suite.mock.
 		ExpectQuery("SELECT count").
 		WithArgs(suite.person.ID, suite.person.ID).

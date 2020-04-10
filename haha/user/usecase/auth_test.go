@@ -6,8 +6,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/stretchr/testify/assert"
-	"joblessness/haha/user/repository/mock"
 	"joblessness/haha/models"
+	"joblessness/haha/user/repository/mock"
 	"mime/multipart"
 	"testing"
 )
@@ -26,10 +26,10 @@ func TestAuthPersonFlow(t *testing.T) {
 	firstName := "name"
 	userIdEx := uint64(1)
 	person := &models.Person{
-		Login:       login,
-		Password:    password,
+		Login:     login,
+		Password:  password,
 		FirstName: firstName,
-		Phone: phone,
+		Phone:     phone,
 	}
 
 	//GetPerson
@@ -60,10 +60,10 @@ func TestAuthOrganizationFlow(t *testing.T) {
 	name := "name"
 	userIdEx := uint64(1)
 	organization := &models.Organization{
-		Login:       login,
-		Password:    password,
-		Name: name,
-		Phone: phone,
+		Login:    login,
+		Password: password,
+		Name:     name,
+		Phone:    phone,
 	}
 
 	//GetOrganization

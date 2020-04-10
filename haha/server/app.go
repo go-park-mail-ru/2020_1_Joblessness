@@ -30,12 +30,12 @@ import (
 )
 
 type App struct {
-	httpServer *http.Server
-	userUse    userInterfaces.UserUseCase
-	authUse authInterfaces.AuthUseCase
-	vacancyUse vacancyInterfaces.VacancyUseCase
-	summaryUse summaryInterfaces.SummaryUseCase
-	searchUse  searchInterfaces.SearchUseCase
+	httpServer  *http.Server
+	userUse     userInterfaces.UserUseCase
+	authUse     authInterfaces.AuthUseCase
+	vacancyUse  vacancyInterfaces.VacancyUseCase
+	summaryUse  summaryInterfaces.SummaryUseCase
+	searchUse   searchInterfaces.SearchUseCase
 	corsHandler *middleware.CorsHandler
 }
 
@@ -54,11 +54,11 @@ func NewApp(c *middleware.CorsHandler) *App {
 	policy := bluemonday.UGCPolicy()
 
 	return &App{
-		userUse: userUseCase.NewUserUseCase(userRepo, policy),
-		authUse: authUseCase.NewAuthUseCase(authRepo),
-		vacancyUse: vacancyUseCase.NewVacancyUseCase(vacancyRepo, policy),
-		summaryUse: summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
-		searchUse: searchUseCase.NewSearchUseCase(searchRepo, policy),
+		userUse:     userUseCase.NewUserUseCase(userRepo, policy),
+		authUse:     authUseCase.NewAuthUseCase(authRepo),
+		vacancyUse:  vacancyUseCase.NewVacancyUseCase(vacancyRepo, policy),
+		summaryUse:  summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
+		searchUse:   searchUseCase.NewSearchUseCase(searchRepo, policy),
 		corsHandler: c,
 	}
 }

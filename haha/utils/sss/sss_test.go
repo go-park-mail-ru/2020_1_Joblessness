@@ -14,9 +14,9 @@ func TestSetAvatarNoFile(t *testing.T) {
 
 	fileHeader := &multipart.FileHeader{
 		Filename: "File",
-		Header: textproto.MIMEHeader{},
+		Header:   textproto.MIMEHeader{},
 
-		Size:     0,
+		Size: 0,
 	}
 	form.File["file"] = append(form.File["file"], fileHeader)
 

@@ -9,29 +9,29 @@ import (
 )
 
 type Summary struct {
-	ID uint64
-	AuthorID uint64
-	Keywords string
-	Name string
+	ID         uint64
+	AuthorID   uint64
+	Keywords   string
+	Name       string
 	SalaryFrom int
-	SalaryTo int
+	SalaryTo   int
 }
 
 type Education struct {
-	SummaryID uint64
+	SummaryID   uint64
 	Institution string
-	Speciality string
-	Graduated sql.NullTime
-	Type string
+	Speciality  string
+	Graduated   sql.NullTime
+	Type        string
 }
 
 type Experience struct {
-	SummaryID uint64
-	CompanyName string
-	Role string
+	SummaryID        uint64
+	CompanyName      string
+	Role             string
 	Responsibilities string
-	Start sql.NullTime
-	Stop sql.NullTime
+	Start            sql.NullTime
+	Stop             sql.NullTime
 }
 
 type User struct {
@@ -56,12 +56,12 @@ type Person struct {
 
 func toPostgres(s *models.Summary) (summary *Summary, educations []*Education, experiences []*Experience) {
 	summary = &Summary{
-		ID:       s.ID,
-		AuthorID: s.Author.ID,
-		Keywords: s.Keywords,
-		Name: s.Name,
+		ID:         s.ID,
+		AuthorID:   s.Author.ID,
+		Keywords:   s.Keywords,
+		Name:       s.Name,
 		SalaryFrom: s.SalaryFrom,
-		SalaryTo: s.SalaryTo,
+		SalaryTo:   s.SalaryTo,
 	}
 
 	for _, education := range s.Educations {
@@ -135,9 +135,9 @@ func toModel(s *Summary, eds []*Education, exs []*Experience, u *User, p *Person
 		ID:          s.ID,
 		Author:      author,
 		Keywords:    s.Keywords,
-		Name: s.Name,
-		SalaryFrom: s.SalaryFrom,
-		SalaryTo: s.SalaryTo,
+		Name:        s.Name,
+		SalaryFrom:  s.SalaryFrom,
+		SalaryTo:    s.SalaryTo,
 		Educations:  educations,
 		Experiences: experiences,
 	}
@@ -145,7 +145,7 @@ func toModel(s *Summary, eds []*Education, exs []*Experience, u *User, p *Person
 
 type GetOptions struct {
 	userID uint64
-	page int
+	page   int
 }
 
 type SummaryRepository struct {
@@ -263,14 +263,14 @@ func (r *SummaryRepository) GetSummaryAuthor(authorID uint64) (*User, *Person, e
 func (r *SummaryRepository) GetSummaries(opt *GetOptions) (models.Summaries, error) {
 	var (
 		rows *sql.Rows
-		err error
+		err  error
 	)
 
 	if opt.userID == 0 {
 		getSummaries := `SELECT id, author, keywords, name, salary_from, salary_to
 					 	 FROM summary
 					 	 LIMIT $1 OFFSET $2;`
-		rows, err = r.db.Query(getSummaries, 10,  opt.page*10)
+		rows, err = r.db.Query(getSummaries, 10, opt.page*10)
 		if err != nil {
 			return nil, err
 		}
@@ -278,7 +278,7 @@ func (r *SummaryRepository) GetSummaries(opt *GetOptions) (models.Summaries, err
 		getSummaries := `SELECT id, author, keywords, name, salary_from, salary_to
 					 	 FROM summary WHERE author = $1
 						LIMIT $2 OFFSET $3;`
-		rows, err = r.db.Query(getSummaries, opt.userID, 10,  opt.page*10)
+		rows, err = r.db.Query(getSummaries, opt.userID, 10, opt.page*10)
 		if err != nil {
 			return nil, err
 		}
@@ -473,7 +473,7 @@ func (r *SummaryRepository) IsOrganizationVacancy(vacancyID, userID uint64) (err
 	return err
 }
 
-func (r *SummaryRepository) ResponseSummary(sendSummary *models.SendSummary)  (err error) {
+func (r *SummaryRepository) ResponseSummary(sendSummary *models.SendSummary) (err error) {
 	response := `UPDATE response 
 				SET date = CURRENT_TIMESTAMP,
 				    approved = $1,

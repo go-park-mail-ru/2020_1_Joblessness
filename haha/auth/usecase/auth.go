@@ -44,7 +44,6 @@ func (a *AuthUseCase) RegisterOrganization(o *models.Organization) (err error) {
 	return a.userRepo.CreateOrganization(o)
 }
 
-
 func (a *AuthUseCase) Login(login, password string) (userID uint64, role, sessionId string, err error) {
 	sessionId = GetSID(64)
 	userID, err = a.userRepo.Login(login, password, sessionId)
