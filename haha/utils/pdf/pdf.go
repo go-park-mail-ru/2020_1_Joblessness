@@ -47,7 +47,7 @@ func SummaryToPdf(w io.Writer, summary models.Summary) error {
 func experienceToStr(experience []models.Experience) (result string) {
 	result = "Experience\n"
 	for _, v := range experience {
-		result += fmt.Sprintf("Company name: %s\nRole: %s\nResponsibilities: %s\nYears: %d-%d",
+		result += fmt.Sprintf("Company name: %s\nRole: %s\nResponsibilities: %s\nYears: %d-%d\n",
 			v.CompanyName, v.Role, v.Responsibilities, v.Start.Year(), v.Stop.Year())
 	}
 	return result
