@@ -65,25 +65,25 @@ func educationToStr(education []models.Education) (result string) {
 func genderToStr(gender string) string {
 	switch gender {
 	case "0":
-		return "♂ Мужчина"
+		return "Мужчина"
 	case "1":
-		return "♀ Женщина"
+		return "Женщина"
 	case "2":
-		return "⚥ Женщина в теле мужчины"
+		return "Женщина в теле мужчины"
 	case "3":
-		return "⚢ Мужчина в теле мужчины"
+		return "Мужчина в теле мужчины"
 	case "4":
-		return "⚣ Женщина в теле женщины"
+		return "Женщина в теле женщины"
 	case "5":
-		return "⚤ Мужчина в теле женщины"
+		return "Мужчина в теле женщины"
 	case "6":
-		return "⚦ Несколько мужчин"
+		return "Несколько мужчин"
 	case "7":
-		return "⚧ Мужчина и женщина"
+		return "Мужчина и женщина"
 	case "8":
-		return "⚨ Женщина в теле мужчины"
+		return "Женщина в теле мужчины"
 	case "9":
-		return "☿ Все выше перечисленное"
+		return "Все выше перечисленное"
 	}
 	return "Не определился"
 }
