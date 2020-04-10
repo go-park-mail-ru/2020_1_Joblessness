@@ -23,19 +23,19 @@ func SummaryToPdf(w io.Writer, summary models.Summary) error {
 	experience := experienceToStr(summary.Experiences)
 	education := educationToStr(summary.Educations)
 
-	pdf.CellFormat(190, 7, "SUMMARY", "0", 0, "CM", false, 0, "")
+	pdf.CellFormat(190, 7, tr("РЕЗЮМЕ"), "0", 0, "CM", false, 0, "")
 	pdf.Ln(20)
-	pdf.CellFormat(190, 7, "PERSONAL INFORMATION\n", "0", 0, "CM", false, 0, "")
+	pdf.CellFormat(190, 7, tr("ПЕРСОНАЛЬНАЯ ИНФОРМАЦИЯ\n"), "0", 0, "CM", false, 0, "")
 	pdf.Ln(-1)
 	pdf.MultiCell(100, 7, tr(name), "0", "LM", false)
 	pdf.Ln(-1)
 	pdf.MultiCell(100, 7, tr(personal), "0", "LM", false)
 	pdf.Ln(20)
-	pdf.CellFormat(190, 7, "CONTACTS", "0", 0, "CM", false, 0, "")
+	pdf.CellFormat(190, 7, tr("КОНТАКТЫ"), "0", 0, "CM", false, 0, "")
 	pdf.Ln(-1)
 	pdf.MultiCell(190, 7, tr(contacts), "0", "LM", false)
 	pdf.Ln(20)
-	pdf.CellFormat(190, 7, "GENERAL INFORMATION", "0", 0, "CM", false, 0, "")
+	pdf.CellFormat(190, 7, tr("ОСНОВНАЯ ИНФОРМАЦИЯ"), "0", 0, "CM", false, 0, "")
 	pdf.Ln(-1)
 	pdf.MultiCell(190, 7, tr(experience), "0", "LM", false)
 	pdf.Ln(-1)
@@ -45,7 +45,11 @@ func SummaryToPdf(w io.Writer, summary models.Summary) error {
 }
 
 func experienceToStr(experience []models.Experience) (result string) {
-	result = "Experience\n"
+	if len(experience) == 0 {
+		return ""
+	}
+
+	result = "ОПЫТ\n"
 	for _, v := range experience {
 		result += fmt.Sprintf("Company name: %s\nRole: %s\nResponsibilities: %s\nYears: %d-%d\n",
 			v.CompanyName, v.Role, v.Responsibilities, v.Start.Year(), v.Stop.Year())
@@ -54,7 +58,11 @@ func experienceToStr(experience []models.Experience) (result string) {
 }
 
 func educationToStr(education []models.Education) (result string) {
-	result = "Education\n"
+	if len(education) == 0 {
+		return ""
+	}
+
+	result = "ОБРАЗОВАНИЕ\n"
 	for _, v := range education {
 		result += fmt.Sprintf("Institution: %s\nSpecialization: %s\nGraduated: %d\nType: %s\n",
 			v.Institution, v.Speciality, v.Graduated.Year(), v.Type)
