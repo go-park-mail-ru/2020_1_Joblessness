@@ -84,15 +84,13 @@ func (h *Handler) PrintSummary(w http.ResponseWriter, r *http.Request) {
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
 	case nil:
+		w.Header().Set("Content-type", "application/pdf")
 		errOut := pdf.SummaryToPdf(w, *getSummary)
 		if errOut != nil {
 			golog.Errorf("#%s: %w", rID, err)
 			w.WriteHeader(http.StatusInternalServerError)
-			json, _ := json.Marshal(models.Error{Message: err.Error()})
-			w.Write(json)
 			return
 		}
-		w.Header().Set("Content-type", "application/pdf")
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
