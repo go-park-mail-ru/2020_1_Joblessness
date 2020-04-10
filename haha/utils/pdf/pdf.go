@@ -16,10 +16,10 @@ func SummaryToPdf(w io.Writer, summary models.Summary) error {
 	pdf.SetFont("Helvetica", "", 16)
 	tr := pdf.UnicodeTranslatorFromDescriptor("cp1251")
 
-	name := fmt.Sprintf("Name: %s %s\n", summary.Author.FirstName, summary.Author.LastName)
-	personal := fmt.Sprintf("Birthday: %d-%d-%d\nGender: %s\n", summary.Author.Birthday.Year(),
+	name := fmt.Sprintf("Имя: %s %s\n", summary.Author.FirstName, summary.Author.LastName)
+	personal := fmt.Sprintf("День рождени: %d-%d-%d\nПол: %s\n", summary.Author.Birthday.Year(),
 		summary.Author.Birthday.Month(), summary.Author.Birthday.Day(), genderToStr(summary.Author.Gender))
-	contacts := fmt.Sprintf("Email: %s\nPhone: %s\n", summary.Author.Email, summary.Author.Phone)
+	contacts := fmt.Sprintf("Почта: %s\nТелефон: %s\n", summary.Author.Email, summary.Author.Phone)
 	experience := experienceToStr(summary.Experiences)
 	education := educationToStr(summary.Educations)
 
@@ -51,7 +51,7 @@ func experienceToStr(experience []models.Experience) (result string) {
 
 	result = "ОПЫТ\n"
 	for _, v := range experience {
-		result += fmt.Sprintf("Company name: %s\nRole: %s\nResponsibilities: %s\nYears: %d-%d\n",
+		result += fmt.Sprintf("Компания: %s\nДолжность: %s\nОбязанности: %s\nПериод: %d-%d\n",
 			v.CompanyName, v.Role, v.Responsibilities, v.Start.Year(), v.Stop.Year())
 	}
 	return result
@@ -64,7 +64,7 @@ func educationToStr(education []models.Education) (result string) {
 
 	result = "ОБРАЗОВАНИЕ\n"
 	for _, v := range education {
-		result += fmt.Sprintf("Institution: %s\nSpecialization: %s\nGraduated: %d\nType: %s\n",
+		result += fmt.Sprintf("Институт: %s\nСпециальность: %s\nВыпуск: %d\nТип: %s\n",
 			v.Institution, v.Speciality, v.Graduated.Year(), v.Type)
 	}
 	return result
