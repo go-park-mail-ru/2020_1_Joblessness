@@ -1,4 +1,4 @@
-package postgresUser
+package userPostgres
 
 import (
 	"database/sql"

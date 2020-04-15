@@ -1,4 +1,4 @@
-package httpUser
+package userHttp
 
 import (
 	"github.com/gorilla/mux"

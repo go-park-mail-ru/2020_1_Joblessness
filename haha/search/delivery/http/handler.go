@@ -1,4 +1,4 @@
-package httpSearch
+package searchHttp
 
 import (
 	"encoding/json"

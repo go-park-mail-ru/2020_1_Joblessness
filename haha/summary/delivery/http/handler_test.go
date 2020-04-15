@@ -1,6 +1,6 @@
-package httpSummary
+package summaryHttp
 
-//go:generate mockgen -destination=../../usecase/mock/summary.go -package=mock joblessness/haha/summary/interfaces SummaryUseCase
+//go:generate mockgen -destination=../../usecase/mock/usecase.go -package=mock joblessness/haha/summary/interfaces SummaryUseCase
 
 import (
 	"bytes"

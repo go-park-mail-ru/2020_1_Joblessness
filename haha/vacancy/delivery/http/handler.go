@@ -1,4 +1,4 @@
-package httpVacancy
+package vacancyHttp
 
 import (
 	"database/sql"

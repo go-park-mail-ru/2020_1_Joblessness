@@ -1,4 +1,4 @@
-package httpSearch
+package searchHttp
 
 //go:generate mockgen -destination=../../usecase/mock/search.go -package=mock joblessness/haha/search/interfaces SearchUseCase
 

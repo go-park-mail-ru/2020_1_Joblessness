@@ -1,6 +1,6 @@
-package httpAuth
+package authHttp
 
-//go:generate mockgen -destination=../../usecase/mock/auth.go -package=mock joblessness/haha/auth/interfaces AuthUseCase
+//go:generate mockgen -destination=../../usecase/mock/usecase.go -package=mock joblessness/haha/auth/interfaces AuthUseCase
 
 import (
 	"bytes"

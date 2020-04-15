@@ -1,4 +1,4 @@
-package httpVacancy
+package vacancyHttp
 
 //go:generate  mockgen -destination=../../usecase/mock/vacancy.go -package=mock joblessness/haha/vacancy/interfaces VacancyUseCase
 

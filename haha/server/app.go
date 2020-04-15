@@ -4,10 +4,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 	"github.com/microcosm-cc/bluemonday"
-	httpAuth "joblessness/haha/auth/delivery/http"
+	"joblessness/haha/auth/delivery/http"
 	"joblessness/haha/auth/interfaces"
-	postgresAuth "joblessness/haha/auth/repository/postgres"
-	authUseCase "joblessness/haha/auth/usecase"
+	"joblessness/haha/auth/repository/postgres"
+	"joblessness/haha/auth/usecase"
 	"joblessness/haha/middleware"
 	"joblessness/haha/search/delivery/http"
 	"joblessness/haha/search/interfaces"
@@ -17,7 +17,7 @@ import (
 	"joblessness/haha/summary/interfaces"
 	"joblessness/haha/summary/repository/postgres"
 	"joblessness/haha/summary/usecase"
-	httpUser "joblessness/haha/user/delivery/http"
+	"joblessness/haha/user/delivery/http"
 	"joblessness/haha/user/interfaces"
 	"joblessness/haha/user/repository/postgres"
 	"joblessness/haha/user/usecase"
@@ -46,11 +46,11 @@ func NewApp(c *middleware.CorsHandler) *App {
 		return nil
 	}
 
-	userRepo := postgresUser.NewUserRepository(db)
-	authRepo := postgresAuth.NewAuthRepository(db)
-	vacancyRepo := vacancyRepoPostgres.NewVacancyRepository(db)
-	summaryRepo := summaryRepoPostgres.NewSummaryRepository(db)
-	searchRepo := searchRepoPostgres.NewSearchRepository(db)
+	userRepo := userPostgres.NewUserRepository(db)
+	authRepo := authPostgres.NewAuthRepository(db)
+	vacancyRepo := vacancyPostgres.NewVacancyRepository(db)
+	summaryRepo := summaryPostgres.NewSummaryRepository(db)
+	searchRepo := searchPostgres.NewSearchRepository(db)
 	policy := bluemonday.UGCPolicy()
 
 	return &App{
@@ -75,19 +75,19 @@ func (app *App) StartRouter() {
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
 	// auth
-	httpAuth.RegisterHTTPEndpoints(router, mAuth, app.authUse)
+	authHttp.RegisterHTTPEndpoints(router, mAuth, app.authUse)
 
 	// users
-	httpUser.RegisterHTTPEndpoints(router, mAuth, app.userUse)
+	userHttp.RegisterHTTPEndpoints(router, mAuth, app.userUse)
 
 	// vacancies
-	httpVacancy.RegisterHTTPEndpoints(router, mAuth, app.vacancyUse)
+	vacancyHttp.RegisterHTTPEndpoints(router, mAuth, app.vacancyUse)
 
 	// summaries
-	httpSummary.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
+	summaryHttp.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
 
 	// search
-	httpSearch.RegisterHTTPEndpoints(router, app.searchUse)
+	searchHttp.RegisterHTTPEndpoints(router, app.searchUse)
 
 	http.Handle("/", router)
 	golog.Info("Server started")

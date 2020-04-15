@@ -1,4 +1,4 @@
-package httpUser
+package userHttp
 
 //go:generate mockgen -destination=../../usecase/mock/user.go -package=mock joblessness/haha/user/interfaces UserUseCase
 

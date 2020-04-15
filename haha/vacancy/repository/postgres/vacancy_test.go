@@ -1,4 +1,4 @@
-package vacancyRepoPostgres
+package vacancyPostgres
 
 import (
 	"database/sql"

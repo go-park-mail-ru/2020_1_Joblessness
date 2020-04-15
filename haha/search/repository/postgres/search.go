@@ -1,4 +1,4 @@
-package searchRepoPostgres
+package searchPostgres
 
 import (
 	"database/sql"

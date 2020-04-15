@@ -1,4 +1,4 @@
-package httpSummary
+package summaryHttp
 
 import (
 	"database/sql"

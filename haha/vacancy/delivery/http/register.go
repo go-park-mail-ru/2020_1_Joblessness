@@ -1,4 +1,4 @@
-package httpVacancy
+package vacancyHttp
 
 import (
 	"github.com/gorilla/mux"
