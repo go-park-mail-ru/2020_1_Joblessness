@@ -2,6 +2,7 @@ package summaryPostgres
 
 import (
 	"database/sql"
+	"fmt"
 	"joblessness/haha/models"
 	summaryInterfaces "joblessness/haha/summary/interfaces"
 	"strings"
@@ -360,7 +361,7 @@ func (r *SummaryRepository) CheckAuthor(summaryID uint64, authorID uint64) (err 
 	}
 
 	if !isAuthor {
-		return summaryInterfaces.NewErrorPersonIsNotOwner(authorID, summaryID)
+		return fmt.Errorf("%w, person id: %d, summary id: %d", summaryInterfaces.ErrPersonIsNotOwner, authorID, summaryID)
 	}
 
 	return err
@@ -374,7 +375,7 @@ func (r *SummaryRepository) ChangeSummary(summary *models.Summary) (err error) {
 					  WHERE id = $2`
 	_, err = r.db.Exec(changeSummary, summaryDB.Keywords, summaryDB.ID)
 	if err != nil {
-		return summaryInterfaces.NewErrorSummaryNotFound(summaryDB.ID)
+		return fmt.Errorf("%w, summary id: %d", summaryInterfaces.ErrSummaryNotFound, summaryDB.ID)
 	}
 
 	changeEducation := `UPDATE education
@@ -417,7 +418,7 @@ func (r *SummaryRepository) DeleteSummary(summaryID uint64) (err error) {
 					  WHERE id = $1`
 	_, err = r.db.Exec(deleteSummary, summaryID)
 	if err != nil {
-		return summaryInterfaces.NewErrorSummaryNotFound(summaryID)
+		return fmt.Errorf("%w, summary id: %d", summaryInterfaces.ErrSummaryNotFound, summaryID)
 	}
 
 	//TODO Убрал удаление связанных строк CASCADE есть в бд
@@ -433,7 +434,7 @@ func (r *SummaryRepository) SendSummary(sendSummary *models.SendSummary) (err er
 		return err
 	}
 	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
-		return summaryInterfaces.NewErrorSummaryAlreadySent()
+		return summaryInterfaces.ErrSummaryAlreadySent
 	}
 
 	return nil
@@ -451,7 +452,7 @@ func (r *SummaryRepository) RefreshSummary(summaryID, vacancyID uint64) (err err
 		return err
 	}
 	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
-		return summaryInterfaces.NewErrorNoSummaryToRefresh()
+		return summaryInterfaces.ErrNoSummaryToRefresh
 	}
 
 	return nil
@@ -467,7 +468,7 @@ func (r *SummaryRepository) IsOrganizationVacancy(vacancyID, userID uint64) (err
 	}
 
 	if !isAuthor {
-		return summaryInterfaces.NewErrorOrganizationIsNotOwner()
+		return summaryInterfaces.ErrOrganizationIsNotOwner
 	}
 
 	return err
@@ -485,7 +486,7 @@ func (r *SummaryRepository) ResponseSummary(sendSummary *models.SendSummary)  (e
 		return err
 	}
 	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
-		return summaryInterfaces.NewErrorNoSummaryToRefresh()
+		return summaryInterfaces.ErrNoSummaryToRefresh
 	}
 
 	return nil

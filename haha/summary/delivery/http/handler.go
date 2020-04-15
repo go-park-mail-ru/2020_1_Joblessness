@@ -3,6 +3,7 @@ package summaryHttp
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 	"joblessness/haha/models"
@@ -77,13 +78,13 @@ func (h *Handler) PrintSummary(w http.ResponseWriter, r *http.Request) {
 	summaryID, _ := strconv.ParseUint(mux.Vars(r)["summary_id"], 10, 64)
 
 	getSummary, err := h.useCase.GetSummary(summaryID)
-	switch err {
-	case sql.ErrNoRows :
+	switch true {
+	case errors.Is(err, sql.ErrNoRows):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case nil:
+	case err == nil:
 		errOut := pdf.SummaryToPdf(w, *getSummary)
 		if errOut != nil {
 			golog.Errorf("#%s: %w",  rID, err)
@@ -106,13 +107,13 @@ func (h *Handler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	summaryID, _ := strconv.ParseUint(mux.Vars(r)["summary_id"], 10, 64)
 
 	summary, err := h.useCase.GetSummary(summaryID)
-	switch err {
-	case sql.ErrNoRows :
+	switch true {
+	case errors.Is(err, sql.ErrNoRows):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case nil:
+	case err == nil:
 		jsonData, err := json.Marshal(summary)
 		if err != nil {
 			golog.Errorf("#%s: %w",  rID, err)
@@ -167,18 +168,18 @@ func (h *Handler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	newSummary.Author.ID = r.Context().Value("userID").(uint64)
 
 	err = h.useCase.ChangeSummary(&newSummary)
-	switch err.(type) {
-	case *summaryInterfaces.ErrorSummaryNotFound:
+	switch true {
+	case errors.Is(err, summaryInterfaces.ErrSummaryNotFound):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case *summaryInterfaces.ErrorPersonIsNotOwner:
+	case errors.Is(err, summaryInterfaces.ErrPersonIsNotOwner):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusForbidden)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case nil:
+	case err == nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
@@ -195,18 +196,18 @@ func (h *Handler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
 	authorID := r.Context().Value("userID").(uint64)
 
 	err := h.useCase.DeleteSummary(summaryID, authorID)
-	switch err.(type) {
-	case *summaryInterfaces.ErrorSummaryNotFound:
+	switch true {
+	case errors.Is(err, summaryInterfaces.ErrSummaryNotFound):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case *summaryInterfaces.ErrorPersonIsNotOwner:
+	case errors.Is(err, summaryInterfaces.ErrPersonIsNotOwner):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusForbidden)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case nil:
+	case err == nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
@@ -231,18 +232,18 @@ func (h *Handler) SendSummary(w http.ResponseWriter, r *http.Request) {
 	sendSummary.UserID =  r.Context().Value("userID").(uint64)
 
 	err = h.useCase.SendSummary(&sendSummary)
-	switch err.(type) {
-	case *summaryInterfaces.ErrorPersonIsNotOwner:
+	switch true {
+	case errors.Is(err, summaryInterfaces.ErrPersonIsNotOwner):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusForbidden)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case *summaryInterfaces.ErrorNoSummaryToRefresh:
+	case errors.Is(err, summaryInterfaces.ErrNoSummaryToRefresh):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case nil:
+	case err == nil:
 		w.WriteHeader(http.StatusOK)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)
@@ -267,18 +268,18 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 	sendSummary.OrganizationID =  r.Context().Value("userID").(uint64)
 
 	err = h.useCase.ResponseSummary(&sendSummary)
-	switch err.(type) {
-	case *summaryInterfaces.ErrorOrganizationIsNotOwner:
+	switch true {
+	case errors.Is(err, summaryInterfaces.ErrOrganizationIsNotOwner):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusForbidden)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case *summaryInterfaces.ErrorNoSummaryToRefresh:
+	case errors.Is(err, summaryInterfaces.ErrNoSummaryToRefresh):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case nil:
+	case err == nil:
 		w.WriteHeader(http.StatusOK)
 	default:
 		golog.Errorf("#%s: %w",  rID, err)

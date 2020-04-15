@@ -2,6 +2,7 @@ package authPostgres
 
 import (
 	"database/sql"
+	"fmt"
 	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/models"
 	"joblessness/haha/utils/salt"
@@ -135,7 +136,7 @@ func (r *AuthRepository) Login(login, password, SID string) (userId uint64, err 
 	rows := r.db.QueryRow(checkUser, login)
 	err = rows.Scan(&userId, &hashedPwd)
 	if err != nil || !salt.ComparePasswords(hashedPwd, password) {
-		return 0, authInterfaces.NewErrorWrongLoginOrPassword()
+		return 0, fmt.Errorf("%w, login: %s, password: %s", authInterfaces.ErrWrongLoginOrPassword, login, password)
 	}
 
 	insertSession := `INSERT INTO session (user_id, session_id, expires) 
@@ -161,7 +162,7 @@ func (r *AuthRepository) SessionExists(sessionId string) (userId uint64, err err
 	var expires time.Time
 	err = r.db.QueryRow(checkUser, sessionId).Scan(&userId,  &expires)
 	if err != nil {
-		return 0, authInterfaces.NewErrorWrongSID()
+		return 0, authInterfaces.ErrWrongSID
 	}
 
 	if expires.Before(time.Now()) {
@@ -171,7 +172,7 @@ func (r *AuthRepository) SessionExists(sessionId string) (userId uint64, err err
 			return 0, err
 		}
 		userId = 0
-		return userId, authInterfaces.NewErrorWrongSID()
+		return userId, authInterfaces.ErrWrongSID
 	}
 
 	return userId, err
@@ -187,7 +188,7 @@ func (r *AuthRepository) DoesUserExists(login string) (err error) {
 	}
 
 	if columnCount != 0 {
-		return authInterfaces.NewErrorUserAlreadyExists(login)
+		return fmt.Errorf("%w, login: %s", authInterfaces.ErrUserAlreadyExists, login)
 	}
 	return nil
 }

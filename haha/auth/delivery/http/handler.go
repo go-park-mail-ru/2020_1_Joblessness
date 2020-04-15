@@ -5,8 +5,9 @@ import (
 	"encoding/json"
 	"github.com/juju/loggo"
 	"github.com/kataras/golog"
+	"github.com/pkg/errors"
 	"gopkg.in/go-playground/validator.v9"
-	authInterfaces "joblessness/haha/auth/interfaces"
+	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/models"
 	"net/http"
 	"time"
@@ -41,13 +42,13 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.useCase.RegisterPerson(&user)
-	switch err.(type) {
-	case *authInterfaces.ErrorUserAlreadyExists:
+	switch true {
+	case errors.Is(err, authInterfaces.ErrUserAlreadyExists):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case nil:
+	case err == nil:
 		golog.Infof("#%s: %s",  rID, "Успешно")
 		w.WriteHeader(http.StatusCreated)
 	default:
@@ -76,13 +77,13 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.useCase.RegisterOrganization(&org)
-	switch err.(type) {
-	case *authInterfaces.ErrorUserAlreadyExists:
+	switch true {
+	case errors.Is(err, authInterfaces.ErrUserAlreadyExists):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case nil:
+	case err == nil:
 		golog.Infof("#%s: %s",  rID, "success")
 		w.WriteHeader(http.StatusCreated)
 	default:
@@ -112,13 +113,13 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userId, role, sessionId, err := h.useCase.Login(user.Login, user.Password)
-	switch err.(type) {
-	case *authInterfaces.ErrorWrongLoginOrPassword:
+	switch true {
+	case errors.Is(err, authInterfaces.ErrWrongLoginOrPassword):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case nil:
+	case err == nil:
 		cookie := &http.Cookie {
 			Name: "session_id",
 			Value: sessionId,
@@ -169,13 +170,13 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 	userID, _ := r.Context().Value("userID").(uint64)
 
 	role, err := h.useCase.GetRole(userID)
-	switch err {
-	case sql.ErrNoRows :
+	switch true {
+	case errors.Is(err, sql.ErrNoRows):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
-	case nil:
+	case err == nil:
 		jsonData, _ := json.Marshal(models.ResponseRole{ID: userID, Role: role})
 		w.WriteHeader(http.StatusCreated)
 		w.Write(jsonData)
