@@ -21,15 +21,15 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	router *mux.Router
-	mainMiddleware *middleware.RecoveryHandler
-	authMiddleware *middleware.SessionHandler
-	controller *gomock.Controller
-	authUseCase *mock.MockAuthUseCase
-	uc *searchUseCaseMock.MockSearchUseCase
-	person models.Person
-	personByte *bytes.Buffer
-	organization models.Organization
+	router           *mux.Router
+	mainMiddleware   *middleware.RecoveryHandler
+	authMiddleware   *middleware.SessionHandler
+	controller       *gomock.Controller
+	authUseCase      *mock.MockAuthUseCase
+	uc               *searchUseCaseMock.MockSearchUseCase
+	person           models.Person
+	personByte       *bytes.Buffer
+	organization     models.Organization
 	organizationByte *bytes.Buffer
 }
 

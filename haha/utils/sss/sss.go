@@ -9,14 +9,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"io"
 	"mime/multipart"
+	"os"
 	"strconv"
 	"strings"
 )
 
 var sess = session.Must(session.NewSession(&aws.Config{
 	Region: aws.String("ru-msk"),
-	Credentials: credentials.NewStaticCredentials("orFNtcQG9pi8NvqcFhLAj4",
-		"33CiuS769M4u1wHAk42HhdtCrCb795MGuez3biaE3CeK", ""),
+	Credentials: credentials.NewStaticCredentials(os.Getenv("HOTBOX_ID"),
+		os.Getenv("HOTBOX_SECRETE"), os.Getenv("HOTBOX_TOKEN")),
 	Endpoint: aws.String("https://hb.bizmrg.com"),
 }))
 
@@ -29,10 +30,10 @@ func UploadAvatar(form *multipart.Form, userID uint64) (link string, err error) 
 	}
 
 	file, err := fileHeaders[0].Open()
-	defer file.Close()
 	if err != nil {
 		return "", err
 	}
+	defer file.Close()
 
 	var buf bytes.Buffer
 	io.Copy(&buf, file)
@@ -56,3 +57,4 @@ func UploadAvatar(form *multipart.Form, userID uint64) (link string, err error) 
 
 	return link, nil
 }
+

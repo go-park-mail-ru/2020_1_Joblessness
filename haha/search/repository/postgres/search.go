@@ -22,14 +22,14 @@ type User struct {
 }
 
 type Person struct {
-	ID uint64
-	Name string
-	Gender string
+	ID       uint64
+	Name     string
+	Gender   string
 	Birthday time.Time
 }
 
 type Organization struct {
-	ID uint64
+	ID   uint64
 	Name string
 	Site string
 }
@@ -54,7 +54,7 @@ func (r SearchRepository) SearchPersons(request, since, desc string) (result []*
 
 	page, _ := strconv.Atoi(since)
 
-	getPersons := 	`SELECT users.id as userId, p.name, tag, avatar
+	getPersons := `SELECT users.id as userId, p.name, tag, avatar
 					FROM users
 					JOIN person p on users.person_id = p.id
 					WHERE lower(name) LIKE lower('%' || $1 || '%')
@@ -82,7 +82,7 @@ func (r SearchRepository) SearchPersons(request, since, desc string) (result []*
 			personDB.FirstName = personDB.FirstName[:index]
 		}
 
-		result= append(result, &personDB)
+		result = append(result, &personDB)
 	}
 
 	return result, nil
@@ -98,7 +98,7 @@ func (r SearchRepository) SearchOrganizations(request, since, desc string) (resu
 
 	page, _ := strconv.Atoi(since)
 
-	getOrgs := 	`SELECT users.id as userId, name, tag, avatar
+	getOrgs := `SELECT users.id as userId, name, tag, avatar
 					FROM users
 					JOIN organization o on users.organization_id = o.id
 					WHERE lower(name) LIKE lower('%' || $1 || '%')
@@ -121,7 +121,7 @@ func (r SearchRepository) SearchOrganizations(request, since, desc string) (resu
 			return nil, err
 		}
 
-		result= append(result, &orgDB)
+		result = append(result, &orgDB)
 	}
 
 	return result, nil
@@ -161,7 +161,7 @@ func (r SearchRepository) SearchVacancies(request, since, desc string) (result [
 			return nil, err
 		}
 
-		result= append(result, &vacancyDB)
+		result = append(result, &vacancyDB)
 	}
 
 	return result, nil

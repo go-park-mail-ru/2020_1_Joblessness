@@ -8,16 +8,16 @@ import (
 )
 
 type Vacancy struct {
-	ID uint64
-	OrganizationID uint64
-	Name string
-	Description string
-	SalaryFrom int
-	SalaryTo int
-	WithTax bool
+	ID               uint64
+	OrganizationID   uint64
+	Name             string
+	Description      string
+	SalaryFrom       int
+	SalaryTo         int
+	WithTax          bool
 	Responsibilities string
-	Conditions string
-	Keywords string
+	Conditions       string
+	Keywords         string
 }
 
 type User struct {
@@ -32,7 +32,7 @@ type User struct {
 }
 
 type Organization struct {
-	ID uint64
+	ID   uint64
 	Name string
 	Site string
 }
@@ -92,8 +92,8 @@ func (r *VacancyRepository) CreateVacancy(vacancy *models.Vacancy) (vacancyID ui
                      					   responsibilities, conditions, keywords)
 					  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;`
 	err = r.db.QueryRow(createVacancy, &vacancyDB.OrganizationID, &vacancyDB.Name, &vacancyDB.Description,
-						&vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
-						&vacancyDB.Conditions, &vacancyDB.Keywords).Scan(&vacancyID)
+		&vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
+		&vacancyDB.Conditions, &vacancyDB.Keywords).Scan(&vacancyID)
 	if err != nil {
 		return vacancyID, err
 	}
@@ -156,8 +156,8 @@ func (r *VacancyRepository) GetVacancies(page int) (vacancies models.Vacancies, 
 	for rows.Next() {
 		var vacancyDB Vacancy
 		err = rows.Scan(&vacancyDB.ID, &vacancyDB.OrganizationID, &vacancyDB.Name, &vacancyDB.Description,
-						&vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
-						&vacancyDB.Conditions, &vacancyDB.Keywords)
+			&vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
+			&vacancyDB.Conditions, &vacancyDB.Keywords)
 		if err != nil {
 			return vacancies, err
 		}
@@ -192,8 +192,8 @@ func (r *VacancyRepository) ChangeVacancy(vacancy *models.Vacancy) (err error) {
 						  with_tax = $5, responsibilities = $6, conditions = $7, keywords = $8
 					  WHERE id = $9;`
 	_, err = r.db.Exec(changeVacancy, vacancyDB.Name, vacancyDB.Description,
-						 vacancyDB.SalaryFrom, vacancyDB.SalaryTo, vacancyDB.WithTax, vacancyDB.Responsibilities,
-						 vacancyDB.Conditions, vacancyDB.Keywords, vacancyDB.ID)
+		vacancyDB.SalaryFrom, vacancyDB.SalaryTo, vacancyDB.WithTax, vacancyDB.Responsibilities,
+		vacancyDB.Conditions, vacancyDB.Keywords, vacancyDB.ID)
 
 	return err
 }

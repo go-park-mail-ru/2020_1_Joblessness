@@ -24,7 +24,7 @@ func (corsList *CorsHandler) Preflight(w http.ResponseWriter, req *http.Request)
 	corsList.PrivateApi(w, req)
 }
 
-func (corsList *CorsHandler) PrivateApi (w http.ResponseWriter, req *http.Request) bool {
+func (corsList *CorsHandler) PrivateApi(w http.ResponseWriter, req *http.Request) bool {
 	referer := req.Header.Get("Referer")
 	origin := req.Header.Get("Origin")
 
@@ -39,7 +39,7 @@ func (corsList *CorsHandler) PrivateApi (w http.ResponseWriter, req *http.Reques
 
 	if result {
 		golog.Info("Allowed")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Origin, " +
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Origin, "+
 			"Set-Cookie, Access-Control-Allow-Methods, Access-Control-Allow-Credentials")
 		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
 		w.Header().Set("Access-Control-Allow-Origin", origin)

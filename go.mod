@@ -11,6 +11,7 @@ require (
 	github.com/juju/loggo v0.0.0-20190526231331-6e530bcce5d8
 	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/kataras/golog v0.0.10
+	github.com/kpawlik/gofpdf v0.0.0-20150618133642-98fe7ea10d03
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/lib/pq v1.3.0
 	github.com/microcosm-cc/bluemonday v1.0.2

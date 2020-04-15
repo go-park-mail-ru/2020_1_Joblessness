@@ -30,13 +30,13 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	var user models.Person
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if err = validator.New().Struct(user); err != nil {
-		golog.Errorf("#%s: %s",  rID, "Empty login or password")
+		golog.Errorf("#%s: %s", rID, "Empty login or password")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -52,7 +52,7 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 		golog.Infof("#%s: %s",  rID, "Успешно")
 		w.WriteHeader(http.StatusCreated)
 	default:
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
@@ -65,13 +65,13 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 	var org models.Organization
 	err := json.NewDecoder(r.Body).Decode(&org)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if err = validator.New().Struct(org); err != nil {
-		golog.Errorf("#%s: %s",  rID, "Empty login or password")
+		golog.Errorf("#%s: %s", rID, "Empty login or password")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -87,7 +87,7 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 		golog.Infof("#%s: %s",  rID, "success")
 		w.WriteHeader(http.StatusCreated)
 	default:
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
@@ -101,13 +101,13 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&user)
 	golog.Debugf("#%s: %w", rID, user)
 	if err != nil {
-		golog.Errorf("#%s: %w\n%w",  rID, err, user)
+		golog.Errorf("#%s: %w\n%w", rID, err, user)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if err = validator.New().Struct(user); err != nil {
-		golog.Errorf("#%s: %s",  rID, "Empty login or password")
+		golog.Errorf("#%s: %s", rID, "Empty login or password")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -135,7 +135,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 		w.Write(jsonData)
 	default:
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
@@ -146,14 +146,14 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	session, err := r.Cookie("session_id")
 	if err == http.ErrNoCookie {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 
 	err = h.useCase.Logout(session.Value)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -181,7 +181,7 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusCreated)
 		w.Write(jsonData)
 	default:
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)

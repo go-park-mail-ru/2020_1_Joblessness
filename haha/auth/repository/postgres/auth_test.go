@@ -15,10 +15,10 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	rep *AuthRepository
-	db *sql.DB
-	mock sqlmock.Sqlmock
-	person models.Person
+	rep          *AuthRepository
+	db           *sql.DB
+	mock         sqlmock.Sqlmock
+	person       models.Person
 	organization models.Organization
 }
 
@@ -29,25 +29,25 @@ func (suite *userSuite) SetupTest() {
 	suite.rep = NewAuthRepository(suite.db)
 
 	suite.person = models.Person{
-		ID: 1,
-		Login:       "login",
-		Password:    "password",
-		FirstName:   "first",
-		LastName:    "name",
-		Email:       "email",
-		Phone: "phone",
-		Tag: "tag",
+		ID:        1,
+		Login:     "login",
+		Password:  "password",
+		FirstName: "first",
+		LastName:  "name",
+		Email:     "email",
+		Phone:     "phone",
+		Tag:       "tag",
 	}
 
 	suite.organization = models.Organization{
-		ID: 1,
-		Login:       "login",
-		Password:    "password",
-		Name:   "name",
-		Site:    "site",
-		Email:       "email",
-		Phone: "phone",
-		Tag: "tag",
+		ID:       1,
+		Login:    "login",
+		Password: "password",
+		Name:     "name",
+		Site:     "site",
+		Email:    "email",
+		Phone:    "phone",
+		Tag:      "tag",
 	}
 }
 
@@ -104,7 +104,7 @@ func (suite *userSuite) TestCreatePerson() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO person ").
-		WithArgs(suite.person.FirstName + " " + suite.person.LastName, suite.person.Gender, suite.person.Birthday).
+		WithArgs(suite.person.FirstName+" "+suite.person.LastName, suite.person.Gender, suite.person.Birthday).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
@@ -227,7 +227,7 @@ func (suite *userSuite) TestSessionExistsFailed() {
 }
 
 func (suite *userSuite) TestSessionExistsExpired() {
-	rows := sqlmock.NewRows([]string{"id", "expires"}).AddRow(1, time.Now().Add(-1 * time.Hour))
+	rows := sqlmock.NewRows([]string{"id", "expires"}).AddRow(1, time.Now().Add(-1*time.Hour))
 
 	suite.mock.
 		ExpectQuery("SELECT user_id, expires").

@@ -20,7 +20,7 @@ func NewHandler(useCase searchInterfaces.SearchUseCase) *Handler {
 	}
 }
 
-func (h *Handler) Search (w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
 	searchType := r.FormValue("type")
@@ -39,7 +39,7 @@ func (h *Handler) Search (w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write(resultJSON)
 	default:
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

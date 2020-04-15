@@ -26,7 +26,7 @@ func (corsList *CorsHandler) Preflight(w http.ResponseWriter, req *http.Request)
 }
 
 //TODO разбить
-func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Request) bool {
+func (corsList *CorsHandler) PrivateApi(w *http.ResponseWriter, req *http.Request) bool {
 	referer := req.Header.Get("Referer")
 	origin := req.Header.Get("Origin")
 

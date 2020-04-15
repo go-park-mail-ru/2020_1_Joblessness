@@ -14,6 +14,6 @@ func RegisterHTTPEndpoints(router *mux.Router, m *middleware.SessionHandler, uc 
 	vacanciesRouter.HandleFunc("", h.GetVacancies).Methods("GET")
 	vacanciesRouter.HandleFunc("/{vacancy_id:[0-9]+}", h.GetVacancy).Methods("GET")
 	vacanciesRouter.HandleFunc("/{vacancy_id:[0-9]+}", m.OrganizationRequired(h.ChangeVacancy)).Methods("PUT")
-	vacanciesRouter.HandleFunc("/{vacancy_id:[0-9]+}", m.OrganizationRequired(h.DeleteVacancy) ).Methods("DELETE")
-	router.HandleFunc("/organizations/{organization_id:[0-9]+}/vacancies", h.GetOrgVacancies ).Methods("GET")
+	vacanciesRouter.HandleFunc("/{vacancy_id:[0-9]+}", m.OrganizationRequired(h.DeleteVacancy)).Methods("DELETE")
+	router.HandleFunc("/organizations/{organization_id:[0-9]+}/vacancies", h.GetOrgVacancies).Methods("GET")
 }

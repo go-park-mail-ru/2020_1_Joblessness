@@ -23,16 +23,16 @@ type User struct {
 }
 
 type Person struct {
-	ID uint64
-	Name string
-	Gender string
+	ID       uint64
+	Name     string
+	Gender   string
 	Birthday time.Time
 }
 
 type Organization struct {
-	ID uint64
-	Name string
-	Site string
+	ID    uint64
+	Name  string
+	Site  string
 	About string
 }
 
@@ -43,38 +43,38 @@ func toPostgresPerson(p *models.Person) (*User, *Person) {
 	}
 
 	return &User{
-		ID:             p.ID,
-		Login:          p.Login,
-		Password:       p.Password,
-		Tag:            p.Tag,
-		Email:          p.Email,
-		Phone:          p.Phone,
-		Registered:     p.Registered,
-		Avatar:         p.Avatar,
-	},
-	&Person{
-		Name:     name,
-		Gender:   p.Gender,
-		Birthday: p.Birthday,
-	}
+			ID:         p.ID,
+			Login:      p.Login,
+			Password:   p.Password,
+			Tag:        p.Tag,
+			Email:      p.Email,
+			Phone:      p.Phone,
+			Registered: p.Registered,
+			Avatar:     p.Avatar,
+		},
+		&Person{
+			Name:     name,
+			Gender:   p.Gender,
+			Birthday: p.Birthday,
+		}
 }
 
 func toPostgresOrg(o *models.Organization) (*User, *Organization) {
 	return &User{
-		ID:             o.ID,
-		Login:          o.Login,
-		Password:       o.Password,
-		Tag:            o.Tag,
-		Email:          o.Email,
-		Phone:          o.Phone,
-		Registered:     o.Registered,
-		Avatar:         o.Avatar,
-	},
-	&Organization{
-		Name: o.Name,
-		Site: o.Site,
-		About: o.About,
-	}
+			ID:         o.ID,
+			Login:      o.Login,
+			Password:   o.Password,
+			Tag:        o.Tag,
+			Email:      o.Email,
+			Phone:      o.Phone,
+			Registered: o.Registered,
+			Avatar:     o.Avatar,
+		},
+		&Organization{
+			Name:  o.Name,
+			Site:  o.Site,
+			About: o.About,
+		}
 }
 
 func toModelPerson(u *User, p *Person) *models.Person {
@@ -271,7 +271,7 @@ func (r *UserRepository) GetListOfOrgs(page int) (result models.Organizations, e
 	defer rows.Close()
 
 	var (
-		userId uint64
+		userId     uint64
 		name, site string
 	)
 	result = make(models.Organizations, 0)
@@ -282,16 +282,16 @@ func (r *UserRepository) GetListOfOrgs(page int) (result models.Organizations, e
 			return result, err
 		}
 
-		result= append(result, &models.Organization{
-			ID:          userId,
-			Login:       "",
-			Password:    "",
-			Name:        name,
-			Site:        site,
-			Email:       "",
-			Phone: "",
-			Tag:         "",
-			Registered:  time.Time{},
+		result = append(result, &models.Organization{
+			ID:         userId,
+			Login:      "",
+			Password:   "",
+			Name:       name,
+			Site:       site,
+			Email:      "",
+			Phone:      "",
+			Tag:        "",
+			Registered: time.Time{},
 		})
 	}
 

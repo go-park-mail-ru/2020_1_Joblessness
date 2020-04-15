@@ -23,31 +23,31 @@ func NewHandler(useCase vacancyInterfaces.VacancyUseCase) *Handler {
 func (h *Handler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	var newVacancy models.Vacancy
-	newVacancy.Organization.ID =  r.Context().Value("userID").(uint64)
+	newVacancy.Organization.ID = r.Context().Value("userID").(uint64)
 
 	err := json.NewDecoder(r.Body).Decode(&newVacancy)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	if err = validator.New().Struct(newVacancy); err != nil {
-		golog.Errorf("#%s: %s",  rID, "Empty vacancy name")
+		golog.Errorf("#%s: %s", rID, "Empty vacancy name")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	newVacancy.ID, err = h.useCase.CreateVacancy(&newVacancy)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	jsonData, err := json.Marshal(models.ResponseID{ID: newVacancy.ID})
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -61,20 +61,20 @@ func (h *Handler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 
 	getVacancy, err := h.useCase.GetVacancy(vacancyId)
 	switch err {
-	case sql.ErrNoRows :
-		golog.Errorf("#%s: %w",  rID, err)
+	case sql.ErrNoRows:
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
 	case nil:
 		jsonData, err := json.Marshal(getVacancy)
 		if err != nil {
-			golog.Errorf("#%s: %w",  rID, err)
+			golog.Errorf("#%s: %w", rID, err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonData)
 	default:
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }
@@ -85,14 +85,14 @@ func (h *Handler) GetVacancies(w http.ResponseWriter, r *http.Request) {
 
 	vacancies, err := h.useCase.GetVacancies(page)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	jsonData, err := json.Marshal(vacancies)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -107,7 +107,7 @@ func (h *Handler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 	var newVacancy models.Vacancy
 	err := json.NewDecoder(r.Body).Decode(&newVacancy)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -117,7 +117,7 @@ func (h *Handler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 
 	err = h.useCase.ChangeVacancy(&newVacancy)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -133,7 +133,7 @@ func (h *Handler) DeleteVacancy(w http.ResponseWriter, r *http.Request) {
 
 	err := h.useCase.DeleteVacancy(vacancyID, authorID)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -147,14 +147,14 @@ func (h *Handler) GetOrgVacancies(w http.ResponseWriter, r *http.Request) {
 
 	vacancies, err := h.useCase.GetOrgVacancies(orgID)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	jsonData, err := json.Marshal(vacancies)
 	if err != nil {
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

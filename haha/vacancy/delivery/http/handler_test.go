@@ -22,15 +22,15 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	router *mux.Router
+	router         *mux.Router
 	mainMiddleware *middleware.RecoveryHandler
 	authMiddleware *middleware.SessionHandler
-	controller *gomock.Controller
-	authUseCase *mockAuth.MockAuthUseCase
-	uc *vacancyUseCaseMock.MockVacancyUseCase
-	vacancy models.Vacancy
-	vacancyByte *bytes.Buffer
-	cookie *http.Cookie
+	controller     *gomock.Controller
+	authUseCase    *mockAuth.MockAuthUseCase
+	uc             *vacancyUseCaseMock.MockVacancyUseCase
+	vacancy        models.Vacancy
+	vacancyByte    *bytes.Buffer
+	cookie         *http.Cookie
 }
 
 func (suite *userSuite) SetupTest() {
@@ -44,8 +44,8 @@ func (suite *userSuite) SetupTest() {
 	suite.authMiddleware = middleware.NewAuthMiddleware(suite.authUseCase)
 
 	suite.vacancy = models.Vacancy{
-		ID:              3,
-		Organization:     models.VacancyOrganization{
+		ID: 3,
+		Organization: models.VacancyOrganization{
 			ID:     12,
 			Tag:    "",
 			Email:  "",
@@ -68,13 +68,13 @@ func (suite *userSuite) SetupTest() {
 	suite.vacancyByte = bytes.NewBuffer(vacancyJSON)
 	assert.NoError(suite.T(), err)
 
-	suite.cookie = &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	suite.cookie = &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	RegisterHTTPEndpoints(suite.router,suite.authMiddleware, suite.uc)
+	RegisterHTTPEndpoints(suite.router, suite.authMiddleware, suite.uc)
 }
 
 func TestSuite(t *testing.T) {
