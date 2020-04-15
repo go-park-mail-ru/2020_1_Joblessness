@@ -1,6 +1,7 @@
 package summaryUseCase
 
 import (
+	"errors"
 	"github.com/microcosm-cc/bluemonday"
 	"joblessness/haha/models"
 	"joblessness/haha/summary/interfaces"
@@ -77,7 +78,7 @@ func (u *SummaryUseCase) SendSummary(sendSummary *models.SendSummary) (err error
 	}
 
 	err = u.summaryRepo.SendSummary(sendSummary)
-	if err == summaryInterfaces.NewErrorSummaryAlreadySent() {
+	if errors.Is(err, summaryInterfaces.ErrSummaryAlreadySent) {
 		err = u.summaryRepo.RefreshSummary(sendSummary.SummaryID, sendSummary.VacancyID)
 	}
 

@@ -79,7 +79,7 @@ func (suite *userSuite) TestDoesExists() {
 
 	err := suite.rep.DoesUserExists("name")
 
-	assert.IsType(suite.T(), authInterfaces.NewErrorUserAlreadyExists(""), err)
+	assert.True(suite.T(), errors.Is(err, authInterfaces.ErrUserAlreadyExists))
 }
 
 func (suite *userSuite) TestDoesExistsErr() {
@@ -240,5 +240,5 @@ func (suite *userSuite) TestSessionExistsExpired() {
 
 	_, err := suite.rep.SessionExists("sid")
 
-	assert.IsType(suite.T(), authInterfaces.NewErrorWrongSID(), err)
+	assert.True(suite.T(), errors.Is(err, authInterfaces.ErrWrongSID))
 }

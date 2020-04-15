@@ -461,7 +461,7 @@ func (suite *userSuite) TestSendSummary() {
 func (suite *userSuite) TestSendSummaryNotOwner() {
 	suite.uc.EXPECT().
 		SendSummary(&suite.sendSum).
-		Return(summaryInterfaces.NewErrorPersonIsNotOwner(uint64(1), uint64(1))).
+		Return(summaryInterfaces.ErrPersonIsNotOwner).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		PersonSession("username").
@@ -479,7 +479,7 @@ func (suite *userSuite) TestSendSummaryNotOwner() {
 func (suite *userSuite) TestSendSummaryNoSummary() {
 	suite.uc.EXPECT().
 		SendSummary(&suite.sendSum).
-		Return(summaryInterfaces.NewErrorNoSummaryToRefresh()).
+		Return(summaryInterfaces.ErrNoSummaryToRefresh).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		PersonSession("username").
@@ -603,7 +603,7 @@ func (suite *userSuite) TestResponseSummaryWrongURL() {
 func (suite *userSuite) TestResponseSummaryNotOwner() {
 	suite.uc.EXPECT().
 		ResponseSummary(&suite.sendSum).
-		Return(summaryInterfaces.NewErrorOrganizationIsNotOwner()).
+		Return(summaryInterfaces.ErrOrganizationIsNotOwner).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		OrganizationSession("username").
@@ -621,7 +621,7 @@ func (suite *userSuite) TestResponseSummaryNotOwner() {
 func (suite *userSuite) TestResponseSummaryNoSummary() {
 	suite.uc.EXPECT().
 		ResponseSummary(&suite.sendSum).
-		Return(summaryInterfaces.NewErrorNoSummaryToRefresh()).
+		Return(summaryInterfaces.ErrNoSummaryToRefresh).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		OrganizationSession("username").

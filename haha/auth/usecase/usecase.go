@@ -1,6 +1,7 @@
 package authUseCase
 
 import (
+	"fmt"
 	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/models"
 	"math/rand"
@@ -81,7 +82,7 @@ func (a *AuthUseCase) PersonSession(sessionId string) (uint64, error) {
 	if role == "person" {
 		return userID, nil
 	}
-	return userID, authInterfaces.NewErrorUserNotPerson(userID)
+	return userID, fmt.Errorf("%w, user id: %d", authInterfaces.ErrUserNotPerson, userID)
 }
 
 func (a *AuthUseCase) OrganizationSession(sessionId string) (uint64, error) {
@@ -98,5 +99,5 @@ func (a *AuthUseCase) OrganizationSession(sessionId string) (uint64, error) {
 	if role == "organization" {
 		return userID, nil
 	}
-	return userID, authInterfaces.NewErrorUserNotOrganization(userID)
+	return userID, fmt.Errorf("%w, user id: %d", authInterfaces.ErrUserNotOrganization, userID)
 }

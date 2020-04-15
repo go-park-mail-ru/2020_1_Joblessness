@@ -111,7 +111,7 @@ func (suite *userSuite) TestRegistrationPerson() {
 func (suite *userSuite) TestFailedRegistrationPerson() {
 	suite.uc.EXPECT().
 		RegisterPerson(&suite.person).
-		Return(authInterfaces.NewErrorUserAlreadyExists("")).
+		Return(authInterfaces.ErrUserAlreadyExists).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users", suite.personByte)
@@ -137,7 +137,7 @@ func (suite *userSuite) TestRegistrationOrganization() {
 func (suite *userSuite) TestFailedRegistrationOrganization() {
 	suite.uc.EXPECT().
 		RegisterOrganization(&suite.organization).
-		Return(authInterfaces.NewErrorUserAlreadyExists("")).
+		Return(authInterfaces.ErrUserAlreadyExists).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/organizations", suite.organizationByte)
@@ -179,7 +179,7 @@ func (suite *userSuite) TestFailedLoginNotFound() {
 
 	suite.uc.EXPECT().
 		Login(userLogin.Login, userLogin.Password).
-		Return(uint64(0), "organization", "", authInterfaces.NewErrorWrongLoginOrPassword()).
+		Return(uint64(0), "organization", "", authInterfaces.ErrWrongLoginOrPassword).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(userJSON))
@@ -291,7 +291,7 @@ func (suite *userSuite) TestCheckWrongSid() {
 
 	suite.uc.EXPECT().
 		SessionExists(cookie.Value).
-		Return(uint64(0), authInterfaces.NewErrorWrongSID()).
+		Return(uint64(0), authInterfaces.ErrWrongSID).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))
