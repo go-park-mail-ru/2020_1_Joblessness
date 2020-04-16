@@ -115,3 +115,11 @@ func (u *SummaryUseCase) GetUserSendSummaries(userID uint64) (summaries models.O
 	res.Sanitize(u.policy)
 	return res, nil
 }
+
+func (u *SummaryUseCase) SendSummaryByMail(summaryID, authorID uint64, to string) (err error) {
+	if err = u.summaryRepo.CheckAuthor(summaryID, authorID); err != nil {
+		return err
+	}
+
+	return u.summaryRepo.SendSummaryByMail(summaryID, to)
+}

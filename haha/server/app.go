@@ -70,7 +70,7 @@ func (app *App) StartRouter() {
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
 
 	router.Use(m.RecoveryMiddleware)
-	router.Use(app.corsHandler.CorsMiddleware)
+	//router.Use(app.corsHandler.CorsMiddleware)
 	router.Use(m.LogMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 

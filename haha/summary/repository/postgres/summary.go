@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"joblessness/haha/models"
-	summaryInterfaces "joblessness/haha/summary/interfaces"
+	"joblessness/haha/summary/interfaces"
+	"joblessness/haha/utils/mail"
 	"strings"
 	"time"
 )
@@ -555,4 +556,23 @@ func (r *SummaryRepository) GetUserSendSummaries(userID uint64) (summaries model
 		summaries = append(summaries, &vacancyDB)
 	}
 	return summaries, nil
+}
+
+func (r *SummaryRepository) SendSummaryByMail(summaryID uint64, to string) (err error) {
+	summary, err := r.GetSummary(summaryID)
+	if err != nil {
+		return err
+	}
+
+	htmlContent, err := mail.SummaryToHTML(*summary)
+	if err != nil {
+		return err
+	}
+
+	err = mail.SendMessage(htmlContent, to)
+	if err != nil {
+		return err
+	}
+
+	return err
 }

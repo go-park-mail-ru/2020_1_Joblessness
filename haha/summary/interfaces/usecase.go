@@ -13,4 +13,5 @@ type SummaryUseCase interface {
 	ResponseSummary(sendSummary *models.SendSummary) (err error)
 	GetOrgSendSummaries(userID uint64) (summaries models.OrgSummaries, err error)
 	GetUserSendSummaries(userID uint64) (summaries models.OrgSummaries, err error)
+	SendSummaryByMail(summaryID, authorID uint64, to string) (err error)
 }
