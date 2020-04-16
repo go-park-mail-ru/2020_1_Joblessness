@@ -16,6 +16,10 @@ type MockSummaryUseCase struct {
 	recorder *MockSummaryUseCaseMockRecorder
 }
 
+func (m *MockSummaryUseCase) SendSummaryByMail(summaryID, authorID uint64, to string) (err error) {
+	panic("implement me")
+}
+
 // MockSummaryUseCaseMockRecorder is the mock recorder for MockSummaryUseCase
 type MockSummaryUseCaseMockRecorder struct {
 	mock *MockSummaryUseCase

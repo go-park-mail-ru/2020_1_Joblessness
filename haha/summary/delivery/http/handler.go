@@ -348,7 +348,7 @@ func (h *Handler) SendSummaryByMail(w http.ResponseWriter, r *http.Request) {
 	case err == nil:
 		w.WriteHeader(http.StatusOK)
 	default:
-		golog.Errorf("#s: %w", rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json, _ := json.Marshal(models.Error{Message: err.Error()})
 		w.Write(json)
