@@ -1,6 +1,8 @@
 package server
 
 import (
+	"flag"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 	"github.com/microcosm-cc/bluemonday"
@@ -70,14 +72,23 @@ func NewApp(c *middleware.CorsHandler) *App {
 	}
 }
 
+var (
+	noCors = flag.Bool("no-cors", false, "disable cors")
+	port = flag.Uint64("p", 8001, "port")
+)
+
 func (app *App) StartRouter() {
+	flag.Parse()
+
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
 
 	router.Use(m.RecoveryMiddleware)
-	//router.Use(app.corsHandler.CorsMiddleware)
+	if !*noCors {
+		router.Use(app.corsHandler.CorsMiddleware)
+	}
 	router.Use(m.LogMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
@@ -89,8 +100,8 @@ func (app *App) StartRouter() {
 	recommendationHttp.RegisterHTTPEndpoints(router, mAuth, app.recommendationUse)
 
 	http.Handle("/", router)
-	golog.Info("Server started")
-	err := http.ListenAndServe(":8001", router)
+	golog.Infof("Server started at port :%d", *port)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), router)
 	if err != nil {
 		golog.Error("Server failed")
 	}
