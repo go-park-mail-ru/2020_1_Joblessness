@@ -12,8 +12,6 @@ type SummaryRepository interface {
 	DeleteSummary(summaryID uint64) (err error)
 	SendSummary(sendSummary *models.SendSummary) (err error)
 	RefreshSummary(summaryID, vacancyID uint64) (err error)
-	IsOrganizationVacancy(vacancyID, userID uint64) (err error)
-	ResponseSummary(sendSummary *models.SendSummary) (err error)
 	GetOrgSendSummaries(userID uint64) (summaries models.OrgSummaries, err error)
 	GetUserSendSummaries(userID uint64) (summaries models.OrgSummaries, err error)
 	SendSummaryByMail(summaryID uint64, to string) (err error)

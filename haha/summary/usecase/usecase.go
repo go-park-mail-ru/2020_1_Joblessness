@@ -85,17 +85,6 @@ func (u *SummaryUseCase) SendSummary(sendSummary *models.SendSummary) (err error
 	return err
 }
 
-func (u *SummaryUseCase) ResponseSummary(sendSummary *models.SendSummary) (err error) {
-	err = u.summaryRepo.IsOrganizationVacancy(sendSummary.VacancyID, sendSummary.OrganizationID)
-	if err != nil {
-		return err
-	}
-
-	err = u.summaryRepo.ResponseSummary(sendSummary)
-
-	return err
-}
-
 func (u *SummaryUseCase) GetOrgSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
 	res, err := u.summaryRepo.GetOrgSendSummaries(userID)
 	if err != nil {

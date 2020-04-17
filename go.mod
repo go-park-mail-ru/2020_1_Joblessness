@@ -8,6 +8,7 @@ require (
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/golang/mock v1.4.3
 	github.com/gorilla/mux v1.7.4
+	github.com/gorilla/websocket v1.4.2
 	github.com/juju/loggo v0.0.0-20190526231331-6e530bcce5d8
 	github.com/jung-kurt/gofpdf v1.16.2 // indirect
 	github.com/kataras/golog v0.0.10

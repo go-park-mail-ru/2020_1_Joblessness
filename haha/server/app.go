@@ -8,6 +8,10 @@ import (
 	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/auth/repository/postgres"
 	"joblessness/haha/auth/usecase"
+	"joblessness/haha/interview/delivery/http"
+	"joblessness/haha/interview/interfaces"
+	"joblessness/haha/interview/repository/postgres"
+	"joblessness/haha/interview/usecase"
 	"joblessness/haha/middleware"
 	"joblessness/haha/search/delivery/http"
 	"joblessness/haha/search/interfaces"
@@ -36,6 +40,7 @@ type App struct {
 	vacancyUse  vacancyInterfaces.VacancyUseCase
 	summaryUse  summaryInterfaces.SummaryUseCase
 	searchUse   searchInterfaces.SearchUseCase
+	interviewUse   interviewInterfaces.InterviewUseCase
 	corsHandler *middleware.CorsHandler
 }
 
@@ -51,6 +56,7 @@ func NewApp(c *middleware.CorsHandler) *App {
 	vacancyRepo := vacancyPostgres.NewVacancyRepository(db)
 	summaryRepo := summaryPostgres.NewSummaryRepository(db)
 	searchRepo := searchPostgres.NewSearchRepository(db)
+	interviewRepo := interviewPostgres.NewInterviewRepository(db)
 	policy := bluemonday.UGCPolicy()
 
 	return &App{
@@ -59,6 +65,7 @@ func NewApp(c *middleware.CorsHandler) *App {
 		vacancyUse:  vacancyUseCase.NewVacancyUseCase(vacancyRepo, policy),
 		summaryUse:  summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
 		searchUse:   searchUseCase.NewSearchUseCase(searchRepo, policy),
+		interviewUse:   interviewUseCase.NewInterviewUseCase(interviewRepo, policy),
 		corsHandler: c,
 	}
 }
@@ -88,6 +95,9 @@ func (app *App) StartRouter() {
 
 	// search
 	searchHttp.RegisterHTTPEndpoints(router, app.searchUse)
+
+	// interview
+	interviewHttp.RegisterHTTPEndpoints(router, mAuth, app.interviewUse)
 
 	http.Handle("/", router)
 	golog.Info("Server started")

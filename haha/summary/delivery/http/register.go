@@ -19,7 +19,6 @@ func RegisterHTTPEndpoints(router *mux.Router, m *middleware.SessionHandler, uc 
 	summariesRouter.HandleFunc("/{summary_id:[0-9]+}/print", h.PrintSummary).Methods("GET")
 	usersRouter.HandleFunc("/{user_id:[0-9]+}/summaries", h.GetUserSummaries).Methods("GET")
 	router.HandleFunc("/vacancies/{vacancy_id:[0-9]+}/response", m.PersonRequired(h.SendSummary)).Methods("POST")
-	summariesRouter.HandleFunc("/{summary_id:[0-9]+}/response", m.OrganizationRequired(h.ResponseSummary)).Methods("PUT")
 	router.HandleFunc("/organizations/{user_id:[0-9]+}/response", h.GetOrgSendSummaries).Methods("GET")
 	usersRouter.HandleFunc("/{user_id:[0-9]+}/response", h.GetUserSendSummaries).Methods("GET")
 	summariesRouter.HandleFunc("/{summary_id:[0-9]+}/mail", m.PersonRequired(h.SendSummaryByMail)).Methods("POST")

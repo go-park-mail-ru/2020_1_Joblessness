@@ -251,42 +251,6 @@ func (h *Handler) SendSummary(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
-	rID := r.Context().Value("rID").(string)
-
-	var sendSummary models.SendSummary
-	err := json.NewDecoder(r.Body).Decode(&sendSummary)
-	if err != nil {
-		golog.Errorf("#%s: %w", rID, err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	sendSummary.SummaryID, _ = strconv.ParseUint(mux.Vars(r)["summary_id"], 10, 64)
-	sendSummary.OrganizationID = r.Context().Value("userID").(uint64)
-
-	err = h.useCase.ResponseSummary(&sendSummary)
-	switch true {
-	case errors.Is(err, summaryInterfaces.ErrOrganizationIsNotOwner):
-		golog.Errorf("#%s: %w", rID, err)
-		w.WriteHeader(http.StatusForbidden)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
-		w.Write(json)
-	case errors.Is(err, summaryInterfaces.ErrNoSummaryToRefresh):
-		golog.Errorf("#%s: %w", rID, err)
-		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
-		w.Write(json)
-	case err == nil:
-		w.WriteHeader(http.StatusOK)
-	default:
-		golog.Errorf("#%s: %w", rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
-		w.Write(json)
-	}
-}
-
 func (h *Handler) GetOrgSendSummaries(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	userID, _ := strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)

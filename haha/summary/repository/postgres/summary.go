@@ -459,40 +459,6 @@ func (r *SummaryRepository) RefreshSummary(summaryID, vacancyID uint64) (err err
 	return nil
 }
 
-func (r *SummaryRepository) IsOrganizationVacancy(vacancyID, userID uint64) (err error) {
-	var isAuthor bool
-	checkAuthor := `SELECT v.organization_id = $2
-				FROM vacancy v 
-				WHERE v.id = $1`
-	if err = r.db.QueryRow(checkAuthor, vacancyID, userID).Scan(&isAuthor); err != nil {
-		return err
-	}
-
-	if !isAuthor {
-		return summaryInterfaces.ErrOrganizationIsNotOwner
-	}
-
-	return err
-}
-
-func (r *SummaryRepository) ResponseSummary(sendSummary *models.SendSummary) (err error) {
-	response := `UPDATE response 
-				SET date = CURRENT_TIMESTAMP,
-				    approved = $1,
-				    rejected = $2
-				WHERE summary_id = $3
-				AND vacancy_id = $4;`
-	rows, err := r.db.Exec(response, sendSummary.Accepted, sendSummary.Denied, sendSummary.SummaryID, sendSummary.VacancyID)
-	if err != nil {
-		return err
-	}
-	if rowsAf, _ := rows.RowsAffected(); rowsAf == 0 {
-		return summaryInterfaces.ErrNoSummaryToRefresh
-	}
-
-	return nil
-}
-
 func (r *SummaryRepository) GetOrgSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
 	getSummary := `SELECT u.id, u.tag, v.id, s.id, s.keywords, s.name, v.name, r.approved, r.rejected
 				   FROM vacancy v 
