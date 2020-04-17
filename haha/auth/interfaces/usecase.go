@@ -1,10 +1,12 @@
 package authInterfaces
 
-import "joblessness/haha/models"
+import (
+	"joblessness/haha/models/base"
+)
 
 type AuthUseCase interface {
-	RegisterPerson(*models.Person) error
-	RegisterOrganization(*models.Organization) error
+	RegisterPerson(*baseModels.Person) error
+	RegisterOrganization(*baseModels.Organization) error
 	Login(login, password string) (userID uint64, role, sessionID string, err error)
 	Logout(sessionId string) error
 	SessionExists(sessionId string) (uint64, error)

@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 	"gopkg.in/go-playground/validator.v9"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"joblessness/haha/vacancy/interfaces"
 	"net/http"
 	"strconv"
@@ -22,7 +22,7 @@ func NewHandler(useCase vacancyInterfaces.VacancyUseCase) *Handler {
 
 func (h *Handler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-	var newVacancy models.Vacancy
+	var newVacancy baseModels.Vacancy
 	newVacancy.Organization.ID = r.Context().Value("userID").(uint64)
 
 	err := json.NewDecoder(r.Body).Decode(&newVacancy)
@@ -45,7 +45,7 @@ func (h *Handler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(models.ResponseID{ID: newVacancy.ID})
+	jsonData, err := json.Marshal(baseModels.ResponseID{ID: newVacancy.ID})
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -104,7 +104,7 @@ func (h *Handler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	vacancyID, _ := strconv.ParseUint(mux.Vars(r)["vacancy_id"], 10, 64)
 
-	var newVacancy models.Vacancy
+	var newVacancy baseModels.Vacancy
 	err := json.NewDecoder(r.Body).Decode(&newVacancy)
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)

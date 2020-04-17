@@ -13,7 +13,7 @@ import (
 	authInterfaces "joblessness/haha/auth/interfaces"
 	"joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -28,9 +28,9 @@ type userSuite struct {
 	authMiddleware   *middleware.SessionHandler
 	controller       *gomock.Controller
 	uc               *mock.MockAuthUseCase
-	person           models.Person
+	person           baseModels.Person
 	personByte       *bytes.Buffer
-	organization     models.Organization
+	organization     baseModels.Organization
 	organizationByte *bytes.Buffer
 }
 
@@ -43,7 +43,7 @@ func (suite *userSuite) SetupTest() {
 	suite.uc = mock.NewMockAuthUseCase(suite.controller)
 	suite.authMiddleware = middleware.NewAuthMiddleware(suite.uc)
 
-	suite.person = models.Person{
+	suite.person = baseModels.Person{
 		ID:        12,
 		Login:     "new username",
 		Password:  "NewPassword123",
@@ -57,7 +57,7 @@ func (suite *userSuite) SetupTest() {
 	suite.personByte = bytes.NewBuffer(personJSON)
 	assert.NoError(suite.T(), err)
 
-	suite.organization = models.Organization{
+	suite.organization = baseModels.Organization{
 		ID:       12,
 		Login:    "new username",
 		Password: "NewPassword123",
@@ -150,7 +150,7 @@ func (suite *userSuite) TestFailedRegistrationOrganization() {
 
 func (suite *userSuite) TestLogin() {
 
-	userLogin := models.UserLogin{
+	userLogin := baseModels.UserLogin{
 		Login:    "username",
 		Password: "Password123",
 	}
@@ -171,7 +171,7 @@ func (suite *userSuite) TestLogin() {
 }
 
 func (suite *userSuite) TestFailedLoginNotFound() {
-	userLogin := models.UserLogin{
+	userLogin := baseModels.UserLogin{
 		Login:    "username",
 		Password: "Password123",
 	}

@@ -1,4 +1,4 @@
-package models
+package baseModels
 
 import (
 	"github.com/microcosm-cc/bluemonday"

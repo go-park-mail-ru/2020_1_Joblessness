@@ -6,7 +6,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"testing"
 )
 
@@ -15,8 +15,8 @@ type userSuite struct {
 	rep          *UserRepository
 	db           *sql.DB
 	mock         sqlmock.Sqlmock
-	person       models.Person
-	organization models.Organization
+	person       baseModels.Person
+	organization baseModels.Organization
 }
 
 func (suite *userSuite) SetupTest() {
@@ -25,7 +25,7 @@ func (suite *userSuite) SetupTest() {
 	assert.NoError(suite.T(), err)
 	suite.rep = NewUserRepository(suite.db)
 
-	suite.person = models.Person{
+	suite.person = baseModels.Person{
 		ID:        1,
 		Login:     "login",
 		Password:  "password",
@@ -36,7 +36,7 @@ func (suite *userSuite) SetupTest() {
 		Tag:       "tag",
 	}
 
-	suite.organization = models.Organization{
+	suite.organization = baseModels.Organization{
 		ID:       1,
 		Login:    "login",
 		Password: "password",

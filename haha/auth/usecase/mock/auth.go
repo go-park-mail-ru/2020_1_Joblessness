@@ -6,7 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	models "joblessness/haha/models"
+	"joblessness/haha/models/base"
 	reflect "reflect"
 )
 
@@ -110,7 +110,7 @@ func (mr *MockAuthUseCaseMockRecorder) PersonSession(arg0 interface{}) *gomock.C
 }
 
 // RegisterOrganization mocks base method
-func (m *MockAuthUseCase) RegisterOrganization(arg0 *models.Organization) error {
+func (m *MockAuthUseCase) RegisterOrganization(arg0 *baseModels.Organization) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegisterOrganization", arg0)
 	ret0, _ := ret[0].(error)
@@ -124,7 +124,7 @@ func (mr *MockAuthUseCaseMockRecorder) RegisterOrganization(arg0 interface{}) *g
 }
 
 // RegisterPerson mocks base method
-func (m *MockAuthUseCase) RegisterPerson(arg0 *models.Person) error {
+func (m *MockAuthUseCase) RegisterPerson(arg0 *baseModels.Person) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegisterPerson", arg0)
 	ret0, _ := ret[0].(error)

@@ -6,7 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	models "joblessness/haha/models"
+	"joblessness/haha/models/base"
 	reflect "reflect"
 )
 
@@ -34,7 +34,7 @@ func (m *MockVacancyUseCase) EXPECT() *MockVacancyUseCaseMockRecorder {
 }
 
 // ChangeVacancy mocks base method
-func (m *MockVacancyUseCase) ChangeVacancy(arg0 *models.Vacancy) error {
+func (m *MockVacancyUseCase) ChangeVacancy(arg0 *baseModels.Vacancy) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangeVacancy", arg0)
 	ret0, _ := ret[0].(error)
@@ -48,7 +48,7 @@ func (mr *MockVacancyUseCaseMockRecorder) ChangeVacancy(arg0 interface{}) *gomoc
 }
 
 // CreateVacancy mocks base method
-func (m *MockVacancyUseCase) CreateVacancy(arg0 *models.Vacancy) (uint64, error) {
+func (m *MockVacancyUseCase) CreateVacancy(arg0 *baseModels.Vacancy) (uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateVacancy", arg0)
 	ret0, _ := ret[0].(uint64)
@@ -77,10 +77,10 @@ func (mr *MockVacancyUseCaseMockRecorder) DeleteVacancy(arg0, arg1 interface{}) 
 }
 
 // GetOrgVacancies mocks base method
-func (m *MockVacancyUseCase) GetOrgVacancies(arg0 uint64) (models.Vacancies, error) {
+func (m *MockVacancyUseCase) GetOrgVacancies(arg0 uint64) (baseModels.Vacancies, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrgVacancies", arg0)
-	ret0, _ := ret[0].(models.Vacancies)
+	ret0, _ := ret[0].(baseModels.Vacancies)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -92,10 +92,10 @@ func (mr *MockVacancyUseCaseMockRecorder) GetOrgVacancies(arg0 interface{}) *gom
 }
 
 // GetVacancies mocks base method
-func (m *MockVacancyUseCase) GetVacancies(arg0 string) (models.Vacancies, error) {
+func (m *MockVacancyUseCase) GetVacancies(arg0 string) (baseModels.Vacancies, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVacancies", arg0)
-	ret0, _ := ret[0].(models.Vacancies)
+	ret0, _ := ret[0].(baseModels.Vacancies)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -107,10 +107,10 @@ func (mr *MockVacancyUseCaseMockRecorder) GetVacancies(arg0 interface{}) *gomock
 }
 
 // GetVacancy mocks base method
-func (m *MockVacancyUseCase) GetVacancy(arg0 uint64) (*models.Vacancy, error) {
+func (m *MockVacancyUseCase) GetVacancy(arg0 uint64) (*baseModels.Vacancy, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetVacancy", arg0)
-	ret0, _ := ret[0].(*models.Vacancy)
+	ret0, _ := ret[0].(*baseModels.Vacancy)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

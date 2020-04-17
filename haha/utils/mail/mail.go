@@ -5,7 +5,7 @@ import (
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"html/template"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"os"
 )
 
@@ -13,7 +13,7 @@ type Mail struct {
 	To string `json:"to"`
 }
 
-func SummaryToHTML(summary models.Summary) (htmlString string, err error) {
+func SummaryToHTML(summary baseModels.Summary) (htmlString string, err error) {
 	t := template.New("summary.html")
 
 	t, err = t.ParseFiles("haha/utils/mail/summary.html")
@@ -22,7 +22,7 @@ func SummaryToHTML(summary models.Summary) (htmlString string, err error) {
 	}
 
 	data := struct {
-		Summary models.Summary
+		Summary baseModels.Summary
 	}{
 		summary,
 	}

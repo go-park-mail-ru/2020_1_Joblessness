@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	mockAuth "joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	vacancyUseCaseMock "joblessness/haha/vacancy/usecase/mock"
 	"net/http"
 	"net/http/httptest"
@@ -28,7 +28,7 @@ type userSuite struct {
 	controller     *gomock.Controller
 	authUseCase    *mockAuth.MockAuthUseCase
 	uc             *vacancyUseCaseMock.MockVacancyUseCase
-	vacancy        models.Vacancy
+	vacancy        baseModels.Vacancy
 	vacancyByte    *bytes.Buffer
 	cookie         *http.Cookie
 }
@@ -43,9 +43,9 @@ func (suite *userSuite) SetupTest() {
 	suite.authUseCase = mockAuth.NewMockAuthUseCase(suite.controller)
 	suite.authMiddleware = middleware.NewAuthMiddleware(suite.authUseCase)
 
-	suite.vacancy = models.Vacancy{
+	suite.vacancy = baseModels.Vacancy{
 		ID: 3,
-		Organization: models.VacancyOrganization{
+		Organization: baseModels.VacancyOrganization{
 			ID:     12,
 			Tag:    "",
 			Email:  "",
@@ -202,7 +202,7 @@ func (suite *userSuite) TestGetVacancyWrongUrl() {
 func (suite *userSuite) TestGetVacancies() {
 	suite.uc.EXPECT().
 		GetVacancies("1").
-		Return(models.Vacancies{&suite.vacancy}, nil).
+		Return(baseModels.Vacancies{&suite.vacancy}, nil).
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/vacancies?page=1", bytes.NewBuffer([]byte{}))
@@ -215,7 +215,7 @@ func (suite *userSuite) TestGetVacancies() {
 func (suite *userSuite) TestGetVacanciesEmpty() {
 	suite.uc.EXPECT().
 		GetVacancies("1").
-		Return(models.Vacancies{}, nil).
+		Return(baseModels.Vacancies{}, nil).
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/vacancies?page=1", bytes.NewBuffer([]byte{}))
@@ -367,7 +367,7 @@ func (suite *userSuite) TestDeleteVacancyFailed() {
 func (suite *userSuite) TestGetOrgVacancies() {
 	suite.uc.EXPECT().
 		GetOrgVacancies(uint64(1)).
-		Return(models.Vacancies{&suite.vacancy}, nil).
+		Return(baseModels.Vacancies{&suite.vacancy}, nil).
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/organizations/1/vacancies", bytes.NewBuffer([]byte{}))
@@ -380,7 +380,7 @@ func (suite *userSuite) TestGetOrgVacancies() {
 func (suite *userSuite) TestGetOrgVacanciesEmpty() {
 	suite.uc.EXPECT().
 		GetOrgVacancies(uint64(1)).
-		Return(models.Vacancies{}, nil).
+		Return(baseModels.Vacancies{}, nil).
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/organizations/1/vacancies", bytes.NewBuffer([]byte{}))

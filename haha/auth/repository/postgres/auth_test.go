@@ -7,7 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	authInterfaces "joblessness/haha/auth/interfaces"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
+	pgModels "joblessness/haha/models/postgres"
 	"joblessness/haha/utils/salt"
 	"testing"
 	"time"
@@ -18,8 +19,8 @@ type userSuite struct {
 	rep          *AuthRepository
 	db           *sql.DB
 	mock         sqlmock.Sqlmock
-	person       models.Person
-	organization models.Organization
+	person       baseModels.Person
+	organization baseModels.Organization
 }
 
 func (suite *userSuite) SetupTest() {
@@ -28,7 +29,7 @@ func (suite *userSuite) SetupTest() {
 	assert.NoError(suite.T(), err)
 	suite.rep = NewAuthRepository(suite.db)
 
-	suite.person = models.Person{
+	suite.person = baseModels.Person{
 		ID:        1,
 		Login:     "login",
 		Password:  "password",
@@ -39,7 +40,7 @@ func (suite *userSuite) SetupTest() {
 		Tag:       "tag",
 	}
 
-	suite.organization = models.Organization{
+	suite.organization = baseModels.Organization{
 		ID:       1,
 		Login:    "login",
 		Password: "password",
@@ -93,7 +94,7 @@ func (suite *userSuite) TestDoesExistsErr() {
 }
 
 func (suite *userSuite) TestCreateUserNoId() {
-	user, _ := toPostgresPerson(&suite.person)
+	user, _ := pgModels.ToPgPerson(&suite.person)
 	err := suite.rep.CreateUser(user)
 
 	assert.Error(suite.T(), err)

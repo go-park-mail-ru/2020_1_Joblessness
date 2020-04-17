@@ -2,7 +2,7 @@ package userUseCase
 
 import (
 	"github.com/microcosm-cc/bluemonday"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"joblessness/haha/user/interfaces"
 	"joblessness/haha/utils/sss"
 	"mime/multipart"
@@ -20,7 +20,7 @@ func NewUserUseCase(userRepo userInterfaces.UserRepository, policy *bluemonday.P
 	}
 }
 
-func (a *UserUseCase) GetPerson(userID uint64) (*models.Person, error) {
+func (a *UserUseCase) GetPerson(userID uint64) (*baseModels.Person, error) {
 	res, err := a.userRepo.GetPerson(userID)
 	if err != nil {
 		return nil, err
@@ -30,11 +30,11 @@ func (a *UserUseCase) GetPerson(userID uint64) (*models.Person, error) {
 	return res, nil
 }
 
-func (a *UserUseCase) ChangePerson(p *models.Person) error {
+func (a *UserUseCase) ChangePerson(p *baseModels.Person) error {
 	return a.userRepo.ChangePerson(p)
 }
 
-func (a *UserUseCase) GetOrganization(userID uint64) (*models.Organization, error) {
+func (a *UserUseCase) GetOrganization(userID uint64) (*baseModels.Organization, error) {
 	res, err := a.userRepo.GetOrganization(userID)
 	if err != nil {
 		return nil, err
@@ -44,11 +44,11 @@ func (a *UserUseCase) GetOrganization(userID uint64) (*models.Organization, erro
 	return res, nil
 }
 
-func (a *UserUseCase) ChangeOrganization(o *models.Organization) error {
+func (a *UserUseCase) ChangeOrganization(o *baseModels.Organization) error {
 	return a.userRepo.ChangeOrganization(o)
 }
 
-func (a *UserUseCase) GetListOfOrgs(page int) (result models.Organizations, err error) {
+func (a *UserUseCase) GetListOfOrgs(page int) (result baseModels.Organizations, err error) {
 	res, err := a.userRepo.GetListOfOrgs(page)
 	if err != nil {
 		return nil, err
@@ -75,6 +75,6 @@ func (a *UserUseCase) LikeExists(userID, favoriteID uint64) (bool, error) {
 	return a.userRepo.LikeExists(userID, favoriteID)
 }
 
-func (a *UserUseCase) GetUserFavorite(userID uint64) (models.Favorites, error) {
+func (a *UserUseCase) GetUserFavorite(userID uint64) (baseModels.Favorites, error) {
 	return a.userRepo.GetUserFavorite(userID)
 }

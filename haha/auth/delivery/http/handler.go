@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"gopkg.in/go-playground/validator.v9"
 	"joblessness/haha/auth/interfaces"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"net/http"
 	"time"
 )
@@ -27,7 +27,7 @@ func NewHandler(useCase authInterfaces.AuthUseCase) *Handler {
 func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
-	var user models.Person
+	var user baseModels.Person
 	err := json.NewDecoder(r.Body).Decode(&user)
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
@@ -46,7 +46,7 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, authInterfaces.ErrUserAlreadyExists):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		golog.Infof("#%s: %s",  rID, "Успешно")
@@ -54,7 +54,7 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -62,7 +62,7 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
-	var org models.Organization
+	var org baseModels.Organization
 	err := json.NewDecoder(r.Body).Decode(&org)
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
@@ -81,7 +81,7 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, authInterfaces.ErrUserAlreadyExists):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		golog.Infof("#%s: %s",  rID, "success")
@@ -89,7 +89,7 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -97,7 +97,7 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
-	var user models.UserLogin
+	var user baseModels.UserLogin
 	err := json.NewDecoder(r.Body).Decode(&user)
 	golog.Debugf("#%s: %w", rID, user)
 	if err != nil {
@@ -117,7 +117,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, authInterfaces.ErrWrongLoginOrPassword):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusBadRequest)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		cookie := &http.Cookie {
@@ -131,13 +131,13 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, cookie)
 
-		jsonData, _ := json.Marshal(models.ResponseRole{ID: userId, Role: role})
+		jsonData, _ := json.Marshal(baseModels.ResponseRole{ID: userId, Role: role})
 		w.WriteHeader(http.StatusCreated)
 		w.Write(jsonData)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -174,16 +174,16 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, sql.ErrNoRows):
 		golog.Errorf("#%s: %w",  rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
-		jsonData, _ := json.Marshal(models.ResponseRole{ID: userID, Role: role})
+		jsonData, _ := json.Marshal(baseModels.ResponseRole{ID: userID, Role: role})
 		w.WriteHeader(http.StatusCreated)
 		w.Write(jsonData)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }

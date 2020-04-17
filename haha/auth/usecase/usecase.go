@@ -3,7 +3,7 @@ package authUseCase
 import (
 	"fmt"
 	"joblessness/haha/auth/interfaces"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"math/rand"
 )
 
@@ -27,7 +27,7 @@ func GetSID(n int) string {
 	return string(b)
 }
 
-func (a *AuthUseCase) RegisterPerson(p *models.Person) (err error) {
+func (a *AuthUseCase) RegisterPerson(p *baseModels.Person) (err error) {
 	err = a.userRepo.DoesUserExists(p.Login)
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func (a *AuthUseCase) RegisterPerson(p *models.Person) (err error) {
 	return a.userRepo.CreatePerson(p)
 }
 
-func (a *AuthUseCase) RegisterOrganization(o *models.Organization) (err error) {
+func (a *AuthUseCase) RegisterOrganization(o *baseModels.Organization) (err error) {
 	err = a.userRepo.DoesUserExists(o.Login)
 	if err != nil {
 		return err

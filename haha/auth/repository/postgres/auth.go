@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"joblessness/haha/auth/interfaces"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
+	"joblessness/haha/models/postgres"
 	"joblessness/haha/utils/salt"
 	"time"
 )
@@ -19,75 +20,7 @@ func NewAuthRepository(db *sql.DB) *AuthRepository {
 	}
 }
 
-type User struct {
-	ID             uint64
-	Login          string
-	Password       string
-	OrganizationID uint64
-	PersonID       uint64
-	Tag            string
-	Email          string
-	Phone          string
-	Registered     time.Time
-	Avatar         string
-}
-
-type Person struct {
-	ID       uint64
-	Name     string
-	Gender   string
-	Birthday time.Time
-}
-
-type Organization struct {
-	ID    uint64
-	Name  string
-	Site  string
-	About string
-}
-
-func toPostgresPerson(p *models.Person) (*User, *Person) {
-	name := p.FirstName
-	if p.LastName != "" {
-		name += " " + p.LastName
-	}
-
-	return &User{
-			ID:         p.ID,
-			Login:      p.Login,
-			Password:   p.Password,
-			Tag:        p.Tag,
-			Email:      p.Email,
-			Phone:      p.Phone,
-			Registered: p.Registered,
-			Avatar:     p.Avatar,
-		},
-		&Person{
-			Name:     name,
-			Gender:   p.Gender,
-			Birthday: p.Birthday,
-		}
-}
-
-func toPostgresOrg(o *models.Organization) (*User, *Organization) {
-	return &User{
-			ID:         o.ID,
-			Login:      o.Login,
-			Password:   o.Password,
-			Tag:        o.Tag,
-			Email:      o.Email,
-			Phone:      o.Phone,
-			Registered: o.Registered,
-			Avatar:     o.Avatar,
-		},
-		&Organization{
-			Name:  o.Name,
-			Site:  o.Site,
-			About: o.About,
-		}
-}
-
-func (r AuthRepository) CreateUser(user *User) (err error) {
+func (r AuthRepository) CreateUser(user *pgModels.User) (err error) {
 	user.Password, err = salt.HashAndSalt(user.Password)
 
 	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone, tag) 
@@ -98,8 +31,8 @@ func (r AuthRepository) CreateUser(user *User) (err error) {
 	return err
 }
 
-func (r *AuthRepository) CreatePerson(user *models.Person) (err error) {
-	dbUser, dbPerson := toPostgresPerson(user)
+func (r *AuthRepository) CreatePerson(user *baseModels.Person) (err error) {
+	dbUser, dbPerson := pgModels.ToPgPerson(user)
 	if dbPerson.Birthday.IsZero() {
 		dbPerson.Birthday.AddDate(1950, 0, 0)
 	}
@@ -116,8 +49,8 @@ func (r *AuthRepository) CreatePerson(user *models.Person) (err error) {
 	return err
 }
 
-func (r *AuthRepository) CreateOrganization(org *models.Organization) (err error) {
-	dbUser, dbOrg := toPostgresOrg(org)
+func (r *AuthRepository) CreateOrganization(org *baseModels.Organization) (err error) {
+	dbUser, dbOrg := pgModels.ToPgOrganization(org)
 
 	err = r.db.QueryRow("INSERT INTO organization (name, site, about) VALUES($1, $2, $3) RETURNING id",
 		dbOrg.Name, dbOrg.Site, dbOrg.About).

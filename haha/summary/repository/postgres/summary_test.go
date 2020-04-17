@@ -6,7 +6,8 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
+	pgModels "joblessness/haha/models/postgres"
 	summaryInterfaces "joblessness/haha/summary/interfaces"
 	"testing"
 	"time"
@@ -17,13 +18,13 @@ type summarySuite struct {
 	rep        *SummaryRepository
 	db         *sql.DB
 	mock       sqlmock.Sqlmock
-	summary    models.Summary
-	education  Education
-	experience Experience
-	user       User
-	person     Person
-	response   models.VacancyResponse
-	sendSum    models.SendSummary
+	summary    baseModels.Summary
+	education  pgModels.Education
+	experience pgModels.Experience
+	user       pgModels.User
+	person     pgModels.Person
+	response   baseModels.VacancyResponse
+	sendSum    baseModels.SendSummary
 }
 
 func (suite *summarySuite) SetupTest() {
@@ -32,9 +33,9 @@ func (suite *summarySuite) SetupTest() {
 	assert.NoError(suite.T(), err)
 	suite.rep = NewSummaryRepository(suite.db)
 
-	suite.summary = models.Summary{
+	suite.summary = baseModels.Summary{
 		ID: 3,
-		Author: models.Author{
+		Author: baseModels.Author{
 			ID:        12,
 			Tag:       "tag",
 			Email:     "email",
@@ -45,15 +46,15 @@ func (suite *summarySuite) SetupTest() {
 			Gender:    "gender",
 		},
 		Keywords: "key",
-		Educations: []models.Education{
-			models.Education{
+		Educations: []baseModels.Education{
+			baseModels.Education{
 				Institution: "was",
 				Speciality:  "is",
 				Type:        "none",
 			},
 		},
-		Experiences: []models.Experience{
-			models.Experience{
+		Experiences: []baseModels.Experience{
+			baseModels.Experience{
 				CompanyName:      "comp",
 				Role:             "role",
 				Responsibilities: "response",
@@ -63,7 +64,7 @@ func (suite *summarySuite) SetupTest() {
 		},
 	}
 
-	suite.user = User{
+	suite.user = pgModels.User{
 		ID:             12,
 		OrganizationID: 0,
 		PersonID:       3,
@@ -74,14 +75,14 @@ func (suite *summarySuite) SetupTest() {
 		Avatar:         "avatar",
 	}
 
-	suite.person = Person{
+	suite.person = pgModels.Person{
 		ID:       uint64(3),
 		Name:     "name",
 		Gender:   "gender",
 		Birthday: time.Now(),
 	}
 
-	suite.response = models.VacancyResponse{
+	suite.response = baseModels.VacancyResponse{
 		UserID:    suite.person.ID,
 		Tag:       suite.user.Tag,
 		VacancyID: uint64(7),
@@ -89,7 +90,7 @@ func (suite *summarySuite) SetupTest() {
 		Keywords:  suite.summary.Keywords,
 	}
 
-	suite.sendSum = models.SendSummary{
+	suite.sendSum = baseModels.SendSummary{
 		VacancyID:      uint64(7),
 		SummaryID:      suite.summary.ID,
 		UserID:         suite.person.ID,

@@ -6,7 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	models "joblessness/haha/models"
+	"joblessness/haha/models/base"
 	reflect "reflect"
 )
 
@@ -34,7 +34,7 @@ func (m *MockAuthRepository) EXPECT() *MockAuthRepositoryMockRecorder {
 }
 
 // ChangeOrganization mocks base method
-func (m *MockAuthRepository) ChangeOrganization(arg0 models.Organization) error {
+func (m *MockAuthRepository) ChangeOrganization(arg0 baseModels.Organization) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangeOrganization", arg0)
 	ret0, _ := ret[0].(error)
@@ -48,7 +48,7 @@ func (mr *MockAuthRepositoryMockRecorder) ChangeOrganization(arg0 interface{}) *
 }
 
 // ChangePerson mocks base method
-func (m *MockAuthRepository) ChangePerson(arg0 models.Person) error {
+func (m *MockAuthRepository) ChangePerson(arg0 baseModels.Person) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangePerson", arg0)
 	ret0, _ := ret[0].(error)
@@ -62,7 +62,7 @@ func (mr *MockAuthRepositoryMockRecorder) ChangePerson(arg0 interface{}) *gomock
 }
 
 // CreateOrganization mocks base method
-func (m *MockAuthRepository) CreateOrganization(arg0 *models.Organization) error {
+func (m *MockAuthRepository) CreateOrganization(arg0 *baseModels.Organization) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateOrganization", arg0)
 	ret0, _ := ret[0].(error)
@@ -76,7 +76,7 @@ func (mr *MockAuthRepositoryMockRecorder) CreateOrganization(arg0 interface{}) *
 }
 
 // CreatePerson mocks base method
-func (m *MockAuthRepository) CreatePerson(arg0 *models.Person) error {
+func (m *MockAuthRepository) CreatePerson(arg0 *baseModels.Person) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreatePerson", arg0)
 	ret0, _ := ret[0].(error)
@@ -104,10 +104,10 @@ func (mr *MockAuthRepositoryMockRecorder) DoesUserExists(arg0 interface{}) *gomo
 }
 
 // GetListOfOrgs mocks base method
-func (m *MockAuthRepository) GetListOfOrgs(arg0 int) ([]models.Organization, error) {
+func (m *MockAuthRepository) GetListOfOrgs(arg0 int) ([]baseModels.Organization, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetListOfOrgs", arg0)
-	ret0, _ := ret[0].([]models.Organization)
+	ret0, _ := ret[0].([]baseModels.Organization)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -119,10 +119,10 @@ func (mr *MockAuthRepositoryMockRecorder) GetListOfOrgs(arg0 interface{}) *gomoc
 }
 
 // GetOrganization mocks base method
-func (m *MockAuthRepository) GetOrganization(arg0 uint64) (*models.Organization, error) {
+func (m *MockAuthRepository) GetOrganization(arg0 uint64) (*baseModels.Organization, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrganization", arg0)
-	ret0, _ := ret[0].(*models.Organization)
+	ret0, _ := ret[0].(*baseModels.Organization)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -134,10 +134,10 @@ func (mr *MockAuthRepositoryMockRecorder) GetOrganization(arg0 interface{}) *gom
 }
 
 // GetPerson mocks base method
-func (m *MockAuthRepository) GetPerson(arg0 uint64) (*models.Person, error) {
+func (m *MockAuthRepository) GetPerson(arg0 uint64) (*baseModels.Person, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPerson", arg0)
-	ret0, _ := ret[0].(*models.Person)
+	ret0, _ := ret[0].(*baseModels.Person)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -164,10 +164,10 @@ func (mr *MockAuthRepositoryMockRecorder) GetRole(arg0 interface{}) *gomock.Call
 }
 
 // GetUserFavorite mocks base method
-func (m *MockAuthRepository) GetUserFavorite(arg0 uint64) (models.Favorites, error) {
+func (m *MockAuthRepository) GetUserFavorite(arg0 uint64) (baseModels.Favorites, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserFavorite", arg0)
-	ret0, _ := ret[0].(models.Favorites)
+	ret0, _ := ret[0].(baseModels.Favorites)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

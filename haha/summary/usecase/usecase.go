@@ -3,7 +3,7 @@ package summaryUseCase
 import (
 	"errors"
 	"github.com/microcosm-cc/bluemonday"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"joblessness/haha/summary/interfaces"
 	"strconv"
 )
@@ -20,11 +20,11 @@ func NewSummaryUseCase(summaryRepo summaryInterfaces.SummaryRepository, policy *
 	}
 }
 
-func (u *SummaryUseCase) CreateSummary(summary *models.Summary) (summaryID uint64, err error) {
+func (u *SummaryUseCase) CreateSummary(summary *baseModels.Summary) (summaryID uint64, err error) {
 	return u.summaryRepo.CreateSummary(summary)
 }
 
-func (u *SummaryUseCase) GetAllSummaries(page string) (summaries models.Summaries, err error) {
+func (u *SummaryUseCase) GetAllSummaries(page string) (summaries baseModels.Summaries, err error) {
 	pageInt, _ := strconv.Atoi(page)
 	res, err := u.summaryRepo.GetAllSummaries(pageInt)
 	if err != nil {
@@ -35,7 +35,7 @@ func (u *SummaryUseCase) GetAllSummaries(page string) (summaries models.Summarie
 	return res, nil
 }
 
-func (u *SummaryUseCase) GetUserSummaries(page string, userID uint64) (summaries models.Summaries, err error) {
+func (u *SummaryUseCase) GetUserSummaries(page string, userID uint64) (summaries baseModels.Summaries, err error) {
 	pageInt, _ := strconv.Atoi(page)
 	res, err := u.summaryRepo.GetUserSummaries(pageInt, userID)
 	if err != nil {
@@ -46,7 +46,7 @@ func (u *SummaryUseCase) GetUserSummaries(page string, userID uint64) (summaries
 	return res, nil
 }
 
-func (u *SummaryUseCase) GetSummary(summaryID uint64) (summary *models.Summary, err error) {
+func (u *SummaryUseCase) GetSummary(summaryID uint64) (summary *baseModels.Summary, err error) {
 	res, err := u.summaryRepo.GetSummary(summaryID)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func (u *SummaryUseCase) GetSummary(summaryID uint64) (summary *models.Summary, 
 	return res, nil
 }
 
-func (u *SummaryUseCase) ChangeSummary(summary *models.Summary) (err error) {
+func (u *SummaryUseCase) ChangeSummary(summary *baseModels.Summary) (err error) {
 	if err = u.summaryRepo.CheckAuthor(summary.ID, summary.Author.ID); err != nil {
 		return err
 	}
@@ -72,7 +72,7 @@ func (u *SummaryUseCase) DeleteSummary(summaryID uint64, authorID uint64) (err e
 	return u.summaryRepo.DeleteSummary(summaryID)
 }
 
-func (u *SummaryUseCase) SendSummary(sendSummary *models.SendSummary) (err error) {
+func (u *SummaryUseCase) SendSummary(sendSummary *baseModels.SendSummary) (err error) {
 	if err := u.summaryRepo.CheckAuthor(sendSummary.SummaryID, sendSummary.UserID); err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func (u *SummaryUseCase) SendSummary(sendSummary *models.SendSummary) (err error
 	return err
 }
 
-func (u *SummaryUseCase) ResponseSummary(sendSummary *models.SendSummary) (err error) {
+func (u *SummaryUseCase) ResponseSummary(sendSummary *baseModels.SendSummary) (err error) {
 	err = u.summaryRepo.IsOrganizationVacancy(sendSummary.VacancyID, sendSummary.OrganizationID)
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func (u *SummaryUseCase) ResponseSummary(sendSummary *models.SendSummary) (err e
 	return err
 }
 
-func (u *SummaryUseCase) GetOrgSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
+func (u *SummaryUseCase) GetOrgSendSummaries(userID uint64) (summaries baseModels.OrgSummaries, err error) {
 	res, err := u.summaryRepo.GetOrgSendSummaries(userID)
 	if err != nil {
 		return nil, err
@@ -106,7 +106,7 @@ func (u *SummaryUseCase) GetOrgSendSummaries(userID uint64) (summaries models.Or
 	return res, nil
 }
 
-func (u *SummaryUseCase) GetUserSendSummaries(userID uint64) (summaries models.OrgSummaries, err error) {
+func (u *SummaryUseCase) GetUserSendSummaries(userID uint64) (summaries baseModels.OrgSummaries, err error) {
 	res, err := u.summaryRepo.GetUserSendSummaries(userID)
 	if err != nil {
 		return nil, err

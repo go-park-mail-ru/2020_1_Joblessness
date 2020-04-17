@@ -6,7 +6,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/stretchr/testify/assert"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"joblessness/haha/user/repository/mock"
 	"mime/multipart"
 	"testing"
@@ -25,7 +25,7 @@ func TestAuthPersonFlow(t *testing.T) {
 	phone := "phone"
 	firstName := "name"
 	userIdEx := uint64(1)
-	person := &models.Person{
+	person := &baseModels.Person{
 		Login:     login,
 		Password:  password,
 		FirstName: firstName,
@@ -59,7 +59,7 @@ func TestAuthOrganizationFlow(t *testing.T) {
 	phone := "phone"
 	name := "name"
 	userIdEx := uint64(1)
-	organization := &models.Organization{
+	organization := &baseModels.Organization{
 		Login:    login,
 		Password: password,
 		Name:     name,
@@ -105,7 +105,7 @@ func TestListOrgs(t *testing.T) {
 	policy := bluemonday.UGCPolicy()
 	uc := NewUserUseCase(repo, policy)
 
-	repo.EXPECT().GetListOfOrgs(1).Return(models.Organizations{}, nil).Times(1)
+	repo.EXPECT().GetListOfOrgs(1).Return(baseModels.Organizations{}, nil).Times(1)
 	_, err := uc.GetListOfOrgs(1)
 	assert.NoError(t, err)
 }
@@ -122,7 +122,7 @@ func TestLike(t *testing.T) {
 	_, err := uc.LikeUser(uint64(1), uint64(5))
 	assert.NoError(t, err)
 
-	repo.EXPECT().GetUserFavorite(uint64(5)).Return(models.Favorites{}, nil).Times(1)
+	repo.EXPECT().GetUserFavorite(uint64(5)).Return(baseModels.Favorites{}, nil).Times(1)
 	_, err = uc.GetUserFavorite(uint64(5))
 	assert.NoError(t, err)
 }
