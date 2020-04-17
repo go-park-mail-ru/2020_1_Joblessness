@@ -6,7 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	models "joblessness/haha/models"
+	"joblessness/haha/models/base"
 	reflect "reflect"
 )
 
@@ -34,10 +34,10 @@ func (m *MockSearchUseCase) EXPECT() *MockSearchUseCaseMockRecorder {
 }
 
 // Search mocks base method
-func (m *MockSearchUseCase) Search(arg0, arg1, arg2, arg3 string) (models.SearchResult, error) {
+func (m *MockSearchUseCase) Search(arg0, arg1, arg2, arg3 string) (baseModels.SearchResult, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Search", arg0, arg1, arg2, arg3)
-	ret0, _ := ret[0].(models.SearchResult)
+	ret0, _ := ret[0].(baseModels.SearchResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

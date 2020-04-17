@@ -1,10 +1,12 @@
 package authInterfaces
 
-import "joblessness/haha/models"
+import (
+	"joblessness/haha/models/base"
+)
 
 type AuthRepository interface {
-	CreatePerson(user *models.Person) error
-	CreateOrganization(org *models.Organization) error
+	CreatePerson(user *baseModels.Person) error
+	CreateOrganization(org *baseModels.Organization) error
 	Login(login, password, SID string) (uint64, error)
 	Logout(sessionId string) error
 	SessionExists(sessionId string) (uint64, error)

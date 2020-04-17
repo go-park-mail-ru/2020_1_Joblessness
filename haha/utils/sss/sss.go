@@ -57,4 +57,3 @@ func UploadAvatar(form *multipart.Form, userID uint64) (link string, err error) 
 
 	return link, nil
 }
-

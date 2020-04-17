@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	searchInterfaces "joblessness/haha/search/interfaces"
 	searchUseCaseMock "joblessness/haha/search/usecase/mock"
 	"net/http"
@@ -27,9 +27,9 @@ type userSuite struct {
 	controller       *gomock.Controller
 	authUseCase      *mock.MockAuthUseCase
 	uc               *searchUseCaseMock.MockSearchUseCase
-	person           models.Person
+	person           baseModels.Person
 	personByte       *bytes.Buffer
-	organization     models.Organization
+	organization     baseModels.Organization
 	organizationByte *bytes.Buffer
 }
 
@@ -53,7 +53,7 @@ func TestSuite(t *testing.T) {
 func (suite *userSuite) TestSearch() {
 	suite.uc.EXPECT().
 		Search(gomock.Any(), gomock.Any(), "1", "true").
-		Return(models.SearchResult{}, nil).
+		Return(baseModels.SearchResult{}, nil).
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
@@ -66,7 +66,7 @@ func (suite *userSuite) TestSearch() {
 func (suite *userSuite) TestSearchWrongReq() {
 	suite.uc.EXPECT().
 		Search(gomock.Any(), gomock.Any(), "1", "true").
-		Return(models.SearchResult{}, searchInterfaces.ErrUnknownRequest).
+		Return(baseModels.SearchResult{}, searchInterfaces.ErrUnknownRequest).
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
@@ -79,7 +79,7 @@ func (suite *userSuite) TestSearchWrongReq() {
 func (suite *userSuite) TestSearchFailed() {
 	suite.uc.EXPECT().
 		Search(gomock.Any(), gomock.Any(), "1", "true").
-		Return(models.SearchResult{}, errors.New("")).
+		Return(baseModels.SearchResult{}, errors.New("")).
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))

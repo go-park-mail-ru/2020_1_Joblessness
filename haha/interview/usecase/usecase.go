@@ -3,7 +3,7 @@ package interviewUseCase
 import (
 	"github.com/microcosm-cc/bluemonday"
 	interviewInterfaces "joblessness/haha/interview/interfaces"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"joblessness/haha/utils/chat"
 )
 
@@ -19,7 +19,7 @@ func NewInterviewUseCase(interviewRepo interviewInterfaces.InterviewRepository, 
 	}
 }
 
-func (u *InterviewUseCase) ResponseSummary(sendSummary *models.SendSummary) (err error) {
+func (u *InterviewUseCase) ResponseSummary(sendSummary *baseModels.SendSummary) (err error) {
 	err = u.interviewRepo.IsOrganizationVacancy(sendSummary.VacancyID, sendSummary.OrganizationID)
 	if err != nil {
 		return err
@@ -34,14 +34,14 @@ func (u *InterviewUseCase) SaveMessage(message *chat.Message) (err error) {
 	return u.interviewRepo.SaveMessage(message)
 }
 
-func (u *InterviewUseCase) GetHistory(parameters *models.ChatParameters) (result models.Messages, err error) {
+func (u *InterviewUseCase) GetHistory(parameters *baseModels.ChatParameters) (result baseModels.Messages, err error) {
 	return u.interviewRepo.GetHistory(parameters)
 }
 
-func (u *InterviewUseCase) GetResponseCredentials(summaryID, vacancyID uint64) (result *models.SummaryCredentials, err error) {
+func (u *InterviewUseCase) GetResponseCredentials(summaryID, vacancyID uint64) (result *baseModels.SummaryCredentials, err error) {
 	return u.interviewRepo.GetResponseCredentials(summaryID, vacancyID)
 }
 
-func (u *InterviewUseCase) GetConversations(userID uint64) (result models.Conversations, err error) {
+func (u *InterviewUseCase) GetConversations(userID uint64) (result baseModels.Conversations, err error) {
 	return u.interviewRepo.GetConversations(userID)
 }

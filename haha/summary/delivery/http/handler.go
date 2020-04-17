@@ -6,7 +6,7 @@ import (
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"joblessness/haha/summary/interfaces"
 	"joblessness/haha/utils/mail"
 	"joblessness/haha/utils/pdf"
@@ -24,7 +24,7 @@ func NewHandler(useCase summaryInterfaces.SummaryUseCase) *Handler {
 
 func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-	var newSummary models.Summary
+	var newSummary baseModels.Summary
 	newSummary.Author.ID = r.Context().Value("userID").(uint64)
 
 	err := json.NewDecoder(r.Body).Decode(&newSummary)
@@ -41,7 +41,7 @@ func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(models.ResponseID{ID: newSummary.ID})
+	jsonData, err := json.Marshal(baseModels.ResponseID{ID: newSummary.ID})
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -83,7 +83,7 @@ func (h *Handler) PrintSummary(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, sql.ErrNoRows):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		errOut := pdf.SummaryToPdf(w, *getSummary)
@@ -95,7 +95,7 @@ func (h *Handler) PrintSummary(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -109,7 +109,7 @@ func (h *Handler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, sql.ErrNoRows):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		jsonData, err := json.Marshal(summary)
@@ -123,7 +123,7 @@ func (h *Handler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -154,7 +154,7 @@ func (h *Handler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	summaryID, _ := strconv.ParseUint(mux.Vars(r)["summary_id"], 10, 64)
 
-	var newSummary models.Summary
+	var newSummary baseModels.Summary
 	err := json.NewDecoder(r.Body).Decode(&newSummary)
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
@@ -170,19 +170,19 @@ func (h *Handler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, summaryInterfaces.ErrSummaryNotFound):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case errors.Is(err, summaryInterfaces.ErrPersonIsNotOwner):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusForbidden)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -198,19 +198,19 @@ func (h *Handler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, summaryInterfaces.ErrSummaryNotFound):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case errors.Is(err, summaryInterfaces.ErrPersonIsNotOwner):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusForbidden)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -218,7 +218,7 @@ func (h *Handler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) SendSummary(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
-	var sendSummary models.SendSummary
+	var sendSummary baseModels.SendSummary
 	err := json.NewDecoder(r.Body).Decode(&sendSummary)
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
@@ -234,19 +234,19 @@ func (h *Handler) SendSummary(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, summaryInterfaces.ErrPersonIsNotOwner):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusForbidden)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case errors.Is(err, summaryInterfaces.ErrNoSummaryToRefresh):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		w.WriteHeader(http.StatusOK)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -314,7 +314,7 @@ func (h *Handler) SendSummaryByMail(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }

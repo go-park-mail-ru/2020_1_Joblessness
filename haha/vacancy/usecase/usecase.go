@@ -2,7 +2,7 @@ package vacancyUseCase
 
 import (
 	"github.com/microcosm-cc/bluemonday"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"joblessness/haha/vacancy/interfaces"
 	"strconv"
 )
@@ -19,11 +19,11 @@ func NewVacancyUseCase(vacancyRepo vacancyInterfaces.VacancyRepository, policy *
 	}
 }
 
-func (u *VacancyUseCase) CreateVacancy(vacancy *models.Vacancy) (vacancyID uint64, err error) {
+func (u *VacancyUseCase) CreateVacancy(vacancy *baseModels.Vacancy) (vacancyID uint64, err error) {
 	return u.vacancyRepo.CreateVacancy(vacancy)
 }
 
-func (u *VacancyUseCase) GetVacancies(page string) (models.Vacancies, error) {
+func (u *VacancyUseCase) GetVacancies(page string) (baseModels.Vacancies, error) {
 	pageInt, _ := strconv.Atoi(page)
 	res, err := u.vacancyRepo.GetVacancies(pageInt)
 	if err != nil {
@@ -34,7 +34,7 @@ func (u *VacancyUseCase) GetVacancies(page string) (models.Vacancies, error) {
 	return res, nil
 }
 
-func (u *VacancyUseCase) GetVacancy(vacancyID uint64) (*models.Vacancy, error) {
+func (u *VacancyUseCase) GetVacancy(vacancyID uint64) (*baseModels.Vacancy, error) {
 	res, err := u.vacancyRepo.GetVacancy(vacancyID)
 	if err != nil {
 		return nil, err
@@ -44,7 +44,7 @@ func (u *VacancyUseCase) GetVacancy(vacancyID uint64) (*models.Vacancy, error) {
 	return res, nil
 }
 
-func (u *VacancyUseCase) ChangeVacancy(vacancy *models.Vacancy) (err error) {
+func (u *VacancyUseCase) ChangeVacancy(vacancy *baseModels.Vacancy) (err error) {
 	if err = u.vacancyRepo.CheckAuthor(vacancy.ID, vacancy.Organization.ID); err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (u *VacancyUseCase) DeleteVacancy(vacancyID, authorID uint64) (err error) {
 	return u.vacancyRepo.DeleteVacancy(vacancyID)
 }
 
-func (u *VacancyUseCase) GetOrgVacancies(userID uint64) (models.Vacancies, error) {
+func (u *VacancyUseCase) GetOrgVacancies(userID uint64) (baseModels.Vacancies, error) {
 	res, err := u.vacancyRepo.GetOrgVacancies(userID)
 	if err != nil {
 		return nil, err

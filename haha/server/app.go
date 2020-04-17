@@ -1,6 +1,8 @@
 package server
 
 import (
+	"flag"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 	"github.com/microcosm-cc/bluemonday"
@@ -13,6 +15,10 @@ import (
 	"joblessness/haha/interview/repository/postgres"
 	"joblessness/haha/interview/usecase"
 	"joblessness/haha/middleware"
+	"joblessness/haha/recommendation/delivery/http"
+	"joblessness/haha/recommendation/interfaces"
+	"joblessness/haha/recommendation/repository/postgres"
+	"joblessness/haha/recommendation/usecase"
 	"joblessness/haha/search/delivery/http"
 	"joblessness/haha/search/interfaces"
 	"joblessness/haha/search/repository/postgres"
@@ -40,6 +46,7 @@ type App struct {
 	vacancyUse  vacancyInterfaces.VacancyUseCase
 	summaryUse  summaryInterfaces.SummaryUseCase
 	searchUse   searchInterfaces.SearchUseCase
+	recommendationUse recommendationInterfaces.UseCase
 	interviewUse   interviewInterfaces.InterviewUseCase
 	corsHandler *middleware.CorsHandler
 }
@@ -56,52 +63,53 @@ func NewApp(c *middleware.CorsHandler) *App {
 	vacancyRepo := vacancyPostgres.NewVacancyRepository(db)
 	summaryRepo := summaryPostgres.NewSummaryRepository(db)
 	searchRepo := searchPostgres.NewSearchRepository(db)
+	recommendationRepo := recommendationPostgres.NewRepository(db, vacancyRepo)
 	interviewRepo := interviewPostgres.NewInterviewRepository(db)
 	policy := bluemonday.UGCPolicy()
 
 	return &App{
-		userUse:     userUseCase.NewUserUseCase(userRepo, policy),
-		authUse:     authUseCase.NewAuthUseCase(authRepo),
-		vacancyUse:  vacancyUseCase.NewVacancyUseCase(vacancyRepo, policy),
-		summaryUse:  summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
-		searchUse:   searchUseCase.NewSearchUseCase(searchRepo, policy),
+		userUse:           userUseCase.NewUserUseCase(userRepo, policy),
+		authUse:           authUseCase.NewAuthUseCase(authRepo),
+		vacancyUse:        vacancyUseCase.NewVacancyUseCase(vacancyRepo, policy),
+		summaryUse:        summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
+		searchUse:         searchUseCase.NewSearchUseCase(searchRepo, policy),
+		recommendationUse: recommendationUseCase.NewUseCase(recommendationRepo),
 		interviewUse:   interviewUseCase.NewInterviewUseCase(interviewRepo, policy),
-		corsHandler: c,
+		corsHandler:       c,
 	}
 }
 
+var (
+	noCors = flag.Bool("no-cors", false, "disable cors")
+	port = flag.Uint64("p", 8001, "port")
+)
+
 func (app *App) StartRouter() {
+	flag.Parse()
+
 	router := mux.NewRouter().PathPrefix("/api").Subrouter()
 
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
 
 	router.Use(m.RecoveryMiddleware)
-	//router.Use(app.corsHandler.CorsMiddleware)
+	if !*noCors {
+		router.Use(app.corsHandler.CorsMiddleware)
+	}
 	router.Use(m.LogMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
-	// auth
 	authHttp.RegisterHTTPEndpoints(router, mAuth, app.authUse)
-
-	// users
 	userHttp.RegisterHTTPEndpoints(router, mAuth, app.userUse)
-
-	// vacancies
 	vacancyHttp.RegisterHTTPEndpoints(router, mAuth, app.vacancyUse)
-
-	// summaries
 	summaryHttp.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
-
-	// search
 	searchHttp.RegisterHTTPEndpoints(router, app.searchUse)
-
-	// interview
+	recommendationHttp.RegisterHTTPEndpoints(router, mAuth, app.recommendationUse)
 	interviewHttp.RegisterHTTPEndpoints(router, mAuth, app.interviewUse)
 
 	http.Handle("/", router)
-	golog.Info("Server started")
-	err := http.ListenAndServe(":8001", router)
+	golog.Infof("Server started at port :%d", *port)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), router)
 	if err != nil {
 		golog.Error("Server failed")
 	}

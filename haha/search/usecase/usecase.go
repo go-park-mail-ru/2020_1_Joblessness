@@ -2,7 +2,7 @@ package searchUseCase
 
 import (
 	"github.com/microcosm-cc/bluemonday"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	searchInterfaces "joblessness/haha/search/interfaces"
 )
 
@@ -18,7 +18,7 @@ func NewSearchUseCase(userRepo searchInterfaces.SearchRepository, policy *bluemo
 	}
 }
 
-func (a *SearchUseCase) Search(searchType, request, since, desc string) (result models.SearchResult, err error) {
+func (a *SearchUseCase) Search(searchType, request, since, desc string) (result baseModels.SearchResult, err error) {
 	switch searchType {
 	case "person":
 		result.Persons, err = a.searchRepo.SearchPersons(request, since, desc)

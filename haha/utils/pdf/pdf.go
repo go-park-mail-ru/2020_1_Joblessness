@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/kpawlik/gofpdf"
 	"io"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 )
 
-func SummaryToPdf(w io.Writer, summary models.Summary) error {
+func SummaryToPdf(w io.Writer, summary baseModels.Summary) error {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 
 	pdf.SetFontLocation("./haha/utils/pdf/")
@@ -44,7 +44,7 @@ func SummaryToPdf(w io.Writer, summary models.Summary) error {
 	return pdf.Output(w)
 }
 
-func experienceToStr(experience []models.Experience) (result string) {
+func experienceToStr(experience []baseModels.Experience) (result string) {
 	if len(experience) == 0 {
 		return ""
 	}
@@ -57,7 +57,7 @@ func experienceToStr(experience []models.Experience) (result string) {
 	return result
 }
 
-func educationToStr(education []models.Education) (result string) {
+func educationToStr(education []baseModels.Education) (result string) {
 	if len(education) == 0 {
 		return ""
 	}

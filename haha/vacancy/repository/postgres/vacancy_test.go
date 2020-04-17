@@ -6,7 +6,8 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
+	pgModels "joblessness/haha/models/postgres"
 	"testing"
 	"time"
 )
@@ -16,9 +17,9 @@ type vacancySuite struct {
 	rep          *VacancyRepository
 	db           *sql.DB
 	mock         sqlmock.Sqlmock
-	vacancy      models.Vacancy
-	user         User
-	organization Organization
+	vacancy      baseModels.Vacancy
+	user         pgModels.User
+	organization pgModels.Organization
 }
 
 func (suite *vacancySuite) SetupTest() {
@@ -27,9 +28,9 @@ func (suite *vacancySuite) SetupTest() {
 	assert.NoError(suite.T(), err)
 	suite.rep = NewVacancyRepository(suite.db)
 
-	suite.vacancy = models.Vacancy{
+	suite.vacancy = baseModels.Vacancy{
 		ID: 3,
-		Organization: models.VacancyOrganization{
+		Organization: baseModels.VacancyOrganization{
 			ID:     12,
 			Tag:    "tag",
 			Email:  "email",
@@ -48,7 +49,7 @@ func (suite *vacancySuite) SetupTest() {
 		Keywords:         "word",
 	}
 
-	suite.user = User{
+	suite.user = pgModels.User{
 		ID:             12,
 		OrganizationID: 1,
 		PersonID:       0,
@@ -59,7 +60,7 @@ func (suite *vacancySuite) SetupTest() {
 		Avatar:         "avatar",
 	}
 
-	suite.organization = Organization{
+	suite.organization = pgModels.Organization{
 		ID:   1,
 		Name: "name",
 		Site: "site",

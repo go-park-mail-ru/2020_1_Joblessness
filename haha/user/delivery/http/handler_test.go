@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	mockAuth "joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"joblessness/haha/user/usecase/mock"
 	"net/http"
 	"net/http/httptest"
@@ -29,9 +29,9 @@ type userSuite struct {
 	controller       *gomock.Controller
 	uc               *mock.MockUserUseCase
 	ucAuth           *mockAuth.MockAuthUseCase
-	person           models.Person
+	person           baseModels.Person
 	personByte       *bytes.Buffer
-	organization     models.Organization
+	organization     baseModels.Organization
 	organizationByte *bytes.Buffer
 }
 
@@ -45,7 +45,7 @@ func (suite *userSuite) SetupTest() {
 	suite.ucAuth = mockAuth.NewMockAuthUseCase(suite.controller)
 	suite.authMiddleware = middleware.NewAuthMiddleware(suite.ucAuth)
 
-	suite.person = models.Person{
+	suite.person = baseModels.Person{
 		ID:        12,
 		Login:     "new username",
 		Password:  "NewPassword123",
@@ -59,7 +59,7 @@ func (suite *userSuite) SetupTest() {
 	suite.personByte = bytes.NewBuffer(personJSON)
 	assert.NoError(suite.T(), err)
 
-	suite.organization = models.Organization{
+	suite.organization = baseModels.Organization{
 		ID:       12,
 		Login:    "new username",
 		Password: "NewPassword123",
@@ -371,7 +371,7 @@ func (suite *userSuite) TestChangeOrganizationWrongId() {
 func (suite *userSuite) TestListOrgs() {
 	suite.uc.EXPECT().
 		GetListOfOrgs(1).
-		Return(models.Organizations{}, nil).
+		Return(baseModels.Organizations{}, nil).
 		Times(1)
 
 	r, _ := http.NewRequest("GET", "/api/organizations?page=1", bytes.NewBuffer([]byte{}))
@@ -510,7 +510,7 @@ func (suite *userSuite) TestGetFavorite() {
 		Times(1)
 	suite.uc.EXPECT().
 		GetUserFavorite(uint64(12)).
-		Return(models.Favorites{}, nil).
+		Return(baseModels.Favorites{}, nil).
 		Times(1)
 
 	cookie := &http.Cookie{

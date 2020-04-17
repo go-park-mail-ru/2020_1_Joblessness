@@ -6,7 +6,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"testing"
 )
 
@@ -15,9 +15,9 @@ type userSuite struct {
 	rep          *SearchRepository
 	db           *sql.DB
 	mock         sqlmock.Sqlmock
-	person       models.Person
-	organization models.Organization
-	vacancy      models.Vacancy
+	person       baseModels.Person
+	organization baseModels.Organization
+	vacancy      baseModels.Vacancy
 }
 
 func (suite *userSuite) SetupTest() {
@@ -26,9 +26,9 @@ func (suite *userSuite) SetupTest() {
 	assert.NoError(suite.T(), err)
 	suite.rep = NewSearchRepository(suite.db)
 
-	suite.vacancy = models.Vacancy{
+	suite.vacancy = baseModels.Vacancy{
 		ID: 3,
-		Organization: models.VacancyOrganization{
+		Organization: baseModels.VacancyOrganization{
 			ID:     12,
 			Tag:    "tag",
 			Email:  "email",
@@ -47,7 +47,7 @@ func (suite *userSuite) SetupTest() {
 		Keywords:         "word",
 	}
 
-	suite.person = models.Person{
+	suite.person = baseModels.Person{
 		ID:        1,
 		Login:     "login",
 		Password:  "password",
@@ -58,7 +58,7 @@ func (suite *userSuite) SetupTest() {
 		Tag:       "tag",
 	}
 
-	suite.organization = models.Organization{
+	suite.organization = baseModels.Organization{
 		ID:       1,
 		Login:    "login",
 		Password: "password",

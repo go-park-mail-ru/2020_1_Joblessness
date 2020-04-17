@@ -1,4 +1,4 @@
-package models
+package baseModels
 
 import (
 	"joblessness/haha/utils/chat"

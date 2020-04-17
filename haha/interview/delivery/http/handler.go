@@ -8,7 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/kataras/golog"
 	interviewInterfaces "joblessness/haha/interview/interfaces"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"joblessness/haha/summary/interfaces"
 	"joblessness/haha/utils/chat"
 	"net/http"
@@ -45,7 +45,7 @@ func NewHandler(useCase interviewInterfaces.InterviewUseCase) *Handler {
 	return handler
 }
 
-func (h *Handler) generateMessage(sendSummary *models.SendSummary) (result *chat.Message, err error) {
+func (h *Handler) generateMessage(sendSummary *baseModels.SendSummary) (result *chat.Message, err error) {
 	credentials, err := h.useCase.GetResponseCredentials(sendSummary.SummaryID, sendSummary.VacancyID)
 	if err != nil {
 		return nil, err
@@ -73,7 +73,7 @@ func (h *Handler) generateMessage(sendSummary *models.SendSummary) (result *chat
 func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
-	var sendSummary models.SendSummary
+	var sendSummary baseModels.SendSummary
 	err := json.NewDecoder(r.Body).Decode(&sendSummary)
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
@@ -89,12 +89,12 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, summaryInterfaces.ErrOrganizationIsNotOwner):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusForbidden)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case errors.Is(err, summaryInterfaces.ErrNoSummaryToRefresh):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		if message, err := h.generateMessage(&sendSummary); err == nil {
@@ -104,7 +104,7 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -135,7 +135,7 @@ func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) History(w http.ResponseWriter, r *http.Request) {
-	var parameters models.ChatParameters
+	var parameters baseModels.ChatParameters
 	rID := r.Context().Value("rID").(string)
 	parameters.From = r.Context().Value("userID").(uint64)
 	parameters.To, _ = strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
@@ -150,7 +150,7 @@ func (h *Handler) History(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -169,7 +169,7 @@ func (h *Handler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(models.Error{Message: err.Error()})
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }

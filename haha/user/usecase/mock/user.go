@@ -6,7 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	models "joblessness/haha/models"
+	"joblessness/haha/models/base"
 	multipart "mime/multipart"
 	reflect "reflect"
 )
@@ -35,7 +35,7 @@ func (m *MockUserUseCase) EXPECT() *MockUserUseCaseMockRecorder {
 }
 
 // ChangeOrganization mocks base method
-func (m *MockUserUseCase) ChangeOrganization(arg0 *models.Organization) error {
+func (m *MockUserUseCase) ChangeOrganization(arg0 *baseModels.Organization) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangeOrganization", arg0)
 	ret0, _ := ret[0].(error)
@@ -49,7 +49,7 @@ func (mr *MockUserUseCaseMockRecorder) ChangeOrganization(arg0 interface{}) *gom
 }
 
 // ChangePerson mocks base method
-func (m *MockUserUseCase) ChangePerson(arg0 *models.Person) error {
+func (m *MockUserUseCase) ChangePerson(arg0 *baseModels.Person) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangePerson", arg0)
 	ret0, _ := ret[0].(error)
@@ -63,10 +63,10 @@ func (mr *MockUserUseCaseMockRecorder) ChangePerson(arg0 interface{}) *gomock.Ca
 }
 
 // GetListOfOrgs mocks base method
-func (m *MockUserUseCase) GetListOfOrgs(arg0 int) (models.Organizations, error) {
+func (m *MockUserUseCase) GetListOfOrgs(arg0 int) (baseModels.Organizations, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetListOfOrgs", arg0)
-	ret0, _ := ret[0].(models.Organizations)
+	ret0, _ := ret[0].(baseModels.Organizations)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -78,10 +78,10 @@ func (mr *MockUserUseCaseMockRecorder) GetListOfOrgs(arg0 interface{}) *gomock.C
 }
 
 // GetOrganization mocks base method
-func (m *MockUserUseCase) GetOrganization(arg0 uint64) (*models.Organization, error) {
+func (m *MockUserUseCase) GetOrganization(arg0 uint64) (*baseModels.Organization, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrganization", arg0)
-	ret0, _ := ret[0].(*models.Organization)
+	ret0, _ := ret[0].(*baseModels.Organization)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -93,10 +93,10 @@ func (mr *MockUserUseCaseMockRecorder) GetOrganization(arg0 interface{}) *gomock
 }
 
 // GetPerson mocks base method
-func (m *MockUserUseCase) GetPerson(arg0 uint64) (*models.Person, error) {
+func (m *MockUserUseCase) GetPerson(arg0 uint64) (*baseModels.Person, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetPerson", arg0)
-	ret0, _ := ret[0].(*models.Person)
+	ret0, _ := ret[0].(*baseModels.Person)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -108,10 +108,10 @@ func (mr *MockUserUseCaseMockRecorder) GetPerson(arg0 interface{}) *gomock.Call 
 }
 
 // GetUserFavorite mocks base method
-func (m *MockUserUseCase) GetUserFavorite(arg0 uint64) (models.Favorites, error) {
+func (m *MockUserUseCase) GetUserFavorite(arg0 uint64) (baseModels.Favorites, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserFavorite", arg0)
-	ret0, _ := ret[0].(models.Favorites)
+	ret0, _ := ret[0].(baseModels.Favorites)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

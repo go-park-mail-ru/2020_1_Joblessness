@@ -3,7 +3,7 @@ package interviewPostgres
 import (
 	"database/sql"
 	interviewInterfaces "joblessness/haha/interview/interfaces"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"joblessness/haha/utils/chat"
 )
 
@@ -31,7 +31,7 @@ func (r *InterviewRepository) IsOrganizationVacancy(vacancyID, userID uint64) (e
 	return err
 }
 
-func (r *InterviewRepository) ResponseSummary(sendSummary *models.SendSummary) (err error) {
+func (r *InterviewRepository) ResponseSummary(sendSummary *baseModels.SendSummary) (err error) {
 	response := `UPDATE response 
 				SET date = CURRENT_TIMESTAMP,
 				    approved = $1,
@@ -57,7 +57,7 @@ func (r *InterviewRepository) SaveMessage(message *chat.Message) (err error) {
 	return err
 }
 
-func (r *InterviewRepository) getUserSendMessages(parameters *models.ChatParameters) (result []*chat.Message, err error) {
+func (r *InterviewRepository) getUserSendMessages(parameters *baseModels.ChatParameters) (result []*chat.Message, err error) {
 	result = make([]*chat.Message, 0)
 	saveMessage := `SELECT user_one_id, user_two_id, user_one, user_two, body, created
     				FROM message
@@ -86,22 +86,22 @@ func (r *InterviewRepository) getUserSendMessages(parameters *models.ChatParamet
 	return result, nil
 }
 
-func (r *InterviewRepository) GetHistory(parameters *models.ChatParameters) (result models.Messages, err error) {
+func (r *InterviewRepository) GetHistory(parameters *baseModels.ChatParameters) (result baseModels.Messages, err error) {
 	from, err := r.getUserSendMessages(parameters)
 	if err != nil {
-		return models.Messages{}, err
+		return baseModels.Messages{}, err
 	}
 
 	parameters.From, parameters.To = parameters.To, parameters.From
 	to, err := r.getUserSendMessages(parameters)
 
-	return models.Messages{
+	return baseModels.Messages{
 		From: from,
 		To:   to,
 	}, err
 }
 
-func (r *InterviewRepository) GetResponseCredentials(summaryID, vacancyID uint64) (result *models.SummaryCredentials, err error) {
+func (r *InterviewRepository) GetResponseCredentials(summaryID, vacancyID uint64) (result *baseModels.SummaryCredentials, err error) {
 	getPerson := `SELECT u.id, p.name
 					FROM summary s
 					JOIN users u on s.author = u.id
@@ -122,8 +122,8 @@ func (r *InterviewRepository) GetResponseCredentials(summaryID, vacancyID uint64
 	return result, err
 }
 
-func (r *InterviewRepository) GetConversations(userID uint64) (result models.Conversations, err error) {
-	result = make(models.Conversations, 0)
+func (r *InterviewRepository) GetConversations(userID uint64) (result baseModels.Conversations, err error) {
+	result = make(baseModels.Conversations, 0)
 	getConversations := `SELECT u.id, u.tag, r.interview_date
 					FROM response r
 					JOIN summary s on r.summary_id = s.id
@@ -140,7 +140,7 @@ func (r *InterviewRepository) GetConversations(userID uint64) (result models.Con
 	rows.Close()
 
 	for rows.Next() {
-		var title models.ConversationTitle
+		var title baseModels.ConversationTitle
 
 		err = rows.Scan(&title.ChatterId, &title.ChatterName, &title.InterviewDate)
 		if err != nil {

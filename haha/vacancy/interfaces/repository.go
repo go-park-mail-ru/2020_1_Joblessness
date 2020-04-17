@@ -1,13 +1,17 @@
 package vacancyInterfaces
 
-import "joblessness/haha/models"
+import (
+	"joblessness/haha/models/base"
+	pgModels "joblessness/haha/models/postgres"
+)
 
 type VacancyRepository interface {
-	CreateVacancy(vacancy *models.Vacancy) (uint64, error)
-	GetVacancies(page int) (models.Vacancies, error)
-	GetVacancy(vacancyID uint64) (*models.Vacancy, error)
+	CreateVacancy(vacancy *baseModels.Vacancy) (uint64, error)
+	GetVacancies(page int) (baseModels.Vacancies, error)
+	GetVacancyOrganization(organizationID uint64) (*pgModels.User, *pgModels.Organization, error)
+	GetVacancy(vacancyID uint64) (*baseModels.Vacancy, error)
 	CheckAuthor(vacancyID, authorID uint64) (err error)
-	ChangeVacancy(vacancy *models.Vacancy) error
+	ChangeVacancy(vacancy *baseModels.Vacancy) error
 	DeleteVacancy(vacancyID uint64) error
-	GetOrgVacancies(userID uint64) (models.Vacancies, error)
+	GetOrgVacancies(userID uint64) (baseModels.Vacancies, error)
 }

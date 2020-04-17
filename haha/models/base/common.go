@@ -1,4 +1,4 @@
-package models
+package baseModels
 
 type ResponseBool struct {
 	Like bool `json:"like"`

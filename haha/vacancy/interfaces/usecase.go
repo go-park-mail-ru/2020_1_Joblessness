@@ -1,12 +1,14 @@
 package vacancyInterfaces
 
-import "joblessness/haha/models"
+import (
+	"joblessness/haha/models/base"
+)
 
 type VacancyUseCase interface {
-	CreateVacancy(vacancy *models.Vacancy) (uint64, error)
-	GetVacancies(page string) (models.Vacancies, error)
-	GetVacancy(vacancyID uint64) (*models.Vacancy, error)
-	ChangeVacancy(vacancy *models.Vacancy) error
+	CreateVacancy(vacancy *baseModels.Vacancy) (uint64, error)
+	GetVacancies(page string) (baseModels.Vacancies, error)
+	GetVacancy(vacancyID uint64) (*baseModels.Vacancy, error)
+	ChangeVacancy(vacancy *baseModels.Vacancy) error
 	DeleteVacancy(vacancyID uint64, authorID uint64) error
-	GetOrgVacancies(userID uint64) (models.Vacancies, error)
+	GetOrgVacancies(userID uint64) (baseModels.Vacancies, error)
 }
