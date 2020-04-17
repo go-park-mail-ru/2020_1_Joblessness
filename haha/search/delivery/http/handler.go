@@ -32,7 +32,7 @@ func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
 
 	switch true {
 	case errors.Is(err, searchInterfaces.ErrUnknownRequest):
-		golog.Errorf("#%s: %w",  rID, err)
+		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 	case err == nil:
 		resultJSON, _ := json.Marshal(resultForum)

@@ -9,6 +9,10 @@ import (
 	"joblessness/haha/auth/repository/postgres"
 	"joblessness/haha/auth/usecase"
 	"joblessness/haha/middleware"
+	"joblessness/haha/recommendation/delivery/http"
+	"joblessness/haha/recommendation/interfaces"
+	"joblessness/haha/recommendation/repository/postgres"
+	"joblessness/haha/recommendation/usecase"
 	"joblessness/haha/search/delivery/http"
 	"joblessness/haha/search/interfaces"
 	"joblessness/haha/search/repository/postgres"
@@ -30,13 +34,14 @@ import (
 )
 
 type App struct {
-	httpServer  *http.Server
-	userUse     userInterfaces.UserUseCase
-	authUse     authInterfaces.AuthUseCase
-	vacancyUse  vacancyInterfaces.VacancyUseCase
-	summaryUse  summaryInterfaces.SummaryUseCase
-	searchUse   searchInterfaces.SearchUseCase
-	corsHandler *middleware.CorsHandler
+	httpServer        *http.Server
+	userUse           userInterfaces.UserUseCase
+	authUse           authInterfaces.AuthUseCase
+	vacancyUse        vacancyInterfaces.VacancyUseCase
+	summaryUse        summaryInterfaces.SummaryUseCase
+	searchUse         searchInterfaces.SearchUseCase
+	recommendationUse recommendationInterfaces.UseCase
+	corsHandler       *middleware.CorsHandler
 }
 
 func NewApp(c *middleware.CorsHandler) *App {
@@ -51,15 +56,17 @@ func NewApp(c *middleware.CorsHandler) *App {
 	vacancyRepo := vacancyPostgres.NewVacancyRepository(db)
 	summaryRepo := summaryPostgres.NewSummaryRepository(db)
 	searchRepo := searchPostgres.NewSearchRepository(db)
+	recommendationRepo := recommendationPostgres.NewRepository(db, vacancyRepo)
 	policy := bluemonday.UGCPolicy()
 
 	return &App{
-		userUse:     userUseCase.NewUserUseCase(userRepo, policy),
-		authUse:     authUseCase.NewAuthUseCase(authRepo),
-		vacancyUse:  vacancyUseCase.NewVacancyUseCase(vacancyRepo, policy),
-		summaryUse:  summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
-		searchUse:   searchUseCase.NewSearchUseCase(searchRepo, policy),
-		corsHandler: c,
+		userUse:           userUseCase.NewUserUseCase(userRepo, policy),
+		authUse:           authUseCase.NewAuthUseCase(authRepo),
+		vacancyUse:        vacancyUseCase.NewVacancyUseCase(vacancyRepo, policy),
+		summaryUse:        summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
+		searchUse:         searchUseCase.NewSearchUseCase(searchRepo, policy),
+		recommendationUse: recommendationUseCase.NewUseCase(recommendationRepo),
+		corsHandler:       c,
 	}
 }
 
@@ -74,20 +81,12 @@ func (app *App) StartRouter() {
 	router.Use(m.LogMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
-	// auth
 	authHttp.RegisterHTTPEndpoints(router, mAuth, app.authUse)
-
-	// users
 	userHttp.RegisterHTTPEndpoints(router, mAuth, app.userUse)
-
-	// vacancies
 	vacancyHttp.RegisterHTTPEndpoints(router, mAuth, app.vacancyUse)
-
-	// summaries
 	summaryHttp.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
-
-	// search
 	searchHttp.RegisterHTTPEndpoints(router, app.searchUse)
+	recommendationHttp.RegisterHTTPEndpoints(router, mAuth, app.recommendationUse)
 
 	http.Handle("/", router)
 	golog.Info("Server started")

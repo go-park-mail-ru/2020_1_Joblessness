@@ -15,6 +15,7 @@ require (
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/lib/pq v1.3.0
 	github.com/microcosm-cc/bluemonday v1.0.2
+	github.com/muesli/regommend v0.0.0-20190807045506-ee89be7688a4
 	github.com/pkg/errors v0.9.1
 	github.com/sendgrid/rest v2.4.1+incompatible // indirect
 	github.com/sendgrid/sendgrid-go v3.5.0+incompatible
