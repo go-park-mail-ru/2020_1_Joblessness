@@ -31,6 +31,7 @@ import (
 	"joblessness/haha/user/interfaces"
 	"joblessness/haha/user/repository/postgres"
 	"joblessness/haha/user/usecase"
+	"joblessness/haha/utils/chat"
 	"joblessness/haha/utils/database"
 	"joblessness/haha/vacancy/delivery/http"
 	"joblessness/haha/vacancy/interfaces"
@@ -40,15 +41,15 @@ import (
 )
 
 type App struct {
-	httpServer  *http.Server
-	userUse     userInterfaces.UserUseCase
-	authUse     authInterfaces.AuthUseCase
-	vacancyUse  vacancyInterfaces.VacancyUseCase
-	summaryUse  summaryInterfaces.SummaryUseCase
-	searchUse   searchInterfaces.SearchUseCase
+	httpServer        *http.Server
+	userUse           userInterfaces.UserUseCase
+	authUse           authInterfaces.AuthUseCase
+	vacancyUse        vacancyInterfaces.VacancyUseCase
+	summaryUse        summaryInterfaces.SummaryUseCase
+	searchUse         searchInterfaces.SearchUseCase
 	recommendationUse recommendationInterfaces.UseCase
-	interviewUse   interviewInterfaces.InterviewUseCase
-	corsHandler *middleware.CorsHandler
+	interviewUse      interviewInterfaces.InterviewUseCase
+	corsHandler       *middleware.CorsHandler
 }
 
 func NewApp(c *middleware.CorsHandler) *App {
@@ -74,14 +75,14 @@ func NewApp(c *middleware.CorsHandler) *App {
 		summaryUse:        summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
 		searchUse:         searchUseCase.NewSearchUseCase(searchRepo, policy),
 		recommendationUse: recommendationUseCase.NewUseCase(recommendationRepo),
-		interviewUse:   interviewUseCase.NewInterviewUseCase(interviewRepo, policy),
+		interviewUse:      interviewUseCase.NewInterviewUseCase(interviewRepo, policy),
 		corsHandler:       c,
 	}
 }
 
 var (
 	noCors = flag.Bool("no-cors", false, "disable cors")
-	port = flag.Uint64("p", 8001, "port")
+	port   = flag.Uint64("p", 8001, "port")
 )
 
 func (app *App) StartRouter() {
@@ -91,6 +92,8 @@ func (app *App) StartRouter() {
 
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
+
+	room := chat.NewRoom(app.interviewUse)
 
 	router.Use(m.RecoveryMiddleware)
 	if !*noCors {
@@ -105,7 +108,7 @@ func (app *App) StartRouter() {
 	summaryHttp.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
 	searchHttp.RegisterHTTPEndpoints(router, app.searchUse)
 	recommendationHttp.RegisterHTTPEndpoints(router, mAuth, app.recommendationUse)
-	interviewHttp.RegisterHTTPEndpoints(router, mAuth, app.interviewUse)
+	interviewHttp.RegisterHTTPEndpoints(router, mAuth, app.interviewUse, room)
 
 	http.Handle("/", router)
 	golog.Infof("Server started at port :%d", *port)

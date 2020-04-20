@@ -35,10 +35,12 @@ func (r *InterviewRepository) ResponseSummary(sendSummary *baseModels.SendSummar
 	response := `UPDATE response 
 				SET date = CURRENT_TIMESTAMP,
 				    approved = $1,
-				    rejected = $2
-				WHERE summary_id = $3
-				AND vacancy_id = $4;`
-	rows, err := r.db.Exec(response, sendSummary.Accepted, sendSummary.Denied, sendSummary.SummaryID, sendSummary.VacancyID)
+				    rejected = $2,
+				    interview_date = $3
+				WHERE summary_id = $4
+				AND vacancy_id = $5;`
+	rows, err := r.db.Exec(response, sendSummary.Accepted, sendSummary.Denied, sendSummary.InterviewDate,
+		sendSummary.SummaryID, sendSummary.VacancyID)
 	if err != nil {
 		return err
 	}
@@ -102,6 +104,8 @@ func (r *InterviewRepository) GetHistory(parameters *baseModels.ChatParameters) 
 }
 
 func (r *InterviewRepository) GetResponseCredentials(summaryID, vacancyID uint64) (result *baseModels.SummaryCredentials, err error) {
+	result = &baseModels.SummaryCredentials{}
+
 	getPerson := `SELECT u.id, p.name
 					FROM summary s
 					JOIN users u on s.author = u.id
@@ -117,7 +121,7 @@ func (r *InterviewRepository) GetResponseCredentials(summaryID, vacancyID uint64
 					JOIN users u on v.organization_id = u.id
 					JOIN organization o on u.organization_id = o.id
 					WHERE v.id = $1`
-	err = r.db.QueryRow(getOrg, vacancyID).Scan(&result.OrganizationID, &result.OrganizationID)
+	err = r.db.QueryRow(getOrg, vacancyID).Scan(&result.OrganizationID, &result.OrganizationName)
 
 	return result, err
 }

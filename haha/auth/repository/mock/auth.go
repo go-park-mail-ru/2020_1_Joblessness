@@ -6,7 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	"joblessness/haha/models/base"
+	baseModels "joblessness/haha/models/base"
 	reflect "reflect"
 )
 
@@ -31,34 +31,6 @@ func NewMockAuthRepository(ctrl *gomock.Controller) *MockAuthRepository {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockAuthRepository) EXPECT() *MockAuthRepositoryMockRecorder {
 	return m.recorder
-}
-
-// ChangeOrganization mocks base method
-func (m *MockAuthRepository) ChangeOrganization(arg0 baseModels.Organization) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChangeOrganization", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ChangeOrganization indicates an expected call of ChangeOrganization
-func (mr *MockAuthRepositoryMockRecorder) ChangeOrganization(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeOrganization", reflect.TypeOf((*MockAuthRepository)(nil).ChangeOrganization), arg0)
-}
-
-// ChangePerson mocks base method
-func (m *MockAuthRepository) ChangePerson(arg0 baseModels.Person) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChangePerson", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ChangePerson indicates an expected call of ChangePerson
-func (mr *MockAuthRepositoryMockRecorder) ChangePerson(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePerson", reflect.TypeOf((*MockAuthRepository)(nil).ChangePerson), arg0)
 }
 
 // CreateOrganization mocks base method
@@ -103,51 +75,6 @@ func (mr *MockAuthRepositoryMockRecorder) DoesUserExists(arg0 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoesUserExists", reflect.TypeOf((*MockAuthRepository)(nil).DoesUserExists), arg0)
 }
 
-// GetListOfOrgs mocks base method
-func (m *MockAuthRepository) GetListOfOrgs(arg0 int) ([]baseModels.Organization, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetListOfOrgs", arg0)
-	ret0, _ := ret[0].([]baseModels.Organization)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetListOfOrgs indicates an expected call of GetListOfOrgs
-func (mr *MockAuthRepositoryMockRecorder) GetListOfOrgs(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetListOfOrgs", reflect.TypeOf((*MockAuthRepository)(nil).GetListOfOrgs), arg0)
-}
-
-// GetOrganization mocks base method
-func (m *MockAuthRepository) GetOrganization(arg0 uint64) (*baseModels.Organization, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetOrganization", arg0)
-	ret0, _ := ret[0].(*baseModels.Organization)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetOrganization indicates an expected call of GetOrganization
-func (mr *MockAuthRepositoryMockRecorder) GetOrganization(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrganization", reflect.TypeOf((*MockAuthRepository)(nil).GetOrganization), arg0)
-}
-
-// GetPerson mocks base method
-func (m *MockAuthRepository) GetPerson(arg0 uint64) (*baseModels.Person, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPerson", arg0)
-	ret0, _ := ret[0].(*baseModels.Person)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPerson indicates an expected call of GetPerson
-func (mr *MockAuthRepositoryMockRecorder) GetPerson(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPerson", reflect.TypeOf((*MockAuthRepository)(nil).GetPerson), arg0)
-}
-
 // GetRole mocks base method
 func (m *MockAuthRepository) GetRole(arg0 uint64) (string, error) {
 	m.ctrl.T.Helper()
@@ -161,36 +88,6 @@ func (m *MockAuthRepository) GetRole(arg0 uint64) (string, error) {
 func (mr *MockAuthRepositoryMockRecorder) GetRole(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRole", reflect.TypeOf((*MockAuthRepository)(nil).GetRole), arg0)
-}
-
-// GetUserFavorite mocks base method
-func (m *MockAuthRepository) GetUserFavorite(arg0 uint64) (baseModels.Favorites, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserFavorite", arg0)
-	ret0, _ := ret[0].(baseModels.Favorites)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserFavorite indicates an expected call of GetUserFavorite
-func (mr *MockAuthRepositoryMockRecorder) GetUserFavorite(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserFavorite", reflect.TypeOf((*MockAuthRepository)(nil).GetUserFavorite), arg0)
-}
-
-// LikeExists mocks base method
-func (m *MockAuthRepository) LikeExists(arg0, arg1 uint64) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LikeExists", arg0, arg1)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// LikeExists indicates an expected call of LikeExists
-func (mr *MockAuthRepositoryMockRecorder) LikeExists(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LikeExists", reflect.TypeOf((*MockAuthRepository)(nil).LikeExists), arg0, arg1)
 }
 
 // Login mocks base method
@@ -222,20 +119,6 @@ func (mr *MockAuthRepositoryMockRecorder) Logout(arg0 interface{}) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockAuthRepository)(nil).Logout), arg0)
 }
 
-// SaveAvatarLink mocks base method
-func (m *MockAuthRepository) SaveAvatarLink(arg0 string, arg1 uint64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveAvatarLink", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SaveAvatarLink indicates an expected call of SaveAvatarLink
-func (mr *MockAuthRepositoryMockRecorder) SaveAvatarLink(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveAvatarLink", reflect.TypeOf((*MockAuthRepository)(nil).SaveAvatarLink), arg0, arg1)
-}
-
 // SessionExists mocks base method
 func (m *MockAuthRepository) SessionExists(arg0 string) (uint64, error) {
 	m.ctrl.T.Helper()
@@ -249,19 +132,4 @@ func (m *MockAuthRepository) SessionExists(arg0 string) (uint64, error) {
 func (mr *MockAuthRepositoryMockRecorder) SessionExists(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SessionExists", reflect.TypeOf((*MockAuthRepository)(nil).SessionExists), arg0)
-}
-
-// SetOrDeleteLike mocks base method
-func (m *MockAuthRepository) SetOrDeleteLike(arg0, arg1 uint64) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetOrDeleteLike", arg0, arg1)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SetOrDeleteLike indicates an expected call of SetOrDeleteLike
-func (mr *MockAuthRepositoryMockRecorder) SetOrDeleteLike(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetOrDeleteLike", reflect.TypeOf((*MockAuthRepository)(nil).SetOrDeleteLike), arg0, arg1)
 }

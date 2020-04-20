@@ -6,46 +6,54 @@ import (
 	"github.com/kataras/golog"
 )
 
-type Messenger interface {
-	SaveMessage(message *Message) (err error)
+type RoomInstance struct {
+	forwardChan chan []byte
+	joinChan    chan *Chatter
+	leaveChan   chan *Chatter
+	Chatters    map[uint64]*Chatter
+	messenger   Messenger
 }
 
-type Room struct {
-	Forward   chan []byte
-	Join      chan *Chatter
-	Leave     chan *Chatter
-	Chatters  map[uint64]*Chatter
-	messenger Messenger
-}
-
-func NewRoom(messenger Messenger) *Room {
-	return &Room{
-		Forward:   make(chan []byte),
-		Join:      make(chan *Chatter),
-		Leave:     make(chan *Chatter),
-		Chatters:  make(map[uint64]*Chatter),
-		messenger: messenger,
+func NewRoom(messenger Messenger) *RoomInstance {
+	return &RoomInstance{
+		forwardChan: make(chan []byte),
+		joinChan:    make(chan *Chatter),
+		leaveChan:   make(chan *Chatter),
+		Chatters:    make(map[uint64]*Chatter),
+		messenger:   messenger,
 	}
 }
 
-func (r *Room) Run() {
+func (r *RoomInstance) Forward(input []byte) {
+	r.forwardChan <- input
+}
+
+func (r *RoomInstance) Join(character *Chatter) {
+	r.joinChan <- character
+}
+
+func (r *RoomInstance) Leave(character *Chatter) {
+	r.leaveChan <- character
+}
+
+func (r *RoomInstance) Run() {
 	golog.Info("running chat room")
 	for {
 		select {
-		case chatter := <-r.Join:
+		case chatter := <-r.joinChan:
 			golog.Infof("new chatter in room")
 			r.Chatters[chatter.ID] = chatter
-		case chatter := <-r.Leave:
+		case chatter := <-r.leaveChan:
 			golog.Infof("chatter leaving room")
 			delete(r.Chatters, chatter.ID)
 			close(chatter.Send)
-		case rawMessage := <-r.Forward:
+		case rawMessage := <-r.forwardChan:
 			r.HandleMessage(rawMessage)
 		}
 	}
 }
 
-func (r *Room) SendGeneratedMessage(message *Message) {
+func (r *RoomInstance) SendGeneratedMessage(message *Message) {
 	if err := r.messenger.SaveMessage(message); err == nil {
 		receiver, existReceiver := r.Chatters[message.UserTwoId]
 		if existReceiver {
@@ -61,7 +69,7 @@ func (r *Room) SendGeneratedMessage(message *Message) {
 	}
 }
 
-func (r *Room) HandleMessage(rawMessage []byte) {
+func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 	var message *Message
 	json.Unmarshal(rawMessage, &message)
 
@@ -90,16 +98,16 @@ func (r *Room) HandleMessage(rawMessage []byte) {
 }
 
 type Chatter struct {
-	ID uint64
+	ID     uint64
 	Socket *websocket.Conn
 	Send   chan []byte
-	Room   *Room
+	Room   Room
 }
 
 func (c *Chatter) Read() {
 	for {
 		if _, msg, err := c.Socket.ReadMessage(); err == nil {
-			c.Room.Forward <- msg
+			c.Room.Forward(msg)
 		} else {
 			break
 		}

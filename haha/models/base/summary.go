@@ -91,6 +91,7 @@ type SendSummary struct {
 	SummaryID      uint64 `json:"summaryId"`
 	UserID         uint64 `json:"user_id,omitempty"`
 	OrganizationID uint64 `json:"organizationId,omitempty"`
+	InterviewDate time.Time `json:"interview_date,omitempty"`
 	Accepted       bool   `json:"accepted"`
 	Denied         bool   `json:"denied"`
 }

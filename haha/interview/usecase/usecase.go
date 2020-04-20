@@ -9,13 +9,13 @@ import (
 
 type InterviewUseCase struct {
 	interviewRepo interviewInterfaces.InterviewRepository
-	policy      *bluemonday.Policy
+	policy        *bluemonday.Policy
 }
 
 func NewInterviewUseCase(interviewRepo interviewInterfaces.InterviewRepository, policy *bluemonday.Policy) *InterviewUseCase {
 	return &InterviewUseCase{
 		interviewRepo: interviewRepo,
-		policy:      policy,
+		policy:        policy,
 	}
 }
 

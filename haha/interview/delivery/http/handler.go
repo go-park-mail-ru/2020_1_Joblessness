@@ -16,21 +16,20 @@ import (
 	"time"
 )
 
-
 const (
 	socketBufferSize  = 1024
 	messageBufferSize = 256
 )
 
 type Handler struct {
-	useCase interviewInterfaces.InterviewUseCase
+	useCase  interviewInterfaces.InterviewUseCase
 	upGrader *websocket.Upgrader
-	room *chat.Room
+	room     chat.Room
 }
 
-func NewHandler(useCase interviewInterfaces.InterviewUseCase) *Handler {
+func NewHandler(useCase interviewInterfaces.InterviewUseCase, room chat.Room) *Handler {
 	handler := &Handler{
-		useCase:  useCase,
+		useCase: useCase,
 		upGrader: &websocket.Upgrader{
 			ReadBufferSize:  socketBufferSize,
 			WriteBufferSize: socketBufferSize,
@@ -38,7 +37,7 @@ func NewHandler(useCase interviewInterfaces.InterviewUseCase) *Handler {
 				return true
 			},
 		},
-		room: chat.NewRoom(useCase),
+		room: room,
 	}
 	handler.room.Run()
 
@@ -120,15 +119,15 @@ func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	chatter := &chat.Chatter{
-		ID: userID,
+		ID:     userID,
 		Socket: socket,
 		Send:   make(chan []byte, messageBufferSize),
 		Room:   h.room,
 	}
 
-	h.room.Join <- chatter
+	h.room.Join(chatter)
 	defer func() {
-		h.room.Leave <- chatter
+		h.room.Leave(chatter)
 	}()
 	go chatter.Write()
 	chatter.Read()
@@ -154,7 +153,6 @@ func (h *Handler) History(w http.ResponseWriter, r *http.Request) {
 		w.Write(json)
 	}
 }
-
 
 func (h *Handler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)

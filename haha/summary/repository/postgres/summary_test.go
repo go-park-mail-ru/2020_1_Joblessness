@@ -502,40 +502,6 @@ func (suite *summarySuite) TestDeleteSummaryFailed() {
 	assert.Error(suite.T(), err)
 }
 
-func (suite *summarySuite) TestIsOrganizationSummaryTrue() {
-	rows := sqlmock.NewRows([]string{"id"}).
-		AddRow(true)
-	suite.mock.
-		ExpectQuery("SELECT v.organization_id").
-		WithArgs(suite.summary.ID, suite.summary.Author.ID).
-		WillReturnRows(rows)
-
-	err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
-	assert.NoError(suite.T(), err)
-}
-
-func (suite *summarySuite) TestIsOrganizationSummaryFalse() {
-	rows := sqlmock.NewRows([]string{"id"}).
-		AddRow(false)
-	suite.mock.
-		ExpectQuery("SELECT v.organization_id").
-		WithArgs(suite.summary.ID, suite.summary.Author.ID).
-		WillReturnRows(rows)
-
-	err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
-	assert.True(suite.T(), errors.Is(err, summaryInterfaces.ErrOrganizationIsNotOwner))
-}
-
-func (suite *summarySuite) TestIsOrganizationSummaryFailed() {
-	suite.mock.
-		ExpectQuery("SELECT v.organization_id").
-		WithArgs(suite.summary.ID, suite.summary.Author.ID).
-		WillReturnError(errors.New(""))
-
-	err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
-	assert.EqualError(suite.T(), err, "")
-}
-
 func (suite *summarySuite) TestSendSummary() {
 	suite.mock.
 		ExpectExec("INSERT INTO response").
@@ -594,26 +560,6 @@ func (suite *summarySuite) TestRefreshSummaryFailed() {
 
 	err := suite.rep.RefreshSummary(suite.sendSum.SummaryID, suite.sendSum.VacancyID)
 	assert.Error(suite.T(), err)
-}
-
-func (suite *summarySuite) TestResponseSummary() {
-	suite.mock.
-		ExpectExec("UPDATE response").
-		WithArgs(suite.sendSum.Accepted, suite.sendSum.Denied, suite.sendSum.SummaryID, suite.sendSum.VacancyID).
-		WillReturnResult(sqlmock.NewResult(1, 1))
-
-	err := suite.rep.ResponseSummary(&suite.sendSum)
-	assert.NoError(suite.T(), err)
-}
-
-func (suite *summarySuite) TestResponseSummaryNo() {
-	suite.mock.
-		ExpectExec("UPDATE response").
-		WithArgs(suite.sendSum.Accepted, suite.sendSum.Denied, suite.sendSum.SummaryID, suite.sendSum.VacancyID).
-		WillReturnResult(sqlmock.NewResult(1, 0))
-
-	err := suite.rep.ResponseSummary(&suite.sendSum)
-	assert.True(suite.T(), errors.Is(err, summaryInterfaces.ErrNoSummaryToRefresh))
 }
 
 func (suite *summarySuite) TestResponseSummaryFailed() {
