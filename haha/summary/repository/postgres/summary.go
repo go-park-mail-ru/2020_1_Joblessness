@@ -116,12 +116,12 @@ func (r *SummaryRepository) GetSummaryAuthor(authorID uint64) (*pgModels.User, *
 	user := pgModels.User{ID: authorID}
 	var person pgModels.Person
 
-	getUser := `SELECT tag, email, phone, avatar, name, gender, birthday
+	getUser := `SELECT tag, email, phone, avatar, name, surname, gender, birthday
 				FROM users 
 				JOIN person p on users.person_id = p.id
 				WHERE users.id = $1`
 	err := r.db.QueryRow(getUser, user.ID).Scan(&user.Tag, &user.Email, &user.Phone, &user.Avatar,
-		&person.Name, &person.Gender, &person.Birthday)
+		&person.Name, &person.LastName, &person.Gender, &person.Birthday)
 
 	return &user, &person, err
 }

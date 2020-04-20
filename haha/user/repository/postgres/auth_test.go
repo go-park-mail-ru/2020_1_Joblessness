@@ -82,8 +82,8 @@ func (suite *userSuite) TestGetPerson() {
 		WithArgs(1).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"name", "gender", "birthday"})
-	rows = rows.AddRow(suite.person.LastName+" "+suite.person.LastName, suite.person.Gender, suite.person.Birthday)
+	rows = sqlmock.NewRows([]string{"name", "surname", "gender", "birthday"})
+	rows = rows.AddRow(suite.person.LastName, suite.person.LastName, suite.person.Gender, suite.person.Birthday)
 	suite.mock.
 		ExpectQuery("SELECT name").
 		WithArgs(suite.person.ID).
@@ -139,7 +139,7 @@ func (suite *userSuite) TestChangePerson() {
 
 	suite.mock.
 		ExpectExec("UPDATE person").
-		WithArgs(suite.person.FirstName+" "+suite.person.LastName, suite.person.Gender, nil, 1).
+		WithArgs(suite.person.FirstName, suite.person.LastName, suite.person.Gender, nil, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	suite.mock.
 		ExpectExec("UPDATE user").

@@ -12,15 +12,14 @@ import (
 	"testing"
 )
 
-
 type userSuite struct {
 	suite.Suite
-	controller       *gomock.Controller
-	uc               *AuthUseCase
-	person           baseModels.Person
-	organization     baseModels.Organization
-	repo *mock.MockAuthRepository
-	sidEx string
+	controller   *gomock.Controller
+	uc           *AuthUseCase
+	person       baseModels.Person
+	organization baseModels.Organization
+	repo         *mock.MockAuthRepository
+	sidEx        string
 }
 
 func (suite *userSuite) SetupTest() {
@@ -33,7 +32,7 @@ func (suite *userSuite) SetupTest() {
 	suite.sidEx = "awdawd"
 
 	suite.person = baseModels.Person{
-		ID: uint64(1),
+		ID:        uint64(1),
 		Login:     "user",
 		Password:  "password",
 		FirstName: "phone",

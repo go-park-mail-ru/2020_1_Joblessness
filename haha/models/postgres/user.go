@@ -2,7 +2,6 @@ package pgModels
 
 import (
 	"joblessness/haha/models/base"
-	"strings"
 	"time"
 )
 
@@ -22,6 +21,7 @@ type User struct {
 type Person struct {
 	ID       uint64
 	Name     string
+	LastName string
 	Gender   string
 	Birthday time.Time
 }
@@ -34,11 +34,6 @@ type Organization struct {
 }
 
 func ToPgPerson(p *baseModels.Person) (*User, *Person) {
-	name := p.FirstName
-	if p.LastName != "" {
-		name += " " + p.LastName
-	}
-
 	return &User{
 			ID:         p.ID,
 			Login:      p.Login,
@@ -50,7 +45,8 @@ func ToPgPerson(p *baseModels.Person) (*User, *Person) {
 			Avatar:     p.Avatar,
 		},
 		&Person{
-			Name:     name,
+			Name:     p.FirstName,
+			LastName: p.LastName,
 			Gender:   p.Gender,
 			Birthday: p.Birthday,
 		}
@@ -75,15 +71,6 @@ func ToPgOrganization(o *baseModels.Organization) (*User, *Organization) {
 }
 
 func ToBasePerson(u *User, p *Person) *baseModels.Person {
-	var lastName, firstName string
-	index := strings.Index(p.Name, " ")
-	if index > -1 {
-		lastName = p.Name[index+1:]
-		firstName = p.Name[:index]
-	} else {
-		firstName = p.Name
-	}
-
 	return &baseModels.Person{
 		ID:         u.ID,
 		Login:      u.Login,
@@ -93,8 +80,8 @@ func ToBasePerson(u *User, p *Person) *baseModels.Person {
 		Phone:      u.Phone,
 		Registered: u.Registered,
 		Avatar:     u.Avatar,
-		FirstName:  firstName,
-		LastName:   lastName,
+		FirstName:  p.Name,
+		LastName:   p.LastName,
 		Gender:     p.Gender,
 		Birthday:   p.Birthday,
 	}

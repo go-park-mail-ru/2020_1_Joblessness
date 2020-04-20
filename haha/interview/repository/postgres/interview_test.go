@@ -15,14 +15,13 @@ import (
 
 type summarySuite struct {
 	suite.Suite
-	rep        *InterviewRepository
-	db         *sql.DB
-	mock       sqlmock.Sqlmock
-	sendSum    baseModels.SendSummary
-	message    chat.Message
-	params baseModels.ChatParameters
+	rep     *InterviewRepository
+	db      *sql.DB
+	mock    sqlmock.Sqlmock
+	sendSum baseModels.SendSummary
+	message chat.Message
+	params  baseModels.ChatParameters
 }
-
 
 func (suite *summarySuite) SetupTest() {
 	var err error
@@ -112,7 +111,7 @@ func (suite *summarySuite) TestResponseSummaryNo() {
 	suite.mock.
 		ExpectExec("UPDATE response").
 		WithArgs(suite.sendSum.Accepted, suite.sendSum.Denied, suite.sendSum.InterviewDate,
-		suite.sendSum.SummaryID, suite.sendSum.VacancyID).
+			suite.sendSum.SummaryID, suite.sendSum.VacancyID).
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
 	err := suite.rep.ResponseSummary(&suite.sendSum)

@@ -37,8 +37,8 @@ func (r *AuthRepository) CreatePerson(user *baseModels.Person) (err error) {
 		dbPerson.Birthday.AddDate(1950, 0, 0)
 	}
 
-	err = r.db.QueryRow("INSERT INTO person (name, gender, birthday) VALUES($1, $2, $3) RETURNING id",
-		dbPerson.Name, dbPerson.Gender, dbPerson.Birthday).
+	err = r.db.QueryRow("INSERT INTO person (name, surname, gender, birthday) VALUES($1, $2, $3, $4) RETURNING id",
+		dbPerson.Name, dbPerson.LastName, dbPerson.Gender, dbPerson.Birthday).
 		Scan(&dbUser.PersonID)
 	if err != nil {
 		return err

@@ -41,8 +41,8 @@ func (suite *summarySuite) SetupTest() {
 			Email:     "email",
 			Phone:     "phone",
 			Avatar:    "avatar",
-			FirstName: "first",
-			LastName:  "name",
+			FirstName: "name",
+			LastName:  "first",
 			Gender:    "gender",
 		},
 		Keywords: "key",
@@ -78,6 +78,7 @@ func (suite *summarySuite) SetupTest() {
 	suite.person = pgModels.Person{
 		ID:       uint64(3),
 		Name:     "name",
+		LastName: "last",
 		Gender:   "gender",
 		Birthday: time.Now(),
 	}
@@ -207,11 +208,12 @@ func (suite *summarySuite) TestGetSummary() {
 		WithArgs(suite.summary.ID).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"tag", "email", "phone", "avatar", "name", "gender", "birthday"}).
+	rows = sqlmock.NewRows([]string{"tag", "email", "phone", "avatar", "name", "surname", "gender", "birthday"}).
 		AddRow(suite.summary.Author.Tag, suite.summary.Author.Email, suite.summary.Author.Phone,
-			suite.summary.Author.Avatar, "first name", suite.summary.Author.Gender, suite.summary.Author.Birthday)
+			suite.summary.Author.Avatar, suite.summary.Author.FirstName, suite.summary.Author.LastName,
+			suite.summary.Author.Gender, suite.summary.Author.Birthday)
 	suite.mock.
-		ExpectQuery("SELECT tag, email, phone, avatar, name, gender, birthday").
+		ExpectQuery("SELECT tag, email, phone, avatar, name, surname, gender, birthday").
 		WithArgs(suite.summary.Author.ID).
 		WillReturnRows(rows)
 
@@ -332,11 +334,12 @@ func (suite *summarySuite) TestGetSummaries() {
 		WithArgs(suite.summary.ID).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"tag", "email", "phone", "avatar", "name", "gender", "birthday"}).
+	rows = sqlmock.NewRows([]string{"tag", "email", "phone", "avatar", "name", "surname", "gender", "birthday"}).
 		AddRow(suite.summary.Author.Tag, suite.summary.Author.Email, suite.summary.Author.Phone,
-			suite.summary.Author.Avatar, "first name", suite.summary.Author.Gender, suite.summary.Author.Birthday)
+			suite.summary.Author.Avatar, suite.summary.Author.FirstName, suite.summary.Author.LastName,
+			suite.summary.Author.Gender, suite.summary.Author.Birthday)
 	suite.mock.
-		ExpectQuery("SELECT tag, email, phone, avatar, name, gender, birthday").
+		ExpectQuery("SELECT tag, email, phone, avatar, name, surname, gender, birthday").
 		WithArgs(suite.summary.Author.ID).
 		WillReturnRows(rows)
 
@@ -371,11 +374,12 @@ func (suite *summarySuite) TestGetUserSummaries() {
 		WithArgs(suite.summary.ID).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"tag", "email", "phone", "avatar", "name", "gender", "birthday"}).
+	rows = sqlmock.NewRows([]string{"tag", "email", "phone", "avatar", "name", "surname", "gender", "birthday"}).
 		AddRow(suite.summary.Author.Tag, suite.summary.Author.Email, suite.summary.Author.Phone,
-			suite.summary.Author.Avatar, "first name", suite.summary.Author.Gender, suite.summary.Author.Birthday)
+			suite.summary.Author.Avatar, suite.summary.Author.FirstName, suite.summary.Author.LastName,
+			suite.summary.Author.Gender, suite.summary.Author.Birthday)
 	suite.mock.
-		ExpectQuery("SELECT tag, email, phone, avatar, name, gender, birthday").
+		ExpectQuery("SELECT tag, email, phone, avatar, name, surname, gender, birthday").
 		WithArgs(suite.summary.Author.ID).
 		WillReturnRows(rows)
 

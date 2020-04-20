@@ -24,7 +24,7 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	room *mock.MockRoom
+	room           *mock.MockRoom
 	router         *mux.Router
 	mainMiddleware *middleware.RecoveryHandler
 	authMiddleware *middleware.SessionHandler
@@ -34,11 +34,11 @@ type userSuite struct {
 	cookie         *http.Cookie
 	response       baseModels.VacancyResponse
 	sendSum        baseModels.SendSummary
-	params baseModels.ChatParameters
+	params         baseModels.ChatParameters
 	summaryCredits baseModels.SummaryCredentials
 	responseByte   *bytes.Buffer
 	sendSumByte    *bytes.Buffer
-	paramsByte *bytes.Buffer
+	paramsByte     *bytes.Buffer
 }
 
 func (suite *userSuite) SetupTest() {

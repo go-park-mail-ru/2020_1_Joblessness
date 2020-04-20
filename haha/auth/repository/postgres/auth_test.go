@@ -105,7 +105,7 @@ func (suite *userSuite) TestCreatePerson() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO person ").
-		WithArgs(suite.person.FirstName+" "+suite.person.LastName, suite.person.Gender, suite.person.Birthday).
+		WithArgs(suite.person.FirstName, suite.person.LastName, suite.person.Gender, suite.person.Birthday).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").

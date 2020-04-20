@@ -79,11 +79,11 @@ func TestSuite(t *testing.T) {
 }
 
 func (suite *userSuite) TestSearchPersons() {
-	rows := sqlmock.NewRows([]string{"userId", "name", "tag", "avatar"}).
-		AddRow(suite.person.ID, suite.person.FirstName+" "+suite.person.LastName, suite.person.Tag,
+	rows := sqlmock.NewRows([]string{"userId", "name", "surname", "tag", "avatar"}).
+		AddRow(suite.person.ID, suite.person.FirstName, suite.person.LastName, suite.person.Tag,
 			suite.person.Avatar)
 	suite.mock.
-		ExpectQuery("SELECT users.id as userId, p.name, tag, avatar").
+		ExpectQuery("SELECT users.id as userId, p.name, p.surname, tag, avatar").
 		WithArgs("req", 10, 10).
 		WillReturnRows(rows)
 

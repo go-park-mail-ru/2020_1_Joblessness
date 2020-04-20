@@ -3,7 +3,6 @@ package pgModels
 import (
 	"database/sql"
 	"joblessness/haha/models/base"
-	"strings"
 )
 
 type Summary struct {
@@ -90,21 +89,14 @@ func ToBaseSummary(s *Summary, eds []*Education, exs []*Experience, u *User, p *
 		})
 	}
 
-	nameArr := strings.Split(p.Name, " ")
-	firstName := nameArr[0]
-	var lastName string
-	if len(nameArr) > 1 {
-		lastName = nameArr[1]
-	}
-
 	author := baseModels.Author{
 		ID:        u.ID,
 		Tag:       u.Tag,
 		Email:     u.Email,
 		Phone:     u.Phone,
 		Avatar:    u.Avatar,
-		FirstName: firstName,
-		LastName:  lastName,
+		FirstName: p.Name,
+		LastName:  p.LastName,
 		Gender:    p.Gender,
 		Birthday:  p.Birthday,
 	}

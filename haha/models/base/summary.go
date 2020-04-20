@@ -87,13 +87,13 @@ func (s *Summaries) Sanitize(policy *bluemonday.Policy) {
 }
 
 type SendSummary struct {
-	VacancyID      uint64 `json:"vacancyId,omitempty"`
-	SummaryID      uint64 `json:"summaryId"`
-	UserID         uint64 `json:"user_id,omitempty"`
-	OrganizationID uint64 `json:"organizationId,omitempty"`
-	InterviewDate time.Time `json:"interview_date,omitempty"`
-	Accepted       bool   `json:"accepted"`
-	Denied         bool   `json:"denied"`
+	VacancyID      uint64    `json:"vacancyId,omitempty"`
+	SummaryID      uint64    `json:"summaryId"`
+	UserID         uint64    `json:"user_id,omitempty"`
+	OrganizationID uint64    `json:"organizationId,omitempty"`
+	InterviewDate  time.Time `json:"interview_date,omitempty"`
+	Accepted       bool      `json:"accepted"`
+	Denied         bool      `json:"denied"`
 }
 
 type VacancyResponse struct {

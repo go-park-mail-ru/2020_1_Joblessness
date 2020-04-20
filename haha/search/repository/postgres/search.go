@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"joblessness/haha/models/base"
 	"strconv"
-	"strings"
 )
 
 type SearchRepository struct {
@@ -27,7 +26,7 @@ func (r SearchRepository) SearchPersons(request, since, desc string) (result []*
 
 	page, _ := strconv.Atoi(since)
 
-	getPersons := `SELECT users.id as userId, p.name, tag, avatar
+	getPersons := `SELECT users.id as userId, p.name, p.surname, tag, avatar
 					FROM users
 					JOIN person p on users.person_id = p.id
 					WHERE lower(name) LIKE lower('%' || $1 || '%')
@@ -44,15 +43,9 @@ func (r SearchRepository) SearchPersons(request, since, desc string) (result []*
 
 	for rows.Next() {
 		var personDB baseModels.Person
-		err := rows.Scan(&personDB.ID, &personDB.FirstName, &personDB.Tag, &personDB.Avatar)
+		err := rows.Scan(&personDB.ID, &personDB.FirstName, &personDB.LastName, &personDB.Tag, &personDB.Avatar)
 		if err != nil {
 			return nil, err
-		}
-
-		index := strings.Index(personDB.FirstName, " ")
-		if index > -1 {
-			personDB.LastName = personDB.FirstName[index+1:]
-			personDB.FirstName = personDB.FirstName[:index]
 		}
 
 		result = append(result, &personDB)

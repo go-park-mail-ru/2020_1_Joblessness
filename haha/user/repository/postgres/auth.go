@@ -46,8 +46,8 @@ func (r *UserRepository) GetPerson(userID uint64) (*baseModels.Person, error) {
 
 	var person pgModels.Person
 
-	getPerson := "SELECT name, gender, birthday FROM person WHERE id = $1;"
-	err = r.db.QueryRow(getPerson, user.PersonID).Scan(&person.Name, &person.Gender, &person.Birthday)
+	getPerson := "SELECT name, surname, gender, birthday FROM person WHERE id = $1;"
+	err = r.db.QueryRow(getPerson, user.PersonID).Scan(&person.Name, &person.LastName, &person.Gender, &person.Birthday)
 	if err != nil {
 		return nil, err
 	}
@@ -86,10 +86,11 @@ func (r *UserRepository) ChangePerson(p *baseModels.Person) error {
 
 	changePerson := `UPDATE person 
 					SET name = COALESCE(NULLIF($1, ''), name), 
+					    surname = COALESCE(NULLIF($1, ''), surname), 
 					    gender = COALESCE(NULLIF($2, ''), gender), 
 					    birthday = COALESCE($3, birthday) 
 					WHERE id = $4;`
-	_, err = r.db.Exec(changePerson, dbPerson.Name, dbPerson.Gender, birthday, user.PersonID)
+	_, err = r.db.Exec(changePerson, dbPerson.Name, dbPerson.LastName, dbPerson.Gender, birthday, user.PersonID)
 	if err != nil {
 		return err
 	}
