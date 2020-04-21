@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 	"github.com/microcosm-cc/bluemonday"
+	"google.golang.org/grpc"
 	"joblessness/haha/auth/delivery/http"
 	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/auth/repository/postgres"
@@ -21,8 +22,9 @@ import (
 	"joblessness/haha/recommendation/usecase"
 	"joblessness/haha/search/delivery/http"
 	"joblessness/haha/search/interfaces"
-	//"joblessness/haha/search/repository/grpc"
-	//"joblessness/haha/search/usecase"
+	"log"
+	"joblessness/haha/search/repository/grpc"
+	"joblessness/haha/search/usecase"
 	"joblessness/haha/summary/delivery/http"
 	"joblessness/haha/summary/interfaces"
 	"joblessness/haha/summary/repository/postgres"
@@ -59,11 +61,19 @@ func NewApp(c *middleware.CorsHandler) *App {
 		return nil
 	}
 
+	searchConn, err := grpc.Dial(
+		"127.0.0.1:8002",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		log.Fatalf("cant connect to grpc")
+	}
+
 	userRepo := userPostgres.NewUserRepository(db)
 	authRepo := authPostgres.NewAuthRepository(db)
 	vacancyRepo := vacancyPostgres.NewVacancyRepository(db)
 	summaryRepo := summaryPostgres.NewSummaryRepository(db)
-	//searchRepo := searchGrpc.NewSearchGrpcRepository(db)
+	searchRepo := searchGrpc.NewSearchGrpcRepository(searchConn)
 	recommendationRepo := recommendationPostgres.NewRepository(db, vacancyRepo)
 	interviewRepo := interviewPostgres.NewInterviewRepository(db)
 	policy := bluemonday.UGCPolicy()
@@ -73,7 +83,7 @@ func NewApp(c *middleware.CorsHandler) *App {
 		authUse:           authUseCase.NewAuthUseCase(authRepo),
 		vacancyUse:        vacancyUseCase.NewVacancyUseCase(vacancyRepo, policy),
 		summaryUse:        summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
-		//searchUse:         searchUseCase.NewSearchUseCase(searchRepo, policy),
+		searchUse:         searchUseCase.NewSearchUseCase(searchRepo, policy),
 		recommendationUse: recommendationUseCase.NewUseCase(recommendationRepo),
 		interviewUse:      interviewUseCase.NewInterviewUseCase(interviewRepo, policy),
 		corsHandler:       c,
