@@ -1,4 +1,4 @@
-package searchService
+package main
 
 import (
 	"github.com/kataras/golog"

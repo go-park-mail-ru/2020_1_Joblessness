@@ -22,7 +22,6 @@ import (
 	"joblessness/haha/recommendation/usecase"
 	"joblessness/haha/search/delivery/http"
 	"joblessness/haha/search/interfaces"
-	"log"
 	"joblessness/haha/search/repository/grpc"
 	"joblessness/haha/search/usecase"
 	"joblessness/haha/summary/delivery/http"
@@ -66,7 +65,7 @@ func NewApp(c *middleware.CorsHandler) *App {
 		grpc.WithInsecure(),
 	)
 	if err != nil {
-		log.Fatalf("cant connect to grpc")
+		golog.Fatalf("cant connect to grpc")
 	}
 
 	userRepo := userPostgres.NewUserRepository(db)
