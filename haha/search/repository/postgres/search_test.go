@@ -87,7 +87,7 @@ func (suite *userSuite) TestSearchPersons() {
 		WithArgs("req", 10, 10).
 		WillReturnRows(rows)
 
-	_, err := suite.rep.SearchPersons("req", "1", "true")
+	_, err := suite.rep.SearchPersons(&baseModels.SearchParams{"req", "1", "true"})
 	assert.NoError(suite.T(), err)
 }
 
@@ -97,7 +97,7 @@ func (suite *userSuite) TestSearchPersonsFailed() {
 		WithArgs("req", 10, 10).
 		WillReturnError(errors.New(""))
 
-	_, err := suite.rep.SearchPersons("req", "1", "true")
+	_, err := suite.rep.SearchPersons(&baseModels.SearchParams{"req", "1", "true"})
 	assert.Error(suite.T(), err)
 }
 
@@ -109,7 +109,7 @@ func (suite *userSuite) TestSearchOrganization() {
 		WithArgs("req", 10, 10).
 		WillReturnRows(rows)
 
-	_, err := suite.rep.SearchOrganizations("req", "1", "true")
+	_, err := suite.rep.SearchOrganizations(&baseModels.SearchParams{"req", "1", "true"})
 	assert.NoError(suite.T(), err)
 }
 
@@ -119,7 +119,7 @@ func (suite *userSuite) TestSearchOrganizationFailed() {
 		WithArgs("req", 10, 10).
 		WillReturnError(errors.New(""))
 
-	_, err := suite.rep.SearchOrganizations("req", "1", "true")
+	_, err := suite.rep.SearchOrganizations(&baseModels.SearchParams{"req", "1", "true"})
 	assert.Error(suite.T(), err)
 }
 
@@ -132,7 +132,7 @@ func (suite *userSuite) TestSearchVacancy() {
 		WithArgs("req", 10, 10).
 		WillReturnRows(rows)
 
-	_, err := suite.rep.SearchVacancies("req", "1", "true")
+	_, err := suite.rep.SearchVacancies(&baseModels.SearchParams{"req", "1", "true"})
 	assert.NoError(suite.T(), err)
 }
 
@@ -142,6 +142,6 @@ func (suite *userSuite) TestSearchVacancyFailed() {
 		WithArgs("req", 10, 10).
 		WillReturnError(errors.New(""))
 
-	_, err := suite.rep.SearchVacancies("req", "1", "true")
+	_, err := suite.rep.SearchVacancies(&baseModels.SearchParams{"req", "1", "true"})
 	assert.Error(suite.T(), err)
 }

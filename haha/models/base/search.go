@@ -19,3 +19,9 @@ func (s *SearchResult) Sanitize(policy *bluemonday.Policy) {
 		v.Sanitize(policy)
 	}
 }
+
+type SearchParams struct {
+	Request string
+	Since string
+	Desc string
+}

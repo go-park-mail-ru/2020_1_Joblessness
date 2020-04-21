@@ -21,8 +21,8 @@ import (
 	"joblessness/haha/recommendation/usecase"
 	"joblessness/haha/search/delivery/http"
 	"joblessness/haha/search/interfaces"
-	"joblessness/haha/search/repository/postgres"
-	"joblessness/haha/search/usecase"
+	//"joblessness/haha/search/repository/grpc"
+	//"joblessness/haha/search/usecase"
 	"joblessness/haha/summary/delivery/http"
 	"joblessness/haha/summary/interfaces"
 	"joblessness/haha/summary/repository/postgres"
@@ -63,7 +63,7 @@ func NewApp(c *middleware.CorsHandler) *App {
 	authRepo := authPostgres.NewAuthRepository(db)
 	vacancyRepo := vacancyPostgres.NewVacancyRepository(db)
 	summaryRepo := summaryPostgres.NewSummaryRepository(db)
-	searchRepo := searchPostgres.NewSearchRepository(db)
+	//searchRepo := searchGrpc.NewSearchGrpcRepository(db)
 	recommendationRepo := recommendationPostgres.NewRepository(db, vacancyRepo)
 	interviewRepo := interviewPostgres.NewInterviewRepository(db)
 	policy := bluemonday.UGCPolicy()
@@ -73,7 +73,7 @@ func NewApp(c *middleware.CorsHandler) *App {
 		authUse:           authUseCase.NewAuthUseCase(authRepo),
 		vacancyUse:        vacancyUseCase.NewVacancyUseCase(vacancyRepo, policy),
 		summaryUse:        summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
-		searchUse:         searchUseCase.NewSearchUseCase(searchRepo, policy),
+		//searchUse:         searchUseCase.NewSearchUseCase(searchRepo, policy),
 		recommendationUse: recommendationUseCase.NewUseCase(recommendationRepo),
 		interviewUse:      interviewUseCase.NewInterviewUseCase(interviewRepo, policy),
 		corsHandler:       c,

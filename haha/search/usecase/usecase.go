@@ -19,23 +19,29 @@ func NewSearchUseCase(userRepo searchInterfaces.SearchRepository, policy *bluemo
 }
 
 func (a *SearchUseCase) Search(searchType, request, since, desc string) (result baseModels.SearchResult, err error) {
+	params := &baseModels.SearchParams{
+		Request: request,
+		Since:   since,
+		Desc:    desc,
+	}
+
 	switch searchType {
 	case "person":
-		result.Persons, err = a.searchRepo.SearchPersons(request, since, desc)
+		result.Persons, err = a.searchRepo.SearchPersons(params)
 	case "organization":
-		result.Organizations, err = a.searchRepo.SearchOrganizations(request, since, desc)
+		result.Organizations, err = a.searchRepo.SearchOrganizations(params)
 	case "vacancy":
-		result.Vacancies, err = a.searchRepo.SearchVacancies(request, since, desc)
+		result.Vacancies, err = a.searchRepo.SearchVacancies(params)
 	case "":
-		result.Persons, err = a.searchRepo.SearchPersons(request, since, desc)
+		result.Persons, err = a.searchRepo.SearchPersons(params)
 		if err != nil {
 			break
 		}
-		result.Organizations, err = a.searchRepo.SearchOrganizations(request, since, desc)
+		result.Organizations, err = a.searchRepo.SearchOrganizations(params)
 		if err != nil {
 			break
 		}
-		result.Vacancies, err = a.searchRepo.SearchVacancies(request, since, desc)
+		result.Vacancies, err = a.searchRepo.SearchVacancies(params)
 	default:
 		return result, searchInterfaces.ErrUnknownRequest
 	}

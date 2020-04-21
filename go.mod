@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go v1.29.24
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/golang/mock v1.4.3
+	github.com/golang/protobuf v1.4.0
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/websocket v1.4.2
 	github.com/juju/loggo v0.0.0-20190526231331-6e530bcce5d8
@@ -22,6 +23,10 @@ require (
 	github.com/sendgrid/sendgrid-go v3.5.0+incompatible
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20200317142112-1b76d66859c6
+	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
+	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f // indirect
+	google.golang.org/grpc v1.28.1
+	google.golang.org/protobuf v1.21.0
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0
 )
