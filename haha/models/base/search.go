@@ -22,6 +22,6 @@ func (s *SearchResult) Sanitize(policy *bluemonday.Policy) {
 
 type SearchParams struct {
 	Request string
-	Since string
-	Desc string
+	Since   string
+	Desc    string
 }

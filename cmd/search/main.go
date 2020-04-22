@@ -5,6 +5,7 @@ import (
 	"google.golang.org/grpc"
 	searchPostgres "joblessness/haha/search/repository/postgres"
 	"joblessness/haha/utils/database"
+	searchRpc "joblessness/searchService/rpc"
 	searchServer "joblessness/searchService/server"
 	"net"
 )
@@ -18,13 +19,13 @@ func main() {
 	defer db.Close()
 
 	repo := searchPostgres.NewSearchRepository(db)
-	list, err := net.Listen("tcp", ":8002")
+	list, err := net.Listen("tcp", "127.0.0.1:8002")
 	if err != nil {
 		golog.Error(err.Error())
 		return
 	}
 
 	server := grpc.NewServer()
-	searchServer.NewSearchServer(repo)
+	searchRpc.RegisterSearchServer(server, searchServer.NewSearchServer(repo))
 	server.Serve(list)
 }

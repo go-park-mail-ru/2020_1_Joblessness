@@ -11,7 +11,7 @@ import (
 	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/auth/repository/postgres"
 	"joblessness/haha/auth/usecase"
-	"joblessness/haha/interview/delivery/http"
+	interviewHttp "joblessness/haha/interview/delivery/http"
 	"joblessness/haha/interview/interfaces"
 	"joblessness/haha/interview/repository/postgres"
 	"joblessness/haha/interview/usecase"
@@ -59,13 +59,18 @@ func NewApp(c *middleware.CorsHandler) *App {
 		golog.Error(err.Error())
 		return nil
 	}
+	err = db.Ping()
+	if err != nil {
+		golog.Error("DB: ", err.Error())
+		return nil
+	}
 
 	searchConn, err := grpc.Dial(
 		"127.0.0.1:8002",
 		grpc.WithInsecure(),
 	)
 	if err != nil {
-		golog.Fatalf("cant connect to grpc")
+		golog.Fatal("cant connect to grpc")
 	}
 
 	userRepo := userPostgres.NewUserRepository(db)
@@ -117,6 +122,7 @@ func (app *App) StartRouter() {
 	summaryHttp.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
 	searchHttp.RegisterHTTPEndpoints(router, app.searchUse)
 	recommendationHttp.RegisterHTTPEndpoints(router, mAuth, app.recommendationUse)
+	// TODO Почему залипает
 	interviewHttp.RegisterHTTPEndpoints(router, mAuth, app.interviewUse, room)
 
 	http.Handle("/", router)

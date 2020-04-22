@@ -86,10 +86,10 @@ func (r *UserRepository) ChangePerson(p *baseModels.Person) error {
 
 	changePerson := `UPDATE person 
 					SET name = COALESCE(NULLIF($1, ''), name), 
-					    surname = COALESCE(NULLIF($1, ''), surname), 
-					    gender = COALESCE(NULLIF($2, ''), gender), 
-					    birthday = COALESCE($3, birthday) 
-					WHERE id = $4;`
+					    surname = COALESCE(NULLIF($2, ''), surname), 
+					    gender = COALESCE(NULLIF($3, ''), gender), 
+					    birthday = COALESCE($4, birthday) 
+					WHERE id = $5;`
 	_, err = r.db.Exec(changePerson, dbPerson.Name, dbPerson.LastName, dbPerson.Gender, birthday, user.PersonID)
 	if err != nil {
 		return err

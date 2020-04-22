@@ -39,7 +39,7 @@ func NewHandler(useCase interviewInterfaces.InterviewUseCase, room chat.Room) *H
 		},
 		room: room,
 	}
-	handler.room.Run()
+	go handler.room.Run()
 
 	return handler
 }

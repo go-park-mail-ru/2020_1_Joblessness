@@ -236,19 +236,18 @@ func (suite *userSuite) TestGetSummariesFailed() {
 	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
 }
 
-// TODO: Fix test
-//func (suite *userSuite) TestPrintSummaries() {
-//	suite.uc.EXPECT().
-//		GetSummary(suite.summary.ID).
-//		Return(&suite.summary, nil).
-//		Times(1)
-//
-//	r, _ := http.NewRequest("GET", "/api/summaries/3/print", bytes.NewBuffer([]byte{}))
-//	w := httptest.NewRecorder()
-//	suite.router.ServeHTTP(w, r)
-//
-//	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
-//}
+func (suite *userSuite) TestPrintSummaries() {
+	suite.uc.EXPECT().
+		GetSummary(suite.summary.ID).
+		Return(&suite.summary, nil).
+		Times(1)
+
+	r, _ := http.NewRequest("GET", "/api/summaries/3/print", bytes.NewBuffer([]byte{}))
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
 
 func (suite *userSuite) TestPrintSummariesFailed() {
 	suite.uc.EXPECT().

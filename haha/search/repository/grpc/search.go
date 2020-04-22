@@ -19,7 +19,6 @@ func NewSearchGrpcRepository(conn *grpc.ClientConn) *SearchGrpcRepository {
 	}
 }
 
-
 func (r SearchGrpcRepository) SearchPersons(params *baseModels.SearchParams) (result []*baseModels.Person, err error) {
 	res, err := r.handler.SearchPersons(context.Background(), grpcModels.TransformParamsRPC(params))
 

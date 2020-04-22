@@ -5,12 +5,19 @@ import (
 	"github.com/kpawlik/gofpdf"
 	"io"
 	"joblessness/haha/models/base"
+	"path/filepath"
+	"runtime"
+)
+
+var (
+	_, file, _, _ = runtime.Caller(0)
+	fontLocation  = filepath.Dir(file) + "/font/"
 )
 
 func SummaryToPdf(w io.Writer, summary baseModels.Summary) error {
 	pdf := gofpdf.New("P", "mm", "A4", "")
+	pdf.SetFontLocation(fontLocation)
 
-	pdf.SetFontLocation("./haha/utils/pdf/")
 	pdf.AddFont("Helvetica", "", "helvetica_1251.json")
 	pdf.AddPage()
 	pdf.SetFont("Helvetica", "", 16)

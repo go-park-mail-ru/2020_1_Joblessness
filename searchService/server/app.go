@@ -1,5 +1,7 @@
 package searchServer
 
+//go:generate cd ./searchService/rpc && protoc -I=. search.proto --go_out=plugins=grpc:.
+
 import (
 	baseModels "joblessness/haha/models/base"
 	grpcModels "joblessness/haha/models/grpc"
