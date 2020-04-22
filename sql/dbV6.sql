@@ -16,17 +16,17 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
-DROP DATABASE huvalk;
+DROP DATABASE haha;
 --
--- Name: huvalk; Type: DATABASE; Schema: -; Owner: huvalk
+-- Name: haha; Type: DATABASE; Schema: -; Owner: haha
 --
 
-CREATE DATABASE huvalk WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'ru_RU.UTF-8' LC_CTYPE = 'ru_RU.UTF-8';
+CREATE DATABASE haha WITH TEMPLATE = template0 ENCODING = 'UTF8' LC_COLLATE = 'ru_RU.UTF-8' LC_CTYPE = 'ru_RU.UTF-8';
 
 
-ALTER DATABASE huvalk OWNER TO huvalk;
+ALTER DATABASE haha OWNER TO haha;
 
-\connect huvalk
+\connect haha
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -44,7 +44,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: education; Type: TABLE; Schema: public; Owner: huvalk
+-- Name: education; Type: TABLE; Schema: public; Owner: haha
 --
 
 CREATE TABLE public.education (
@@ -56,10 +56,10 @@ CREATE TABLE public.education (
 );
 
 
-ALTER TABLE public.education OWNER TO huvalk;
+ALTER TABLE public.education OWNER TO haha;
 
 --
--- Name: experience; Type: TABLE; Schema: public; Owner: huvalk
+-- Name: experience; Type: TABLE; Schema: public; Owner: haha
 --
 
 CREATE TABLE public.experience (
@@ -72,10 +72,10 @@ CREATE TABLE public.experience (
 );
 
 
-ALTER TABLE public.experience OWNER TO huvalk;
+ALTER TABLE public.experience OWNER TO haha;
 
 --
--- Name: favorite; Type: TABLE; Schema: public; Owner: huvalk
+-- Name: favorite; Type: TABLE; Schema: public; Owner: haha
 --
 
 CREATE TABLE public.favorite (
@@ -84,10 +84,10 @@ CREATE TABLE public.favorite (
 );
 
 
-ALTER TABLE public.favorite OWNER TO huvalk;
+ALTER TABLE public.favorite OWNER TO haha;
 
 --
--- Name: message; Type: TABLE; Schema: public; Owner: huvalk
+-- Name: message; Type: TABLE; Schema: public; Owner: haha
 --
 
 CREATE TABLE public.message (
@@ -100,10 +100,10 @@ CREATE TABLE public.message (
 );
 
 
-ALTER TABLE public.message OWNER TO huvalk;
+ALTER TABLE public.message OWNER TO haha;
 
 --
--- Name: organization; Type: TABLE; Schema: public; Owner: huvalk
+-- Name: organization; Type: TABLE; Schema: public; Owner: haha
 --
 
 CREATE TABLE public.organization (
@@ -114,10 +114,10 @@ CREATE TABLE public.organization (
 );
 
 
-ALTER TABLE public.organization OWNER TO huvalk;
+ALTER TABLE public.organization OWNER TO haha;
 
 --
--- Name: organization_id_seq; Type: SEQUENCE; Schema: public; Owner: huvalk
+-- Name: organization_id_seq; Type: SEQUENCE; Schema: public; Owner: haha
 --
 
 CREATE SEQUENCE public.organization_id_seq
@@ -129,17 +129,17 @@ CREATE SEQUENCE public.organization_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.organization_id_seq OWNER TO huvalk;
+ALTER TABLE public.organization_id_seq OWNER TO haha;
 
 --
--- Name: organization_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: huvalk
+-- Name: organization_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haha
 --
 
 ALTER SEQUENCE public.organization_id_seq OWNED BY public.organization.id;
 
 
 --
--- Name: person; Type: TABLE; Schema: public; Owner: huvalk
+-- Name: person; Type: TABLE; Schema: public; Owner: haha
 --
 
 CREATE TABLE public.person (
@@ -151,10 +151,10 @@ CREATE TABLE public.person (
 );
 
 
-ALTER TABLE public.person OWNER TO huvalk;
+ALTER TABLE public.person OWNER TO haha;
 
 --
--- Name: person_id_seq; Type: SEQUENCE; Schema: public; Owner: huvalk
+-- Name: person_id_seq; Type: SEQUENCE; Schema: public; Owner: haha
 --
 
 CREATE SEQUENCE public.person_id_seq
@@ -166,17 +166,17 @@ CREATE SEQUENCE public.person_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.person_id_seq OWNER TO huvalk;
+ALTER TABLE public.person_id_seq OWNER TO haha;
 
 --
--- Name: person_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: huvalk
+-- Name: person_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haha
 --
 
 ALTER SEQUENCE public.person_id_seq OWNED BY public.person.id;
 
 
 --
--- Name: requirement; Type: TABLE; Schema: public; Owner: huvalk
+-- Name: requirement; Type: TABLE; Schema: public; Owner: haha
 --
 
 CREATE TABLE public.requirement (
@@ -188,10 +188,10 @@ CREATE TABLE public.requirement (
 );
 
 
-ALTER TABLE public.requirement OWNER TO huvalk;
+ALTER TABLE public.requirement OWNER TO haha;
 
 --
--- Name: response; Type: TABLE; Schema: public; Owner: huvalk
+-- Name: response; Type: TABLE; Schema: public; Owner: haha
 --
 
 CREATE TABLE public.response (
@@ -206,10 +206,10 @@ CREATE TABLE public.response (
 );
 
 
-ALTER TABLE public.response OWNER TO huvalk;
+ALTER TABLE public.response OWNER TO haha;
 
 --
--- Name: session; Type: TABLE; Schema: public; Owner: huvalk
+-- Name: session; Type: TABLE; Schema: public; Owner: haha
 --
 
 CREATE TABLE public.session (
@@ -219,10 +219,10 @@ CREATE TABLE public.session (
 );
 
 
-ALTER TABLE public.session OWNER TO huvalk;
+ALTER TABLE public.session OWNER TO haha;
 
 --
--- Name: summary; Type: TABLE; Schema: public; Owner: huvalk
+-- Name: summary; Type: TABLE; Schema: public; Owner: haha
 --
 
 CREATE TABLE public.summary (
@@ -235,10 +235,10 @@ CREATE TABLE public.summary (
 );
 
 
-ALTER TABLE public.summary OWNER TO huvalk;
+ALTER TABLE public.summary OWNER TO haha;
 
 --
--- Name: summary_id_seq; Type: SEQUENCE; Schema: public; Owner: huvalk
+-- Name: summary_id_seq; Type: SEQUENCE; Schema: public; Owner: haha
 --
 
 CREATE SEQUENCE public.summary_id_seq
@@ -250,17 +250,17 @@ CREATE SEQUENCE public.summary_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.summary_id_seq OWNER TO huvalk;
+ALTER TABLE public.summary_id_seq OWNER TO haha;
 
 --
--- Name: summary_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: huvalk
+-- Name: summary_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haha
 --
 
 ALTER SEQUENCE public.summary_id_seq OWNED BY public.summary.id;
 
 
 --
--- Name: users; Type: TABLE; Schema: public; Owner: huvalk
+-- Name: users; Type: TABLE; Schema: public; Owner: haha
 --
 
 CREATE TABLE public.users (
@@ -278,10 +278,10 @@ CREATE TABLE public.users (
 );
 
 
-ALTER TABLE public.users OWNER TO huvalk;
+ALTER TABLE public.users OWNER TO haha;
 
 --
--- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: huvalk
+-- Name: users_id_seq; Type: SEQUENCE; Schema: public; Owner: haha
 --
 
 CREATE SEQUENCE public.users_id_seq
@@ -293,17 +293,17 @@ CREATE SEQUENCE public.users_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.users_id_seq OWNER TO huvalk;
+ALTER TABLE public.users_id_seq OWNER TO haha;
 
 --
--- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: huvalk
+-- Name: users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haha
 --
 
 ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- Name: vacancy; Type: TABLE; Schema: public; Owner: huvalk
+-- Name: vacancy; Type: TABLE; Schema: public; Owner: haha
 --
 
 CREATE TABLE public.vacancy (
@@ -320,10 +320,10 @@ CREATE TABLE public.vacancy (
 );
 
 
-ALTER TABLE public.vacancy OWNER TO huvalk;
+ALTER TABLE public.vacancy OWNER TO haha;
 
 --
--- Name: vacancy_id_seq; Type: SEQUENCE; Schema: public; Owner: huvalk
+-- Name: vacancy_id_seq; Type: SEQUENCE; Schema: public; Owner: haha
 --
 
 CREATE SEQUENCE public.vacancy_id_seq
@@ -335,52 +335,52 @@ CREATE SEQUENCE public.vacancy_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.vacancy_id_seq OWNER TO huvalk;
+ALTER TABLE public.vacancy_id_seq OWNER TO haha;
 
 --
--- Name: vacancy_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: huvalk
+-- Name: vacancy_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: haha
 --
 
 ALTER SEQUENCE public.vacancy_id_seq OWNED BY public.vacancy.id;
 
 
 --
--- Name: organization id; Type: DEFAULT; Schema: public; Owner: huvalk
+-- Name: organization id; Type: DEFAULT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.organization ALTER COLUMN id SET DEFAULT nextval('public.organization_id_seq'::regclass);
 
 
 --
--- Name: person id; Type: DEFAULT; Schema: public; Owner: huvalk
+-- Name: person id; Type: DEFAULT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.person ALTER COLUMN id SET DEFAULT nextval('public.person_id_seq'::regclass);
 
 
 --
--- Name: summary id; Type: DEFAULT; Schema: public; Owner: huvalk
+-- Name: summary id; Type: DEFAULT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.summary ALTER COLUMN id SET DEFAULT nextval('public.summary_id_seq'::regclass);
 
 
 --
--- Name: users id; Type: DEFAULT; Schema: public; Owner: huvalk
+-- Name: users id; Type: DEFAULT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_id_seq'::regclass);
 
 
 --
--- Name: vacancy id; Type: DEFAULT; Schema: public; Owner: huvalk
+-- Name: vacancy id; Type: DEFAULT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.vacancy ALTER COLUMN id SET DEFAULT nextval('public.vacancy_id_seq'::regclass);
 
 
 --
--- Data for Name: education; Type: TABLE DATA; Schema: public; Owner: huvalk
+-- Data for Name: education; Type: TABLE DATA; Schema: public; Owner: haha
 --
 
 COPY public.education (summary_id, institution, speciality, graduated, type) FROM stdin;
@@ -388,7 +388,7 @@ COPY public.education (summary_id, institution, speciality, graduated, type) FRO
 
 
 --
--- Data for Name: experience; Type: TABLE DATA; Schema: public; Owner: huvalk
+-- Data for Name: experience; Type: TABLE DATA; Schema: public; Owner: haha
 --
 
 COPY public.experience (company_name, role, responsibilities, start, stop, summary_id) FROM stdin;
@@ -396,7 +396,7 @@ COPY public.experience (company_name, role, responsibilities, start, stop, summa
 
 
 --
--- Data for Name: favorite; Type: TABLE DATA; Schema: public; Owner: huvalk
+-- Data for Name: favorite; Type: TABLE DATA; Schema: public; Owner: haha
 --
 
 COPY public.favorite (user_id, favorite_id) FROM stdin;
@@ -404,7 +404,7 @@ COPY public.favorite (user_id, favorite_id) FROM stdin;
 
 
 --
--- Data for Name: message; Type: TABLE DATA; Schema: public; Owner: huvalk
+-- Data for Name: message; Type: TABLE DATA; Schema: public; Owner: haha
 --
 
 COPY public.message (user_one_id, user_two_id, body, created, user_one, user_two) FROM stdin;
@@ -412,7 +412,7 @@ COPY public.message (user_one_id, user_two_id, body, created, user_one, user_two
 
 
 --
--- Data for Name: organization; Type: TABLE DATA; Schema: public; Owner: huvalk
+-- Data for Name: organization; Type: TABLE DATA; Schema: public; Owner: haha
 --
 
 COPY public.organization (id, name, site, about) FROM stdin;
@@ -420,7 +420,7 @@ COPY public.organization (id, name, site, about) FROM stdin;
 
 
 --
--- Data for Name: person; Type: TABLE DATA; Schema: public; Owner: huvalk
+-- Data for Name: person; Type: TABLE DATA; Schema: public; Owner: haha
 --
 
 COPY public.person (id, name, gender, birthday, surname) FROM stdin;
@@ -428,7 +428,7 @@ COPY public.person (id, name, gender, birthday, surname) FROM stdin;
 
 
 --
--- Data for Name: requirement; Type: TABLE DATA; Schema: public; Owner: huvalk
+-- Data for Name: requirement; Type: TABLE DATA; Schema: public; Owner: haha
 --
 
 COPY public.requirement (summary_id, driver_license, has_car, schedule, employment) FROM stdin;
@@ -436,7 +436,7 @@ COPY public.requirement (summary_id, driver_license, has_car, schedule, employme
 
 
 --
--- Data for Name: response; Type: TABLE DATA; Schema: public; Owner: huvalk
+-- Data for Name: response; Type: TABLE DATA; Schema: public; Owner: haha
 --
 
 COPY public.response (summary_id, vacancy_id, rejected, approved, date, interview_date) FROM stdin;
@@ -444,7 +444,7 @@ COPY public.response (summary_id, vacancy_id, rejected, approved, date, intervie
 
 
 --
--- Data for Name: session; Type: TABLE DATA; Schema: public; Owner: huvalk
+-- Data for Name: session; Type: TABLE DATA; Schema: public; Owner: haha
 --
 
 COPY public.session (user_id, session_id, expires) FROM stdin;
@@ -452,7 +452,7 @@ COPY public.session (user_id, session_id, expires) FROM stdin;
 
 
 --
--- Data for Name: summary; Type: TABLE DATA; Schema: public; Owner: huvalk
+-- Data for Name: summary; Type: TABLE DATA; Schema: public; Owner: haha
 --
 
 COPY public.summary (id, author, keywords, name, salary_from, salary_to) FROM stdin;
@@ -460,7 +460,7 @@ COPY public.summary (id, author, keywords, name, salary_from, salary_to) FROM st
 
 
 --
--- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: huvalk
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: haha
 --
 
 COPY public.users (id, login, password, organization_id, person_id, tag, email, phone, registered, avatar) FROM stdin;
@@ -468,7 +468,7 @@ COPY public.users (id, login, password, organization_id, person_id, tag, email, 
 
 
 --
--- Data for Name: vacancy; Type: TABLE DATA; Schema: public; Owner: huvalk
+-- Data for Name: vacancy; Type: TABLE DATA; Schema: public; Owner: haha
 --
 
 COPY public.vacancy (id, organization_id, name, description, with_tax, responsibilities, conditions, keywords, salary_from, salary_to) FROM stdin;
@@ -476,42 +476,42 @@ COPY public.vacancy (id, organization_id, name, description, with_tax, responsib
 
 
 --
--- Name: organization_id_seq; Type: SEQUENCE SET; Schema: public; Owner: huvalk
+-- Name: organization_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haha
 --
 
 SELECT pg_catalog.setval('public.organization_id_seq', 1, false);
 
 
 --
--- Name: person_id_seq; Type: SEQUENCE SET; Schema: public; Owner: huvalk
+-- Name: person_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haha
 --
 
 SELECT pg_catalog.setval('public.person_id_seq', 1, false);
 
 
 --
--- Name: summary_id_seq; Type: SEQUENCE SET; Schema: public; Owner: huvalk
+-- Name: summary_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haha
 --
 
 SELECT pg_catalog.setval('public.summary_id_seq', 1, false);
 
 
 --
--- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: huvalk
+-- Name: users_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haha
 --
 
 SELECT pg_catalog.setval('public.users_id_seq', 1, false);
 
 
 --
--- Name: vacancy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: huvalk
+-- Name: vacancy_id_seq; Type: SEQUENCE SET; Schema: public; Owner: haha
 --
 
 SELECT pg_catalog.setval('public.vacancy_id_seq', 1, false);
 
 
 --
--- Name: organization organization_pkey; Type: CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: organization organization_pkey; Type: CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.organization
@@ -519,7 +519,7 @@ ALTER TABLE ONLY public.organization
 
 
 --
--- Name: person person_pkey; Type: CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: person person_pkey; Type: CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.person
@@ -527,7 +527,7 @@ ALTER TABLE ONLY public.person
 
 
 --
--- Name: summary summary_pkey; Type: CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: summary summary_pkey; Type: CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.summary
@@ -535,7 +535,7 @@ ALTER TABLE ONLY public.summary
 
 
 --
--- Name: favorite unique_like; Type: CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: favorite unique_like; Type: CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.favorite
@@ -543,7 +543,7 @@ ALTER TABLE ONLY public.favorite
 
 
 --
--- Name: response unique_response; Type: CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: response unique_response; Type: CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.response
@@ -551,7 +551,7 @@ ALTER TABLE ONLY public.response
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.users
@@ -559,7 +559,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: vacancy vacancy_pkey; Type: CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: vacancy vacancy_pkey; Type: CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.vacancy
@@ -567,7 +567,7 @@ ALTER TABLE ONLY public.vacancy
 
 
 --
--- Name: education education_summary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: education education_summary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.education
@@ -575,7 +575,7 @@ ALTER TABLE ONLY public.education
 
 
 --
--- Name: experience experience_summary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: experience experience_summary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.experience
@@ -583,7 +583,7 @@ ALTER TABLE ONLY public.experience
 
 
 --
--- Name: favorite favorite_favorite_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: favorite favorite_favorite_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.favorite
@@ -591,7 +591,7 @@ ALTER TABLE ONLY public.favorite
 
 
 --
--- Name: favorite favorite_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: favorite favorite_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.favorite
@@ -599,7 +599,7 @@ ALTER TABLE ONLY public.favorite
 
 
 --
--- Name: message message_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: message message_users_id_fk; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.message
@@ -607,7 +607,7 @@ ALTER TABLE ONLY public.message
 
 
 --
--- Name: message message_users_id_fk_2; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: message message_users_id_fk_2; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.message
@@ -615,7 +615,7 @@ ALTER TABLE ONLY public.message
 
 
 --
--- Name: requirement requirement_summary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: requirement requirement_summary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.requirement
@@ -623,7 +623,7 @@ ALTER TABLE ONLY public.requirement
 
 
 --
--- Name: response response_summary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: response response_summary_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.response
@@ -631,7 +631,7 @@ ALTER TABLE ONLY public.response
 
 
 --
--- Name: response response_vacancy_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: response response_vacancy_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.response
@@ -639,7 +639,7 @@ ALTER TABLE ONLY public.response
 
 
 --
--- Name: session session_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: session session_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.session
@@ -647,7 +647,7 @@ ALTER TABLE ONLY public.session
 
 
 --
--- Name: summary summary_author_fkey; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: summary summary_author_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.summary
@@ -655,7 +655,7 @@ ALTER TABLE ONLY public.summary
 
 
 --
--- Name: users users_organization_fkey; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: users users_organization_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.users
@@ -663,7 +663,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: users users_person_fkey; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: users users_person_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.users
@@ -671,7 +671,7 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: vacancy vacancy_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: huvalk
+-- Name: vacancy vacancy_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: haha
 --
 
 ALTER TABLE ONLY public.vacancy
