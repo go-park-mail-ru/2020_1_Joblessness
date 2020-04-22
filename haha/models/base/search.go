@@ -3,21 +3,15 @@ package baseModels
 import "github.com/microcosm-cc/bluemonday"
 
 type SearchResult struct {
-	Persons       []*Person       `json:"persons"`
-	Organizations []*Organization `json:"organizations"`
-	Vacancies     []*Vacancy      `json:"vacancies"`
+	Persons       Persons      `json:"persons"`
+	Organizations Organizations `json:"organizations"`
+	Vacancies     Vacancies      `json:"vacancies"`
 }
 
 func (s *SearchResult) Sanitize(policy *bluemonday.Policy) {
-	for _, v := range s.Persons {
-		v.Sanitize(policy)
-	}
-	for _, v := range s.Organizations {
-		v.Sanitize(policy)
-	}
-	for _, v := range s.Vacancies {
-		v.Sanitize(policy)
-	}
+	s.Persons.Sanitize(policy)
+	s.Organizations.Sanitize(policy)
+	s.Vacancies.Sanitize(policy)
 }
 
 type SearchParams struct {

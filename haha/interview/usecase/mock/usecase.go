@@ -6,6 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	websocket "github.com/gorilla/websocket"
 	baseModels "joblessness/haha/models/base"
 	chat "joblessness/haha/utils/chat"
 	reflect "reflect"
@@ -32,6 +33,18 @@ func NewMockInterviewUseCase(ctrl *gomock.Controller) *MockInterviewUseCase {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockInterviewUseCase) EXPECT() *MockInterviewUseCaseMockRecorder {
 	return m.recorder
+}
+
+// EnterChat mocks base method
+func (m *MockInterviewUseCase) EnterChat(arg0 uint64, arg1 *websocket.Conn) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "EnterChat", arg0, arg1)
+}
+
+// EnterChat indicates an expected call of EnterChat
+func (mr *MockInterviewUseCaseMockRecorder) EnterChat(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnterChat", reflect.TypeOf((*MockInterviewUseCase)(nil).EnterChat), arg0, arg1)
 }
 
 // GetConversations mocks base method

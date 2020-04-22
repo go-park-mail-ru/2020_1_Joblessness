@@ -146,7 +146,7 @@ func (r *InterviewRepository) GetConversations(userID uint64) (result baseModels
 	for rows.Next() {
 		var title baseModels.ConversationTitle
 
-		err = rows.Scan(&title.ChatterId, &title.ChatterName, &title.InterviewDate)
+		err = rows.Scan(&title.ChatterID, &title.ChatterName, &title.InterviewDate)
 		if err != nil {
 			return nil, err
 		}

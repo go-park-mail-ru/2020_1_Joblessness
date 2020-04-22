@@ -24,7 +24,7 @@ type SummaryCredentials struct {
 }
 
 type ConversationTitle struct {
-	ChatterId     uint64    `json:"chatter_id"`
+	ChatterID     uint64    `json:"chatter_id"`
 	ChatterName   string    `json:"chatter_name"`
 	InterviewDate time.Time `json:"interview_date"`
 }

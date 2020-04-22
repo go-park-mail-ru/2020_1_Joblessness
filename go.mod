@@ -23,7 +23,7 @@ require (
 	github.com/sendgrid/sendgrid-go v3.5.0+incompatible
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/crypto v0.0.0-20200317142112-1b76d66859c6
-	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
+	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f // indirect
 	google.golang.org/grpc v1.28.1
 	google.golang.org/protobuf v1.21.0

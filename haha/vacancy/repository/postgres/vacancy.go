@@ -15,6 +15,39 @@ func NewVacancyRepository(db *sql.DB) *VacancyRepository {
 	return &VacancyRepository{db}
 }
 
+func (r *VacancyRepository) GetRelatedUsers(organizationID uint64) (res []uint64, orgName string, err error) {
+	getName := `SELECT o.name
+					FROM users u
+					JOIN organization o on u.organization_id = o.id
+					WHERE u.id = $1;`
+	err = r.db.QueryRow(getName, organizationID).Scan(&orgName)
+	if err != nil {
+		return nil, orgName, err
+	}
+
+	res = make([]uint64, 0)
+	getRelated := `SELECT f.user_id
+					FROM favorite f
+					WHERE f.favorite_id = $1;`
+	rows, err := r.db.Query(getRelated, organizationID)
+	if err != nil {
+		return nil, orgName, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var userID uint64
+		err = rows.Scan(&userID)
+		if err != nil {
+			return nil, orgName, err
+		}
+
+		res = append(res, userID)
+	}
+
+	return res, orgName, nil
+}
+
 func (r *VacancyRepository) CreateVacancy(vacancy *baseModels.Vacancy) (vacancyID uint64, err error) {
 	vacancyDB := pgModels.ToPgVacancy(vacancy)
 

@@ -1,22 +1,52 @@
 package vacancyUseCase
 
 import (
+	"fmt"
 	"github.com/microcosm-cc/bluemonday"
 	"joblessness/haha/models/base"
+	"joblessness/haha/utils/chat"
 	"joblessness/haha/vacancy/interfaces"
 	"strconv"
+	"time"
 )
 
 type VacancyUseCase struct {
 	vacancyRepo vacancyInterfaces.VacancyRepository
+	room chat.Room
 	policy      *bluemonday.Policy
 }
 
-func NewVacancyUseCase(vacancyRepo vacancyInterfaces.VacancyRepository, policy *bluemonday.Policy) *VacancyUseCase {
+func NewVacancyUseCase(vacancyRepo vacancyInterfaces.VacancyRepository,
+	room chat.Room,
+	policy *bluemonday.Policy) *VacancyUseCase {
 	return &VacancyUseCase{
 		vacancyRepo: vacancyRepo,
+		room: room,
 		policy:      policy,
 	}
+}
+
+func (u *VacancyUseCase) announceVacancy(vacancy *baseModels.Vacancy) (err error) {
+	users, orgName, err := u.vacancyRepo.GetRelatedUsers(vacancy.Organization.ID)
+	if err != nil {
+		return err
+	}
+
+	message := fmt.Sprintf("Похоже, у компании %s появилась новая вакансия %s, Вам это может быть интересно",
+		orgName, vacancy.Name)
+
+	for _, id := range users {
+		u.room.SendGeneratedMessage(&chat.Message{
+			Message:   message,
+			UserOneId: 0,
+			UserOne:   "",
+			UserTwoId: id,
+			UserTwo:   "",
+			Created:   time.Now(),
+		})
+	}
+
+	return nil
 }
 
 func (u *VacancyUseCase) CreateVacancy(vacancy *baseModels.Vacancy) (vacancyID uint64, err error) {

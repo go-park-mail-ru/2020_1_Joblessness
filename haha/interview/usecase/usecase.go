@@ -1,21 +1,75 @@
 package interviewUseCase
 
 import (
+	"fmt"
+	"github.com/gorilla/websocket"
 	"github.com/microcosm-cc/bluemonday"
 	interviewInterfaces "joblessness/haha/interview/interfaces"
 	"joblessness/haha/models/base"
 	"joblessness/haha/utils/chat"
+	"time"
+)
+
+const (
+	socketBufferSize  = 1024
+	messageBufferSize = 256
 )
 
 type InterviewUseCase struct {
 	interviewRepo interviewInterfaces.InterviewRepository
+	room chat.Room
 	policy        *bluemonday.Policy
 }
 
-func NewInterviewUseCase(interviewRepo interviewInterfaces.InterviewRepository, policy *bluemonday.Policy) *InterviewUseCase {
-	return &InterviewUseCase{
+func NewInterviewUseCase(interviewRepo interviewInterfaces.InterviewRepository,
+	policy *bluemonday.Policy) (useCase *InterviewUseCase, room chat.Room) {
+	useCase = &InterviewUseCase{
 		interviewRepo: interviewRepo,
 		policy:        policy,
+	}
+	useCase.room = chat.NewRoom(useCase)
+	go useCase.room.Run()
+	return useCase, useCase.room
+}
+
+func (u *InterviewUseCase) EnterChat(userID uint64, socket *websocket.Conn) {
+	chatter := &chat.Chatter{
+		ID:     userID,
+		Socket: socket,
+		Send:   make(chan []byte, messageBufferSize),
+		Room:   u.room,
+	}
+
+	u.room.Join(chatter)
+	defer func() {
+		u.room.Leave(chatter)
+	}()
+	go chatter.Write()
+	chatter.Read()
+}
+
+func (u *InterviewUseCase) generateMessage(sendSummary *baseModels.SendSummary) (result *chat.Message) {
+	credentials, err := u.GetResponseCredentials(sendSummary.SummaryID, sendSummary.VacancyID)
+	if err != nil {
+		return nil
+	}
+
+	var status string
+	if sendSummary.Accepted {
+		status = "одобрено."
+	} else if sendSummary.Denied {
+		status = "отклонено."
+	} else {
+		status = "просмотренно, Вы приглашены на собеседование."
+	}
+
+	return &chat.Message{
+		Message:   fmt.Sprintf("Ваше резюме было %s", status),
+		UserOneId: credentials.OrganizationID,
+		UserOne:   credentials.OrganizationName,
+		UserTwoId: credentials.UserID,
+		UserTwo:   credentials.UserName,
+		Created:   time.Now(),
 	}
 }
 
@@ -26,6 +80,9 @@ func (u *InterviewUseCase) ResponseSummary(sendSummary *baseModels.SendSummary) 
 	}
 
 	err = u.interviewRepo.ResponseSummary(sendSummary)
+	if err == nil {
+		u.room.SendGeneratedMessage(u.generateMessage(sendSummary))
+	}
 
 	return err
 }

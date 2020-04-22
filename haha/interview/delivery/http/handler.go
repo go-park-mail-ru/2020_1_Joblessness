@@ -3,17 +3,14 @@ package interviewHttp
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/kataras/golog"
 	interviewInterfaces "joblessness/haha/interview/interfaces"
 	"joblessness/haha/models/base"
 	"joblessness/haha/summary/interfaces"
-	"joblessness/haha/utils/chat"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 const (
@@ -24,10 +21,10 @@ const (
 type Handler struct {
 	useCase  interviewInterfaces.InterviewUseCase
 	upGrader *websocket.Upgrader
-	room     chat.Room
+	//room     chat.Room
 }
 
-func NewHandler(useCase interviewInterfaces.InterviewUseCase, room chat.Room) *Handler {
+func NewHandler(useCase interviewInterfaces.InterviewUseCase/*, room chat.Room*/) *Handler {
 	handler := &Handler{
 		useCase: useCase,
 		upGrader: &websocket.Upgrader{
@@ -37,36 +34,11 @@ func NewHandler(useCase interviewInterfaces.InterviewUseCase, room chat.Room) *H
 				return true
 			},
 		},
-		room: room,
+		//room: room,
 	}
-	go handler.room.Run()
+	//go handler.room.Run()
 
 	return handler
-}
-
-func (h *Handler) generateMessage(sendSummary *baseModels.SendSummary) (result *chat.Message, err error) {
-	credentials, err := h.useCase.GetResponseCredentials(sendSummary.SummaryID, sendSummary.VacancyID)
-	if err != nil {
-		return nil, err
-	}
-
-	var status string
-	if sendSummary.Accepted {
-		status = "одобрено"
-	} else if sendSummary.Denied {
-		status = "отклонено"
-	} else {
-		status = "проигнорировано"
-	}
-
-	return &chat.Message{
-		Message:   fmt.Sprintf("Ваше резюме было %s", status),
-		UserOneId: credentials.OrganizationID,
-		UserOne:   credentials.OrganizationName,
-		UserTwoId: credentials.UserID,
-		UserTwo:   credentials.UserName,
-		Created:   time.Now(),
-	}, nil
 }
 
 func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
@@ -96,9 +68,9 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
-		if message, err := h.generateMessage(&sendSummary); err == nil {
-			h.room.SendGeneratedMessage(message)
-		}
+		//if message, err := h.generateMessage(&sendSummary); err == nil {
+		//	h.room.SendGeneratedMessage(message)
+		//}
 		w.WriteHeader(http.StatusOK)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
@@ -118,19 +90,20 @@ func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chatter := &chat.Chatter{
-		ID:     userID,
-		Socket: socket,
-		Send:   make(chan []byte, messageBufferSize),
-		Room:   h.room,
-	}
-
-	h.room.Join(chatter)
-	defer func() {
-		h.room.Leave(chatter)
-	}()
-	go chatter.Write()
-	chatter.Read()
+	h.useCase.EnterChat(userID, socket)
+	//chatter := &chat.Chatter{
+	//	ID:     userID,
+	//	Socket: socket,
+	//	Send:   make(chan []byte, messageBufferSize),
+	//	Room:   h.room,
+	//}
+	//
+	//h.room.Join(chatter)
+	//defer func() {
+	//	h.room.Leave(chatter)
+	//}()
+	//go chatter.Write()
+	//chatter.Read()
 }
 
 func (h *Handler) History(w http.ResponseWriter, r *http.Request) {

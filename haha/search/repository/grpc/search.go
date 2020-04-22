@@ -19,7 +19,7 @@ func NewSearchGrpcRepository(conn *grpc.ClientConn) *SearchGrpcRepository {
 	}
 }
 
-func (r SearchGrpcRepository) SearchPersons(params *baseModels.SearchParams) (result []*baseModels.Person, err error) {
+func (r *SearchGrpcRepository) SearchPersons(params *baseModels.SearchParams) (result []*baseModels.Person, err error) {
 	res, err := r.handler.SearchPersons(context.Background(), grpcModels.TransformParamsRPC(params))
 
 	result = make([]*baseModels.Person, 0)
@@ -38,7 +38,7 @@ func (r SearchGrpcRepository) SearchPersons(params *baseModels.SearchParams) (re
 	return result, err
 }
 
-func (r SearchGrpcRepository) SearchOrganizations(params *baseModels.SearchParams) (result []*baseModels.Organization, err error) {
+func (r *SearchGrpcRepository) SearchOrganizations(params *baseModels.SearchParams) (result []*baseModels.Organization, err error) {
 	res, err := r.handler.SearchOrganizations(context.Background(), grpcModels.TransformParamsRPC(params))
 
 	result = make([]*baseModels.Organization, 0)
@@ -57,7 +57,7 @@ func (r SearchGrpcRepository) SearchOrganizations(params *baseModels.SearchParam
 	return result, err
 }
 
-func (r SearchGrpcRepository) SearchVacancies(params *baseModels.SearchParams) (result []*baseModels.Vacancy, err error) {
+func (r *SearchGrpcRepository) SearchVacancies(params *baseModels.SearchParams) (result []*baseModels.Vacancy, err error) {
 	res, err := r.handler.SearchVacancies(context.Background(), grpcModels.TransformParamsRPC(params))
 
 	result = make([]*baseModels.Vacancy, 0)

@@ -83,7 +83,7 @@ func (suite *userSuite) SetupTest() {
 
 	suite.summaryCredits = baseModels.SummaryCredentials{}
 
-	RegisterHTTPEndpoints(suite.router, suite.authMiddleware, suite.uc, suite.room)
+	RegisterHTTPEndpoints(suite.router, suite.authMiddleware, suite.uc)
 }
 
 func TestSuite(t *testing.T) {

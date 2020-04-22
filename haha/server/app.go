@@ -13,7 +13,7 @@ import (
 	"joblessness/haha/auth/usecase"
 	interviewHttp "joblessness/haha/interview/delivery/http"
 	"joblessness/haha/interview/interfaces"
-	"joblessness/haha/interview/repository/postgres"
+	"joblessness/haha/interview/repository/grpc"
 	"joblessness/haha/interview/usecase"
 	"joblessness/haha/middleware"
 	"joblessness/haha/recommendation/delivery/http"
@@ -32,7 +32,6 @@ import (
 	"joblessness/haha/user/interfaces"
 	"joblessness/haha/user/repository/postgres"
 	"joblessness/haha/user/usecase"
-	"joblessness/haha/utils/chat"
 	"joblessness/haha/utils/database"
 	"joblessness/haha/vacancy/delivery/http"
 	"joblessness/haha/vacancy/interfaces"
@@ -73,23 +72,33 @@ func NewApp(c *middleware.CorsHandler) *App {
 		golog.Fatal("cant connect to grpc")
 	}
 
+	interviewConn, err := grpc.Dial(
+		"127.0.0.1:8003",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		golog.Fatal("cant connect to grpc")
+	}
+
 	userRepo := userPostgres.NewUserRepository(db)
 	authRepo := authPostgres.NewAuthRepository(db)
 	vacancyRepo := vacancyPostgres.NewVacancyRepository(db)
 	summaryRepo := summaryPostgres.NewSummaryRepository(db)
 	searchRepo := searchGrpc.NewSearchGrpcRepository(searchConn)
 	recommendationRepo := recommendationPostgres.NewRepository(db, vacancyRepo)
-	interviewRepo := interviewPostgres.NewInterviewRepository(db)
+	interviewRepo := interviewGrpc.NewInterviewGrpcRepository(interviewConn)
 	policy := bluemonday.UGCPolicy()
+
+	interviewUse, room := interviewUseCase.NewInterviewUseCase(interviewRepo, policy)
 
 	return &App{
 		userUse:           userUseCase.NewUserUseCase(userRepo, policy),
 		authUse:           authUseCase.NewAuthUseCase(authRepo),
-		vacancyUse:        vacancyUseCase.NewVacancyUseCase(vacancyRepo, policy),
+		vacancyUse:        vacancyUseCase.NewVacancyUseCase(vacancyRepo, room, policy),
 		summaryUse:        summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
 		searchUse:         searchUseCase.NewSearchUseCase(searchRepo, policy),
 		recommendationUse: recommendationUseCase.NewUseCase(recommendationRepo),
-		interviewUse:      interviewUseCase.NewInterviewUseCase(interviewRepo, policy),
+		interviewUse:      interviewUse,
 		corsHandler:       c,
 	}
 }
@@ -107,8 +116,6 @@ func (app *App) StartRouter() {
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
 
-	room := chat.NewRoom(app.interviewUse)
-
 	router.Use(m.RecoveryMiddleware)
 	if !*noCors {
 		router.Use(app.corsHandler.CorsMiddleware)
@@ -122,8 +129,7 @@ func (app *App) StartRouter() {
 	summaryHttp.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
 	searchHttp.RegisterHTTPEndpoints(router, app.searchUse)
 	recommendationHttp.RegisterHTTPEndpoints(router, mAuth, app.recommendationUse)
-	// TODO Почему залипает
-	interviewHttp.RegisterHTTPEndpoints(router, mAuth, app.interviewUse, room)
+	interviewHttp.RegisterHTTPEndpoints(router, mAuth, app.interviewUse)
 
 	http.Handle("/", router)
 	golog.Infof("Server started at port :%d", *port)
