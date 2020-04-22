@@ -10,7 +10,7 @@ ENV PGVER 10
 RUN apt -y update && apt install -y postgresql-client
 ENV PGPASSWORD '9730'
 ENV HAHA_DB_USER 'huvalk'
-ENV HAHA_DB_PASSWORD 'huvalk'
+ENV HAHA_DB_PASSWORD '9730'
 ENV HAHA_DB_NAME 'huvalk'
 
 ENV HOTBOX_ID 'orFNtcQG9pi8NvqcFhLAj4'
@@ -36,7 +36,6 @@ EXPOSE 5432
 
 EXPOSE 8001
 
-WORKDIR /opt/build/2020_1_Joblessness/
-COPY --from=build /opt/build/2020_1_Joblessness/ ./
 WORKDIR /opt/build/2020_1_Joblessness/cmd/haha/
+COPY --from=build /opt/build/2020_1_Joblessness/cmd/haha/ ./
 CMD ./main
