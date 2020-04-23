@@ -151,8 +151,14 @@ func (r *VacancyRepository) ChangeVacancy(vacancy *baseModels.Vacancy) (err erro
 	vacancyDB := pgModels.ToPgVacancy(vacancy)
 
 	changeVacancy := `UPDATE vacancy
-					  SET name = $1, description = $2, salary_from = $3, salary_to = $4,
-						  with_tax = $5, responsibilities = $6, conditions = $7, keywords = $8
+					  SET name = COALESCE(NULLIF($1, ''), name), 
+					      description = COALESCE(NULLIF($2, ''), description), 
+					      salary_from = COALESCE(NULLIF($3, 0), salary_from), 
+					      salary_to = COALESCE(NULLIF($4, 0), salary_to),
+						  with_tax = $5, 
+					      responsibilities = COALESCE(NULLIF($6, ''), responsibilities), 
+					      conditions = COALESCE(NULLIF($7, ''), conditions), 
+					      keywords = COALESCE(NULLIF($8, ''), keywords)
 					  WHERE id = $9;`
 	_, err = r.db.Exec(changeVacancy, vacancyDB.Name, vacancyDB.Description,
 		vacancyDB.SalaryFrom, vacancyDB.SalaryTo, vacancyDB.WithTax, vacancyDB.Responsibilities,
