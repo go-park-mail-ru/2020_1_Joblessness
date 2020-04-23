@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"joblessness/haha/auth/interfaces"
-	"joblessness/haha/models/base"
-	"joblessness/haha/models/postgres"
 	"joblessness/haha/utils/salt"
 	"time"
 )
@@ -20,46 +18,40 @@ func NewAuthRepository(db *sql.DB) *AuthRepository {
 	}
 }
 
-func (r AuthRepository) CreateUser(user *pgModels.User) (err error) {
-	user.Password, err = salt.HashAndSalt(user.Password)
+func (r AuthRepository) CreateUser(login, password string, personID, organizationID uint64) (err error) {
+	hashedPassword, err := salt.HashAndSalt(password)
 
-	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone, tag) 
-					VALUES(NULLIF($1, ''), NULLIF($2, ''), NULLIF($3, 0), NULLIF($4, 0), $5, $6, $7)`
-	_, err = r.db.Exec(insertUser, user.Login, user.Password, user.OrganizationID,
-		user.PersonID, user.Email, user.Phone, user.Tag)
-
-	return err
-}
-
-func (r *AuthRepository) CreatePerson(user *baseModels.Person) (err error) {
-	dbUser, dbPerson := pgModels.ToPgPerson(user)
-	if dbPerson.Birthday.IsZero() {
-		dbPerson.Birthday.AddDate(1950, 0, 0)
-	}
-
-	err = r.db.QueryRow("INSERT INTO person (name, surname, gender, birthday) VALUES($1, $2, $3, $4) RETURNING id",
-		dbPerson.Name, dbPerson.LastName, dbPerson.Gender, dbPerson.Birthday).
-		Scan(&dbUser.PersonID)
-	if err != nil {
-		return err
-	}
-	//TODO исполнять как единая транзация
-	err = r.CreateUser(dbUser)
+	insertUser := `INSERT INTO users (login, password, organization_id, person_id) 
+					VALUES(NULLIF($1, ''), NULLIF($2, ''), NULLIF($3, 0), NULLIF($4, 0))`
+	_, err = r.db.Exec(insertUser, login, hashedPassword, organizationID, personID)
 
 	return err
 }
 
-func (r *AuthRepository) CreateOrganization(org *baseModels.Organization) (err error) {
-	dbUser, dbOrg := pgModels.ToPgOrganization(org)
+func (r *AuthRepository) RegisterPerson(login, password, name string) (err error) {
+	var personID uint64
 
-	err = r.db.QueryRow("INSERT INTO organization (name, site, about) VALUES($1, $2, $3) RETURNING id",
-		dbOrg.Name, dbOrg.Site, dbOrg.About).
-		Scan(&dbUser.OrganizationID)
+	err = r.db.QueryRow("INSERT INTO person (name) VALUES($1) RETURNING id", name).
+		Scan(&personID)
 	if err != nil {
 		return err
 	}
 	//TODO исполнять как единая транзация
-	err = r.CreateUser(dbUser)
+	err = r.CreateUser(login, password, personID, 0)
+
+	return err
+}
+
+func (r *AuthRepository) RegisterOrganization(login, password, name string) (err error) {
+	var organizationID uint64
+
+	err = r.db.QueryRow("INSERT INTO organization (name) VALUES($1) RETURNING id", name).
+		Scan(&organizationID)
+	if err != nil {
+		return err
+	}
+	//TODO исполнять как единая транзация
+	err = r.CreateUser(login, password, 0, organizationID)
 
 	return err
 }

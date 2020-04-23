@@ -6,6 +6,7 @@ import (
 )
 
 type UserUseCase interface {
+	// user
 	GetPerson(userID uint64) (*baseModels.Person, error)
 	ChangePerson(p *baseModels.Person) error
 	GetOrganization(userID uint64) (*baseModels.Organization, error)

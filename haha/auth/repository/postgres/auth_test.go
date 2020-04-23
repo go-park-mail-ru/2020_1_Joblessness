@@ -95,7 +95,7 @@ func (suite *userSuite) TestDoesExistsErr() {
 
 func (suite *userSuite) TestCreateUserNoId() {
 	user, _ := pgModels.ToPgPerson(&suite.person)
-	err := suite.rep.CreateUser(user)
+	err := suite.rep.CreateUser(user.Login, user.Password, user.PersonID, 0)
 
 	assert.Error(suite.T(), err)
 }
@@ -105,14 +105,14 @@ func (suite *userSuite) TestCreatePerson() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO person ").
-		WithArgs(suite.person.FirstName, suite.person.LastName, suite.person.Gender, suite.person.Birthday).
+		WithArgs(suite.person.FirstName).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
-		WithArgs("login", sqlmock.AnyArg(), 0, 1, "email", "phone", "tag").
+		WithArgs("login", sqlmock.AnyArg(), 0, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := suite.rep.CreatePerson(&suite.person)
+	err := suite.rep.RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName)
 
 	assert.NoError(suite.T(), err)
 }
@@ -123,7 +123,7 @@ func (suite *userSuite) TestCreatePersonFailed() {
 		WithArgs(suite.person.FirstName + " " + suite.person.LastName).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.CreatePerson(&suite.person)
+	err := suite.rep.RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName)
 
 	assert.Error(suite.T(), err)
 }
@@ -133,14 +133,14 @@ func (suite *userSuite) TestCreateOrg() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO organization").
-		WithArgs(suite.organization.Name, suite.organization.Site, suite.organization.About).
+		WithArgs(suite.organization.Name).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
-		WithArgs("login", sqlmock.AnyArg(), 1, 0, "email", "phone", "tag").
+		WithArgs("login", sqlmock.AnyArg(), 1, 0).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := suite.rep.CreateOrganization(&suite.organization)
+	err := suite.rep.RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name)
 
 	assert.NoError(suite.T(), err)
 }
@@ -151,7 +151,7 @@ func (suite *userSuite) TestCreateOrgFailed() {
 		WithArgs(suite.organization.Name).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.CreateOrganization(&suite.organization)
+	err := suite.rep.RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name)
 
 	assert.Error(suite.T(), err)
 }

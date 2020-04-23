@@ -36,7 +36,7 @@ type userSuite struct {
 }
 
 func (suite *userSuite) SetupTest() {
-	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
+	suite.router = mux.NewRouter().PathPrefix("/haha").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
@@ -88,7 +88,7 @@ Content-Type: text/plain
 
 func newTestMultipartRequest(t *testing.T) *http.Request {
 	b := strings.NewReader(strings.ReplaceAll(message, "\n", "\r\n"))
-	req, err := http.NewRequest("POST", "/api/users/12/avatar", b)
+	req, err := http.NewRequest("POST", "/haha/users/12/avatar", b)
 	if err != nil {
 		t.Fatal("NewRequest:", err)
 	}
@@ -178,7 +178,7 @@ func (suite *userSuite) TestSetAvatarNotMultipart() {
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("POST", "/api/users/12/avatar", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/12/avatar", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -192,7 +192,7 @@ func (suite *userSuite) TestGetPerson() {
 		Return(&suite.person, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/users/12", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/12", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -205,7 +205,7 @@ func (suite *userSuite) TestGetPersonWentWrong() {
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/users/12", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/12", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -228,7 +228,7 @@ func (suite *userSuite) TestChangePerson() {
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("PUT", "/api/users/12", suite.personByte)
+	r, _ := http.NewRequest("PUT", "/haha/users/12", suite.personByte)
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -246,7 +246,7 @@ func (suite *userSuite) TestChangePersonNoCookie() {
 		Return(nil).
 		Times(1)
 
-	r, _ := http.NewRequest("PUT", "/api/users/12", suite.personByte)
+	r, _ := http.NewRequest("PUT", "/haha/users/12", suite.personByte)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -269,7 +269,7 @@ func (suite *userSuite) TestChangePersonWrongId() {
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("PUT", "/api/users/13", suite.personByte)
+	r, _ := http.NewRequest("PUT", "/haha/users/13", suite.personByte)
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -283,7 +283,7 @@ func (suite *userSuite) TestGetOrganization() {
 		Return(&suite.organization, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations/12", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/organizations/12", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -296,7 +296,7 @@ func (suite *userSuite) TestGetOrganizationWentWrong() {
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations/12", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/organizations/12", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -319,7 +319,7 @@ func (suite *userSuite) TestChangeOrganization() {
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("PUT", "/api/organizations/12", suite.organizationByte)
+	r, _ := http.NewRequest("PUT", "/haha/organizations/12", suite.organizationByte)
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -337,7 +337,7 @@ func (suite *userSuite) TestChangeOrganizationNoCookie() {
 		Return(nil).
 		Times(1)
 
-	r, _ := http.NewRequest("PUT", "/api/organizations/12", suite.organizationByte)
+	r, _ := http.NewRequest("PUT", "/haha/organizations/12", suite.organizationByte)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -360,7 +360,7 @@ func (suite *userSuite) TestChangeOrganizationWrongId() {
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("PUT", "/api/organizations/13", suite.organizationByte)
+	r, _ := http.NewRequest("PUT", "/haha/organizations/13", suite.organizationByte)
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -374,7 +374,7 @@ func (suite *userSuite) TestListOrgs() {
 		Return(baseModels.Organizations{}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations?page=1", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/organizations?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -387,7 +387,7 @@ func (suite *userSuite) TestListOrgsFailed() {
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations?page=1", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/organizations?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -410,7 +410,7 @@ func (suite *userSuite) TestLikeUser() {
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("POST", "/api/users/1/like", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/1/like", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -424,7 +424,7 @@ func (suite *userSuite) TestLikeUserNoSession() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/users/1/like", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/1/like", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -447,7 +447,7 @@ func (suite *userSuite) TestLikeUserFailed() {
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("POST", "/api/users/1/like", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/1/like", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -471,7 +471,7 @@ func (suite *userSuite) TestLikeExists() {
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("GET", "/api/users/1/like", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/1/like", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -495,7 +495,7 @@ func (suite *userSuite) TestLikeExistsFailed() {
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("GET", "/api/users/1/like", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/1/like", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -519,7 +519,7 @@ func (suite *userSuite) TestGetFavorite() {
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("GET", "/api/users/12/favorite", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/12/favorite", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -533,7 +533,7 @@ func (suite *userSuite) TestGetFavoriteNoSession() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/users/12/favorite", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/12/favorite", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -552,7 +552,7 @@ func (suite *userSuite) TestGetFavoriteWrongId() {
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("GET", "/api/users/13/favorite", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/13/favorite", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -576,7 +576,7 @@ func (suite *userSuite) TestGetFavoriteFailed() {
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("GET", "/api/users/12/favorite", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/12/favorite", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
