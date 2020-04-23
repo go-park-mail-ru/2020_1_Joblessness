@@ -37,3 +37,20 @@ services:
     stdin_open: true
     tty: true
     network_mode: host
+
+  interview:
+    image: golang
+    environment:
+      - PGPASSWORD=9730
+      - HAHA_DB_USER=huvalk
+      - HAHA_DB_PASSWORD=9730
+      - HAHA_DB_NAME=huvalk
+    volumes:
+      - .:/go/src/haha
+    working_dir: /go/src/haha/cmd/interview/
+    ports:
+      - "8003:8003"
+    command: go run main.go
+    stdin_open: true
+    tty: true
+    network_mode: host
