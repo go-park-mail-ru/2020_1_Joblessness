@@ -2,15 +2,8 @@ version: '3'
 services:
   app:
     image: golang
-    environment:
-      - PGPASSWORD=9730
-      - HAHA_DB_USER=huvalk
-      - HAHA_DB_PASSWORD=9730
-      - HAHA_DB_NAME=huvalk
-      - HOTBOX_ID=orFNtcQG9pi8NvqcFhLAj4
-      - HOTBOX_SECRETE=33CiuS769M4u1wHAk42HhdtCrCb795MGuez3biaE3CeK
-      - HOTBOX_TOKEN
-      - SENDGRID_KEY=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
+    env_file:
+      - ../env.list
     volumes:
       - .:/go/src/haha
     working_dir: /go/src/haha/cmd/haha/
@@ -23,11 +16,8 @@ services:
 
   search:
     image: golang
-    environment:
-      - PGPASSWORD=9730
-      - HAHA_DB_USER=huvalk
-      - HAHA_DB_PASSWORD=9730
-      - HAHA_DB_NAME=huvalk
+    env_file:
+      - ../env.list
     volumes:
       - .:/go/src/haha
     working_dir: /go/src/haha/cmd/search/
@@ -40,11 +30,8 @@ services:
 
   interview:
     image: golang
-    environment:
-      - PGPASSWORD=9730
-      - HAHA_DB_USER=huvalk
-      - HAHA_DB_PASSWORD=9730
-      - HAHA_DB_NAME=huvalk
+    env_file:
+      - ../env.list
     volumes:
       - .:/go/src/haha
     working_dir: /go/src/haha/cmd/interview/
