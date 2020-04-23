@@ -15,22 +15,29 @@ type server struct {
 
 func (s *server) IsOrganizationVacancy(cc context.Context, in *interviewRpc.IsParameters) (*interviewRpc.Status, error) {
 	err := s.interviewRepo.IsOrganizationVacancy(in.VacancyID, in.UserID)
-	if err != nil {
+
+	switch err {
+	case interviewInterfaces.ErrOrganizationIsNotOwner:
+		return &interviewRpc.Status{Code: 403}, err
+	case nil:
+		return &interviewRpc.Status{Code: 200}, nil
+	default:
 		return &interviewRpc.Status{Code: 500}, err
 	}
-
-	return &interviewRpc.Status{Code: 200}, nil
 }
 
 func (s *server) ResponseSummary(cc context.Context, in *interviewRpc.SendSummary) (*interviewRpc.Status, error) {
 	sendSummary := grpcModels.TransformSendSummaryBase(in)
 
 	err := s.interviewRepo.ResponseSummary(sendSummary)
-	if err != nil {
+	switch err {
+	case interviewInterfaces.ErrNoSummaryToRefresh:
+		return &interviewRpc.Status{Code: 404}, err
+	case nil:
+		return &interviewRpc.Status{Code: 200}, nil
+	default:
 		return &interviewRpc.Status{Code: 500}, err
 	}
-
-	return &interviewRpc.Status{Code: 200}, nil
 }
 
 func (s *server) SaveMessage(cc context.Context, in *interviewRpc.Message) (*interviewRpc.Status, error) {

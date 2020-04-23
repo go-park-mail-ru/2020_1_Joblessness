@@ -3,6 +3,7 @@ package interviewGrpc
 import (
 	"context"
 	"google.golang.org/grpc"
+	interviewInterfaces "joblessness/haha/interview/interfaces"
 	baseModels "joblessness/haha/models/base"
 	grpcModels "joblessness/haha/models/grpc"
 	"joblessness/haha/utils/chat"
@@ -20,15 +21,28 @@ func NewInterviewGrpcRepository(conn *grpc.ClientConn) *InterviewGrpcRepository 
 }
 
 func (r *InterviewGrpcRepository) IsOrganizationVacancy(vacancyID, userID uint64) (err error) {
-	_, err = r.handler.IsOrganizationVacancy(context.Background(), &interviewRpc.IsParameters{UserID: userID, VacancyID: vacancyID})
-
-	return err
+	status, err := r.handler.IsOrganizationVacancy(context.Background(), &interviewRpc.IsParameters{UserID: userID, VacancyID: vacancyID})
+	switch status.Code {
+	case 403:
+		return interviewInterfaces.ErrOrganizationIsNotOwner
+	case 200:
+		return  nil
+	default:
+		return err
+	}
 }
 
 func (r *InterviewGrpcRepository) ResponseSummary(sendSummary *baseModels.SendSummary) (err error) {
-	_, err = r.handler.ResponseSummary(context.Background(), grpcModels.TransformSendSummaryRPC(sendSummary))
+	status, err := r.handler.ResponseSummary(context.Background(), grpcModels.TransformSendSummaryRPC(sendSummary))
 
-	return err
+	switch status.Code {
+	case 404:
+		return interviewInterfaces.ErrNoSummaryToRefresh
+	case 200:
+		return nil
+	default:
+		return err
+	}
 }
 
 func (r *InterviewGrpcRepository) SaveMessage(message *chat.Message) (err error) {

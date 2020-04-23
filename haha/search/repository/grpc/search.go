@@ -24,7 +24,8 @@ func (r *SearchGrpcRepository) SearchPersons(params *baseModels.SearchParams) (r
 
 	result = make([]*baseModels.Person, 0)
 	for {
-		person, err := res.Recv()
+		var person *searchRpc.Person
+		person, err = res.Recv()
 		if err == io.EOF {
 			err = nil
 			break
@@ -43,7 +44,8 @@ func (r *SearchGrpcRepository) SearchOrganizations(params *baseModels.SearchPara
 
 	result = make([]*baseModels.Organization, 0)
 	for {
-		org, err := res.Recv()
+		var org *searchRpc.Organization
+		org, err = res.Recv()
 		if err == io.EOF {
 			err = nil
 			break
@@ -62,7 +64,8 @@ func (r *SearchGrpcRepository) SearchVacancies(params *baseModels.SearchParams) 
 
 	result = make([]*baseModels.Vacancy, 0)
 	for {
-		vac, err := res.Recv()
+		var vac *searchRpc.Vacancy
+		vac, err = res.Recv()
 		if err == io.EOF {
 			err = nil
 			break
