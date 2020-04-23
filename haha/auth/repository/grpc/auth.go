@@ -4,7 +4,6 @@ import (
 	"context"
 	"google.golang.org/grpc"
 	"joblessness/authService/grpc"
-	"strconv"
 )
 
 type repository struct {
@@ -45,7 +44,7 @@ func (r *repository) Login(login, password, SID string) (userID uint64, err erro
 		return userID, err
 	}
 
-	return strconv.ParseUint(protoUserID.Id, 10, 64)
+	return protoUserID.Id, err
 }
 
 func (r *repository) Logout(sessionId string) (err error) {
@@ -60,7 +59,7 @@ func (r *repository) SessionExists(sessionId string) (userID uint64, err error) 
 		return userID, err
 	}
 
-	return strconv.ParseUint(protoUserID.Id, 10, 64)
+	return protoUserID.Id, err
 }
 
 func (r *repository) DoesUserExists(login string) (err error) {
@@ -70,7 +69,7 @@ func (r *repository) DoesUserExists(login string) (err error) {
 }
 
 func (r *repository) GetRole(userID uint64) (role string, err error) {
-	protoRole, err := r.authClient.GetRole(context.Background(), &authGrpc.UserID{Id: string(userID)})
+	protoRole, err := r.authClient.GetRole(context.Background(), &authGrpc.UserID{Id: userID})
 	if err != nil {
 		return role, err
 	}

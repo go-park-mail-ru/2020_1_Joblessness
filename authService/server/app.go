@@ -4,7 +4,6 @@ import (
 	"context"
 	"joblessness/authService/grpc"
 	"joblessness/haha/auth/interfaces"
-	"strconv"
 )
 
 type server struct {
@@ -30,7 +29,7 @@ func (s *server) RegisterOrganization(ctx context.Context, in *authGrpc.UserRegi
 func (s *server) Login(ctx context.Context, in *authGrpc.UserLoginParams) (*authGrpc.UserID, error) {
 	userID, err := s.authRepository.Login(in.Login, in.Password, in.Sid)
 
-	return &authGrpc.UserID{Id: string(userID)}, err
+	return &authGrpc.UserID{Id: userID}, err
 }
 
 func (s *server) Logout(ctx context.Context, in *authGrpc.SessionID) (*authGrpc.Nothing, error) {
@@ -42,7 +41,7 @@ func (s *server) Logout(ctx context.Context, in *authGrpc.SessionID) (*authGrpc.
 func (s *server) SessionExists(ctx context.Context, in *authGrpc.SessionID) (*authGrpc.UserID, error) {
 	userID, err := s.authRepository.SessionExists(in.Id)
 
-	return &authGrpc.UserID{Id: string(userID)}, err
+	return &authGrpc.UserID{Id: userID}, err
 }
 
 func (s *server) DoesUserExists(ctx context.Context, in *authGrpc.UserLogin) (*authGrpc.Nothing, error) {
@@ -52,12 +51,7 @@ func (s *server) DoesUserExists(ctx context.Context, in *authGrpc.UserLogin) (*a
 }
 
 func (s *server) GetRole(ctx context.Context, in *authGrpc.UserID) (*authGrpc.Role, error) {
-	id, err := strconv.ParseUint(in.Id, 10, 64)
-	if err != nil {
-		return nil, err
-	}
-
-	role, err := s.authRepository.GetRole(id)
+	role, err := s.authRepository.GetRole(in.Id)
 
 	return &authGrpc.Role{Role: role}, err
 }
