@@ -10,4 +10,6 @@ var (
 	ErrUserNotPerson        = errors.New("user is not a person")
 	ErrUserNotOrganization  = errors.New("user is not a organization")
 	ErrUserAlreadyExists    = errors.New("user already exists")
+
+	ErrParseGrpcError = errors.New("can't parse grpc error")
 )
