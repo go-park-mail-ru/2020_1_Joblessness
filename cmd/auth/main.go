@@ -20,7 +20,7 @@ func main() {
 
 	repository := authPostgres.NewAuthRepository(db)
 
-	listen, err := net.Listen("tcp", "127.0.0.1:8003")
+	listen, err := net.Listen("tcp", "127.0.0.1:8004")
 	if err != nil {
 		golog.Error(err.Error())
 		return

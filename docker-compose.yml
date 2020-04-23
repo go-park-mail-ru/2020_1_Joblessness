@@ -42,6 +42,20 @@ services:
     tty: true
     network_mode: host
 
+  auth:
+    image: golang
+    env_file:
+      - ../env.list
+    volumes:
+      - .:/go/src/haha
+    working_dir: /go/src/haha/cmd/auth/
+    ports:
+      - "8004:8004"
+    command: go run main.go
+    stdin_open: true
+    tty: true
+    network_mode: host
+
   jaeger:
     image: jaegertracing/all-in-one:latest
     ports:

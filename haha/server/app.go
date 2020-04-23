@@ -81,7 +81,7 @@ func NewApp(c *middleware.CorsHandler) *App {
 	}
 
 	authConn, err := grpc.Dial(
-		"127.0.0.1:8003",
+		"127.0.0.1:8004",
 		grpc.WithInsecure(),
 	)
 	if err != nil {
