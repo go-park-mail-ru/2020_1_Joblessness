@@ -18,7 +18,7 @@ func (s *server) IsOrganizationVacancy(cc context.Context, in *interviewRpc.IsPa
 
 	switch err {
 	case interviewInterfaces.ErrOrganizationIsNotOwner:
-		return &interviewRpc.Status{Code: 403}, err
+		return &interviewRpc.Status{Code: 403}, nil
 	case nil:
 		return &interviewRpc.Status{Code: 200}, nil
 	default:
@@ -32,7 +32,7 @@ func (s *server) ResponseSummary(cc context.Context, in *interviewRpc.SendSummar
 	err := s.interviewRepo.ResponseSummary(sendSummary)
 	switch err {
 	case interviewInterfaces.ErrNoSummaryToRefresh:
-		return &interviewRpc.Status{Code: 404}, err
+		return &interviewRpc.Status{Code: 404}, nil
 	case nil:
 		return &interviewRpc.Status{Code: 200}, nil
 	default:

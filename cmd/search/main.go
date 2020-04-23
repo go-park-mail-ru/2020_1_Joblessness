@@ -19,7 +19,7 @@ import (
 
 func main() {
 	jaegerCfgInstance := jaegercfg.Configuration{
-		ServiceName: "session",
+		ServiceName: "search",
 		Sampler: &jaegercfg.SamplerConfig{
 			Type:  jaeger.SamplerTypeConst,
 			Param: 1,
