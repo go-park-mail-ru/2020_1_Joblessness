@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 	"joblessness/haha/auth/delivery/http"
 	"joblessness/haha/auth/interfaces"
-	"joblessness/haha/auth/repository/postgres"
+	"joblessness/haha/auth/repository/grpc"
 	"joblessness/haha/auth/usecase"
 	interviewHttp "joblessness/haha/interview/delivery/http"
 	"joblessness/haha/interview/interfaces"
@@ -43,7 +43,7 @@ import (
 type App struct {
 	httpServer        *http.Server
 	userUse           userInterfaces.UserUseCase
-	authUse           authInterfaces.AuthUseCase
+	authUse        		authInterfaces.AuthUseCase
 	vacancyUse        vacancyInterfaces.VacancyUseCase
 	summaryUse        summaryInterfaces.SummaryUseCase
 	searchUse         searchInterfaces.SearchUseCase
@@ -80,8 +80,16 @@ func NewApp(c *middleware.CorsHandler) *App {
 		golog.Fatal("cant connect to grpc")
 	}
 
+	authConn, err := grpc.Dial(
+		"127.0.0.1:8003",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		golog.Fatal("can't connect to auth")
+	}
+
 	userRepo := userPostgres.NewUserRepository(db)
-	authRepo := authPostgres.NewAuthRepository(db)
+	authRepo := authGrpcRepository.NewRepository(authConn)
 	vacancyRepo := vacancyPostgres.NewVacancyRepository(db)
 	summaryRepo := summaryPostgres.NewSummaryRepository(db)
 	searchRepo := searchGrpc.NewSearchGrpcRepository(searchConn)

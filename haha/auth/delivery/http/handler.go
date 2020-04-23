@@ -41,7 +41,7 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.useCase.RegisterPerson(&user)
+	err = h.useCase.RegisterPerson(user.Login, user.Password, user.FirstName)
 	switch true {
 	case errors.Is(err, authInterfaces.ErrUserAlreadyExists):
 		golog.Errorf("#%s: %w", rID, err)
@@ -76,7 +76,7 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.useCase.RegisterOrganization(&org)
+	err = h.useCase.RegisterOrganization(org.Login, org.Password, org.Name)
 	switch true {
 	case errors.Is(err, authInterfaces.ErrUserAlreadyExists):
 		golog.Errorf("#%s: %w", rID, err)

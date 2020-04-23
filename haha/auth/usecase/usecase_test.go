@@ -53,9 +53,9 @@ func TestSuite(t *testing.T) {
 
 func (suite *userSuite) TestAuthPersonFlow() {
 	//RegisterPerson
-	suite.repo.EXPECT().CreatePerson(&suite.person).Return(nil).Times(1)
+	suite.repo.EXPECT().RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName).Return(nil).Times(1)
 	suite.repo.EXPECT().DoesUserExists(suite.person.Login).Return(nil).Times(1)
-	err := suite.uc.RegisterPerson(&suite.person)
+	err := suite.uc.RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName)
 	assert.NoError(suite.T(), err)
 
 	//Login
@@ -79,9 +79,9 @@ func (suite *userSuite) TestAuthPersonFlow() {
 }
 
 func (suite *userSuite) TestAuthOrganizationFlow() {
-	suite.repo.EXPECT().CreateOrganization(&suite.organization).Return(nil).Times(1)
+	suite.repo.EXPECT().RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name).Return(nil).Times(1)
 	suite.repo.EXPECT().DoesUserExists(suite.organization.Login).Return(nil).Times(1)
-	err := suite.uc.RegisterOrganization(&suite.organization)
+	err := suite.uc.RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name)
 	assert.NoError(suite.T(), err)
 }
 
@@ -182,6 +182,9 @@ func (suite *userSuite) TestOrgSessionWrongRole() {
 		Return("person", nil).
 		Times(1)
 
-	_, err := suite.uc.OrganizationSession(suite.sidEx)
-	assert.Error(suite.T(), err)
+	//RegisterOrganization
+	suite.repo.EXPECT().RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name).Return(nil).Times(1)
+	suite.repo.EXPECT().DoesUserExists(suite.organization.Login).Return(nil).Times(1)
+	err := suite.uc.RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name)
+	assert.NoError(suite.T(), err)
 }

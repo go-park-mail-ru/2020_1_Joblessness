@@ -6,7 +6,6 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	baseModels "joblessness/haha/models/base"
 	reflect "reflect"
 )
 
@@ -31,34 +30,6 @@ func NewMockAuthRepository(ctrl *gomock.Controller) *MockAuthRepository {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockAuthRepository) EXPECT() *MockAuthRepositoryMockRecorder {
 	return m.recorder
-}
-
-// CreateOrganization mocks base method
-func (m *MockAuthRepository) CreateOrganization(arg0 *baseModels.Organization) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateOrganization", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreateOrganization indicates an expected call of CreateOrganization
-func (mr *MockAuthRepositoryMockRecorder) CreateOrganization(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrganization", reflect.TypeOf((*MockAuthRepository)(nil).CreateOrganization), arg0)
-}
-
-// CreatePerson mocks base method
-func (m *MockAuthRepository) CreatePerson(arg0 *baseModels.Person) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreatePerson", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CreatePerson indicates an expected call of CreatePerson
-func (mr *MockAuthRepositoryMockRecorder) CreatePerson(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreatePerson", reflect.TypeOf((*MockAuthRepository)(nil).CreatePerson), arg0)
 }
 
 // DoesUserExists mocks base method
@@ -117,6 +88,34 @@ func (m *MockAuthRepository) Logout(arg0 string) error {
 func (mr *MockAuthRepositoryMockRecorder) Logout(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logout", reflect.TypeOf((*MockAuthRepository)(nil).Logout), arg0)
+}
+
+// RegisterOrganization mocks base method
+func (m *MockAuthRepository) RegisterOrganization(arg0, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterOrganization", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RegisterOrganization indicates an expected call of RegisterOrganization
+func (mr *MockAuthRepositoryMockRecorder) RegisterOrganization(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterOrganization", reflect.TypeOf((*MockAuthRepository)(nil).RegisterOrganization), arg0, arg1, arg2)
+}
+
+// RegisterPerson mocks base method
+func (m *MockAuthRepository) RegisterPerson(arg0, arg1, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterPerson", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RegisterPerson indicates an expected call of RegisterPerson
+func (mr *MockAuthRepositoryMockRecorder) RegisterPerson(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterPerson", reflect.TypeOf((*MockAuthRepository)(nil).RegisterPerson), arg0, arg1, arg2)
 }
 
 // SessionExists mocks base method

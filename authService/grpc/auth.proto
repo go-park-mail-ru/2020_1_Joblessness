@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package authGrpc;
+
+service Auth {
+  rpc RegisterPerson (UserRegister) returns (Nothing);
+  rpc RegisterOrganization (UserRegister) returns (Nothing);
+  rpc Login (UserLoginParams) returns (UserID);
+  rpc Logout (SessionID) returns (Nothing);
+  rpc SessionExists (SessionID) returns (UserID);
+  rpc DoesUserExists(UserLogin) returns (Nothing);
+  rpc GetRole (UserID) returns (Role);
+}
+
+message UserRegister {
+  string login = 1;
+  string password = 2;
+  string name = 3;
+}
+
+message UserLoginParams {
+  string login = 1;
+  string password = 2;
+  string sid = 3;
+}
+
+message UserLogin {
+  string login = 1;
+}
+
+message UserID {
+  string id = 1;
+}
+
+message SessionID {
+  string id = 1;
+}
+
+message Role {
+  string role = 1;
+}
+
+message Nothing {
+  bool dummy = 1;
+}
