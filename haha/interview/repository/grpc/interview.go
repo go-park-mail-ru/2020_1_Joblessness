@@ -22,6 +22,10 @@ func NewInterviewGrpcRepository(conn *grpc.ClientConn) *InterviewGrpcRepository 
 
 func (r *InterviewGrpcRepository) IsOrganizationVacancy(vacancyID, userID uint64) (err error) {
 	status, err := r.handler.IsOrganizationVacancy(context.Background(), &interviewRpc.IsParameters{UserID: userID, VacancyID: vacancyID})
+	if err != nil {
+		return err
+	}
+
 	switch status.Code {
 	case 403:
 		return interviewInterfaces.ErrOrganizationIsNotOwner
@@ -34,6 +38,9 @@ func (r *InterviewGrpcRepository) IsOrganizationVacancy(vacancyID, userID uint64
 
 func (r *InterviewGrpcRepository) ResponseSummary(sendSummary *baseModels.SendSummary) (err error) {
 	status, err := r.handler.ResponseSummary(context.Background(), grpcModels.TransformSendSummaryRPC(sendSummary))
+	if err != nil {
+		return err
+	}
 
 	switch status.Code {
 	case 404:

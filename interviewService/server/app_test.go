@@ -3,10 +3,12 @@ package interviewServer
 //go:generate mockgen -destination=../../haha/interview/repository/mock/interview.go -package=mock joblessness/haha/interview/interfaces InterviewRepository
 
 import (
+	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"google.golang.org/grpc"
+	interviewInterfaces "joblessness/haha/interview/interfaces"
 	interviewGrpc "joblessness/haha/interview/repository/grpc"
 	"joblessness/haha/interview/repository/mock"
 	baseModels "joblessness/haha/models/base"
@@ -59,6 +61,28 @@ func (suite *userSuite) TestIsOrganizationVacancy() {
 	err := suite.grpcRepo.IsOrganizationVacancy(uint64(1), uint64(2))
 
 	assert.NoError(suite.T(), err)
+}
+
+func (suite *userSuite) TestIsOrganizationVacancyNotOwner() {
+	go suite.server.Serve(suite.list)
+	defer suite.server.Stop()
+
+	suite.repo.EXPECT().IsOrganizationVacancy(uint64(1), uint64(2)).Times(1).Return(interviewInterfaces.ErrOrganizationIsNotOwner)
+
+	err := suite.grpcRepo.IsOrganizationVacancy(uint64(1), uint64(2))
+
+	assert.Equal(suite.T(), interviewInterfaces.ErrOrganizationIsNotOwner, err)
+}
+
+func (suite *userSuite) TestIsOrganizationVacancyDefaultErr() {
+	go suite.server.Serve(suite.list)
+	defer suite.server.Stop()
+
+	suite.repo.EXPECT().IsOrganizationVacancy(uint64(1), uint64(2)).Times(1).Return(errors.New(""))
+
+	err := suite.grpcRepo.IsOrganizationVacancy(uint64(1), uint64(2))
+
+	assert.Error(suite.T(), err)
 }
 
 func (suite *userSuite) TestResponseSummary() {
