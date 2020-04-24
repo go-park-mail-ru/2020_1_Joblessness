@@ -6,6 +6,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"google.golang.org/grpc/status"
 	authInterfaces "joblessness/haha/auth/interfaces"
 	"joblessness/haha/models/base"
 	pgModels "joblessness/haha/models/postgres"
@@ -79,8 +80,10 @@ func (suite *userSuite) TestDoesExists() {
 		WillReturnRows(rows)
 
 	err := suite.rep.DoesUserExists("name")
+	e, ok := status.FromError(err)
 
-	assert.True(suite.T(), errors.Is(err, authInterfaces.ErrUserAlreadyExists))
+	assert.True(suite.T(), ok)
+	assert.True(suite.T(), e.Code() == authInterfaces.AlreadyExists)
 }
 
 func (suite *userSuite) TestDoesExistsErr() {
@@ -240,6 +243,8 @@ func (suite *userSuite) TestSessionExistsExpired() {
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	_, err := suite.rep.SessionExists("sid")
+	e, ok := status.FromError(err)
 
-	assert.True(suite.T(), errors.Is(err, authInterfaces.ErrWrongSID))
+	assert.True(suite.T(), ok)
+	assert.True(suite.T(), e.Code() == authInterfaces.WrongSID)
 }

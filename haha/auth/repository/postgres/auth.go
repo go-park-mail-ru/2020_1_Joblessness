@@ -2,8 +2,8 @@ package authPostgres
 
 import (
 	"database/sql"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	authInterfaces "joblessness/haha/auth/interfaces"
 	"joblessness/haha/utils/salt"
 	"time"
 )
@@ -64,7 +64,7 @@ func (r *AuthRepository) Login(login, password, SID string) (userId uint64, err 
 	rows := r.db.QueryRow(checkUser, login)
 	err = rows.Scan(&userId, &hashedPwd)
 	if err != nil || !salt.ComparePasswords(hashedPwd, password) {
-		return 0, status.Error(codes.InvalidArgument, "wrong login or password")
+		return 0, status.Error(authInterfaces.WrongLoginOrPassword, "wrong login or password")
 	}
 
 	insertSession := `INSERT INTO session (user_id, session_id, expires) 
@@ -90,7 +90,7 @@ func (r *AuthRepository) SessionExists(sessionId string) (userId uint64, err err
 	var expires time.Time
 	err = r.db.QueryRow(checkUser, sessionId).Scan(&userId, &expires)
 	if err != nil {
-		return 0, status.Error(500, "wrong sid")
+		return 0, status.Error(authInterfaces.WrongSID, "wrong sid")
 	}
 
 	if expires.Before(time.Now()) {
@@ -100,7 +100,7 @@ func (r *AuthRepository) SessionExists(sessionId string) (userId uint64, err err
 			return 0, err
 		}
 		userId = 0
-		return userId, status.Error(500, "wrong sid")
+		return userId, status.Error(authInterfaces.WrongSID, "wrong sid")
 	}
 
 	return userId, err
@@ -116,7 +116,7 @@ func (r *AuthRepository) DoesUserExists(login string) (err error) {
 	}
 
 	if columnCount != 0 {
-		return status.Error(codes.AlreadyExists, "user already exists")
+		return status.Error(authInterfaces.AlreadyExists, "user already exists")
 	}
 	return nil
 }
@@ -126,7 +126,7 @@ func (r *AuthRepository) GetRole(userID uint64) (string, error) {
 	checkUser := "SELECT person_id, organization_id FROM users WHERE id = $1;"
 	err := r.db.QueryRow(checkUser, userID).Scan(&personID, &organizationID)
 	if err != nil {
-		return "", err
+		return "", status.Error(authInterfaces.NotFound, "not found")
 	}
 
 	if personID.Valid {
