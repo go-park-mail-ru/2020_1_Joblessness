@@ -2,6 +2,7 @@ package baseModels
 
 import "github.com/microcosm-cc/bluemonday"
 
+//easyjson:json
 type VacancyOrganization struct {
 	ID     uint64 `json:"id,omitempty"`
 	Tag    string `json:"tag,omitempty"`
@@ -20,6 +21,7 @@ func (s *VacancyOrganization) Sanitize(policy *bluemonday.Policy) {
 	s.Site = policy.Sanitize(s.Site)
 }
 
+//easyjson:json
 type Vacancy struct {
 	ID               uint64              `json:"id,omitempty"`
 	Organization     VacancyOrganization `json:"organization,omitempty"`

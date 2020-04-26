@@ -2,6 +2,7 @@ package baseModels
 
 import "github.com/microcosm-cc/bluemonday"
 
+//easyjson:json
 type SearchResult struct {
 	Persons       Persons      `json:"persons"`
 	Organizations Organizations `json:"organizations"`

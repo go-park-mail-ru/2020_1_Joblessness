@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+//easyjson:json
 type Education struct {
 	Institution string    `json:"institution,omitempty" validate:"max=60"`
 	Speciality  string    `json:"speciality,omitempty" validate:"max=60"`
@@ -18,6 +19,7 @@ func (s *Education) Sanitize(policy *bluemonday.Policy) {
 	s.Type = policy.Sanitize(s.Type)
 }
 
+//easyjson:json
 type Experience struct {
 	CompanyName      string    `json:"companyName,omitempty" validate:"max=60"`
 	Role             string    `json:"role,omitempty" validate:"max=120"`
@@ -32,6 +34,7 @@ func (s *Experience) Sanitize(policy *bluemonday.Policy) {
 	s.Responsibilities = policy.Sanitize(s.Responsibilities)
 }
 
+//easyjson:json
 type Author struct {
 	ID        uint64    `json:"id,omitempty"`
 	Tag       string    `json:"tag,omitempty"`
@@ -54,6 +57,7 @@ func (s *Author) Sanitize(policy *bluemonday.Policy) {
 	s.Gender = policy.Sanitize(s.Gender)
 }
 
+//easyjson:json
 type Summary struct {
 	ID          uint64       `json:"id,omitempty"`
 	Author      Author       `json:"author,omitempty" validate:"required"`
@@ -86,6 +90,7 @@ func (s *Summaries) Sanitize(policy *bluemonday.Policy) {
 	}
 }
 
+//easyjson:json
 type SendSummary struct {
 	VacancyID      uint64    `json:"vacancyId,omitempty"`
 	SummaryID      uint64    `json:"summaryId"`
@@ -96,6 +101,7 @@ type SendSummary struct {
 	Denied         bool      `json:"denied"`
 }
 
+//easyjson:json
 type VacancyResponse struct {
 	UserID      uint64 `json:"user_id,omitempty"`
 	Tag         string `json:"tag,omitempty"`
