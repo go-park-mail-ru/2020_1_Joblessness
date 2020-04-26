@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"google.golang.org/grpc/status"
 	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
@@ -112,7 +113,7 @@ func (suite *userSuite) TestRegistrationPerson() {
 func (suite *userSuite) TestFailedRegistrationPerson() {
 	suite.uc.EXPECT().
 		RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName).
-		Return(authInterfaces.ErrUserAlreadyExists).
+		Return(status.Error(authInterfaces.AlreadyExists, "user already exists")).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/haha/users", suite.personByte)
@@ -138,7 +139,7 @@ func (suite *userSuite) TestRegistrationOrganization() {
 func (suite *userSuite) TestFailedRegistrationOrganization() {
 	suite.uc.EXPECT().
 		RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name).
-		Return(authInterfaces.ErrUserAlreadyExists).
+		Return(status.Error(authInterfaces.AlreadyExists, "user already exists")).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/haha/organizations", suite.organizationByte)
@@ -180,7 +181,7 @@ func (suite *userSuite) TestFailedLoginNotFound() {
 
 	suite.uc.EXPECT().
 		Login(userLogin.Login, userLogin.Password).
-		Return(uint64(0), "organization", "", authInterfaces.ErrWrongLoginOrPassword).
+		Return(uint64(0), "organization", "", status.Error(authInterfaces.WrongLoginOrPassword, "wrong login or password")).
 		Times(1)
 
 	r, _ := http.NewRequest("POST", "/haha/users/login", bytes.NewBuffer(userJSON))

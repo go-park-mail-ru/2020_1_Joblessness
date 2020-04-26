@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"github.com/juju/loggo"
 	"github.com/kataras/golog"
-	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gopkg.in/go-playground/validator.v9"
 	"joblessness/haha/auth/interfaces"
@@ -45,7 +44,7 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
 			switch e.Code() {
-			case codes.AlreadyExists:
+			case authInterfaces.AlreadyExists:
 				golog.Errorf("#%s: %w", rID, err)
 				w.WriteHeader(http.StatusBadRequest)
 				json, _ := json.Marshal(baseModels.Error{Message: e.Message()})
@@ -86,7 +85,7 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
 			switch e.Code() {
-			case codes.AlreadyExists:
+			case authInterfaces.AlreadyExists:
 				golog.Errorf("#%s: %s", rID, e.Message())
 				w.WriteHeader(http.StatusBadRequest)
 				json, _ := json.Marshal(baseModels.Error{Message: e.Message()})
@@ -128,7 +127,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
 			switch e.Code() {
-			case codes.InvalidArgument:
+			case authInterfaces.WrongLoginOrPassword:
 				golog.Errorf("#%s: %w", rID, err)
 				w.WriteHeader(http.StatusBadRequest)
 				json, _ := json.Marshal(baseModels.Error{Message: e.Message()})
@@ -191,7 +190,7 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if e, ok := status.FromError(err); ok {
 			switch e.Code() {
-			case codes.NotFound:
+			case authInterfaces.NotFound:
 				golog.Errorf("#%s: %w", rID, err)
 				w.WriteHeader(http.StatusNotFound)
 				json, _ := json.Marshal(baseModels.Error{Message: e.Message()})
