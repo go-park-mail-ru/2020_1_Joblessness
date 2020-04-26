@@ -1,10 +1,10 @@
 package searchHttp
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/juju/loggo"
 	"github.com/kataras/golog"
-	"github.com/mailru/easyjson"
 	searchInterfaces "joblessness/haha/search/interfaces"
 	"net/http"
 )
@@ -35,7 +35,7 @@ func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
 	case err == nil:
-		resultJSON, _ := easyjson.Marshal(resultForum)
+		resultJSON, _ := json.Marshal(resultForum)
 		w.WriteHeader(http.StatusOK)
 		w.Write(resultJSON)
 	default:

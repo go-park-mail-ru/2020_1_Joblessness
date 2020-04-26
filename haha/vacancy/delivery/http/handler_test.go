@@ -4,6 +4,7 @@ package vacancyHttp
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"github.com/golang/mock/gomock"
@@ -171,6 +172,19 @@ func (suite *userSuite) TestGetVacancy() {
 	suite.router.ServeHTTP(w, r)
 
 	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
+
+func (suite *userSuite) TestGetVacancyNotFound() {
+	suite.uc.EXPECT().
+		GetVacancy(uint64(3)).
+		Return(nil, sql.ErrNoRows).
+		Times(1)
+
+	r, _ := http.NewRequest("GET", "/haha/vacancies/3", bytes.NewBuffer([]byte{}))
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
 func (suite *userSuite) TestGetVacancyFailed() {

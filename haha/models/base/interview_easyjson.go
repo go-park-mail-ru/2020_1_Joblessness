@@ -17,98 +17,6 @@ var (
 	_ *jwriter.Writer
 	_ easyjson.Marshaler
 )
-
-func easyjsonF9aeba63DecodeJoblessnessHahaModelsBase(in *jlexer.Lexer, out *Messages) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "from":
-			if in.IsNull() {
-				in.Skip()
-				out.From = nil
-			} else {
-				in.Delim('[')
-				if out.From == nil {
-					if !in.IsDelim(']') {
-						out.From = make([]*chat.Message, 0, 8)
-					} else {
-						out.From = []*chat.Message{}
-					}
-				} else {
-					out.From = (out.From)[:0]
-				}
-				for !in.IsDelim(']') {
-					var v1 *chat.Message
-					if in.IsNull() {
-						in.Skip()
-						v1 = nil
-					} else {
-						if v1 == nil {
-							v1 = new(chat.Message)
-						}
-						easyjsonF9aeba63DecodeJoblessnessHahaUtilsChat(in, v1)
-					}
-					out.From = append(out.From, v1)
-					in.WantComma()
-				}
-				in.Delim(']')
-			}
-		case "to":
-			if in.IsNull() {
-				in.Skip()
-				out.To = nil
-			} else {
-				in.Delim('[')
-				if out.To == nil {
-					if !in.IsDelim(']') {
-						out.To = make([]*chat.Message, 0, 8)
-					} else {
-						out.To = []*chat.Message{}
-					}
-				} else {
-					out.To = (out.To)[:0]
-				}
-				for !in.IsDelim(']') {
-					var v2 *chat.Message
-					if in.IsNull() {
-						in.Skip()
-						v2 = nil
-					} else {
-						if v2 == nil {
-							v2 = new(chat.Message)
-						}
-						easyjsonF9aeba63DecodeJoblessnessHahaUtilsChat(in, v2)
-					}
-					out.To = append(out.To, v2)
-					in.WantComma()
-				}
-				in.Delim(']')
-			}
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
 func easyjsonF9aeba63EncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in Messages) {
 	out.RawByte('{')
 	first := true
@@ -161,11 +69,6 @@ func easyjsonF9aeba63EncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in Mes
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Messages) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonF9aeba63EncodeJoblessnessHahaModelsBase(w, v)
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *Messages) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonF9aeba63DecodeJoblessnessHahaModelsBase(l, v)
 }
 func easyjsonF9aeba63DecodeJoblessnessHahaUtilsChat(in *jlexer.Lexer, out *chat.Message) {
 	isTopLevel := in.IsStart()
@@ -284,42 +187,6 @@ func easyjsonF9aeba63EncodeJoblessnessHahaUtilsChat(out *jwriter.Writer, in chat
 	}
 	out.RawByte('}')
 }
-func easyjsonF9aeba63DecodeJoblessnessHahaModelsBase1(in *jlexer.Lexer, out *Conversations) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		in.Skip()
-		*out = nil
-	} else {
-		in.Delim('[')
-		if *out == nil {
-			if !in.IsDelim(']') {
-				*out = make(Conversations, 0, 8)
-			} else {
-				*out = Conversations{}
-			}
-		} else {
-			*out = (*out)[:0]
-		}
-		for !in.IsDelim(']') {
-			var v7 *ConversationTitle
-			if in.IsNull() {
-				in.Skip()
-				v7 = nil
-			} else {
-				if v7 == nil {
-					v7 = new(ConversationTitle)
-				}
-				(*v7).UnmarshalEasyJSON(in)
-			}
-			*out = append(*out, v7)
-			in.WantComma()
-		}
-		in.Delim(']')
-	}
-	if isTopLevel {
-		in.Consumed()
-	}
-}
 func easyjsonF9aeba63EncodeJoblessnessHahaModelsBase1(out *jwriter.Writer, in Conversations) {
 	if in == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
 		out.RawString("null")
@@ -342,48 +209,6 @@ func easyjsonF9aeba63EncodeJoblessnessHahaModelsBase1(out *jwriter.Writer, in Co
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Conversations) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonF9aeba63EncodeJoblessnessHahaModelsBase1(w, v)
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *Conversations) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonF9aeba63DecodeJoblessnessHahaModelsBase1(l, v)
-}
-func easyjsonF9aeba63DecodeJoblessnessHahaModelsBase2(in *jlexer.Lexer, out *ConversationTitle) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "chatter_id":
-			out.ChatterID = uint64(in.Uint64())
-		case "chatter_name":
-			out.ChatterName = string(in.String())
-		case "interview_date":
-			if data := in.Raw(); in.Ok() {
-				in.AddError((out.InterviewDate).UnmarshalJSON(data))
-			}
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
 }
 func easyjsonF9aeba63EncodeJoblessnessHahaModelsBase2(out *jwriter.Writer, in ConversationTitle) {
 	out.RawByte('{')
@@ -421,9 +246,4 @@ func easyjsonF9aeba63EncodeJoblessnessHahaModelsBase2(out *jwriter.Writer, in Co
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ConversationTitle) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonF9aeba63EncodeJoblessnessHahaModelsBase2(w, v)
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *ConversationTitle) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonF9aeba63DecodeJoblessnessHahaModelsBase2(l, v)
 }

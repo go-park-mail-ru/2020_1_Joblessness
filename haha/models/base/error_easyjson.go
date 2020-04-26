@@ -17,37 +17,6 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjsonE34310f8DecodeJoblessnessHahaModelsBase(in *jlexer.Lexer, out *Error) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "message":
-			out.Message = string(in.String())
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
 func easyjsonE34310f8EncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in Error) {
 	out.RawByte('{')
 	first := true
@@ -64,9 +33,4 @@ func easyjsonE34310f8EncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in Err
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Error) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonE34310f8EncodeJoblessnessHahaModelsBase(w, v)
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *Error) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonE34310f8DecodeJoblessnessHahaModelsBase(l, v)
 }

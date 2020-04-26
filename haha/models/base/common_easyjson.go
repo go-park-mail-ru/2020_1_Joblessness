@@ -17,37 +17,6 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjsonC803d3e7DecodeJoblessnessHahaModelsBase(in *jlexer.Lexer, out *ResponseID) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "id":
-			out.ID = uint64(in.Uint64())
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
 func easyjsonC803d3e7EncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in ResponseID) {
 	out.RawByte('{')
 	first := true
@@ -66,41 +35,6 @@ func (v ResponseID) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonC803d3e7EncodeJoblessnessHahaModelsBase(w, v)
 }
 
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *ResponseID) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonC803d3e7DecodeJoblessnessHahaModelsBase(l, v)
-}
-func easyjsonC803d3e7DecodeJoblessnessHahaModelsBase1(in *jlexer.Lexer, out *ResponseBool) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeString()
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "like":
-			out.Like = bool(in.Bool())
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
 func easyjsonC803d3e7EncodeJoblessnessHahaModelsBase1(out *jwriter.Writer, in ResponseBool) {
 	out.RawByte('{')
 	first := true
@@ -117,9 +51,4 @@ func easyjsonC803d3e7EncodeJoblessnessHahaModelsBase1(out *jwriter.Writer, in Re
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ResponseBool) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonC803d3e7EncodeJoblessnessHahaModelsBase1(w, v)
-}
-
-// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *ResponseBool) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjsonC803d3e7DecodeJoblessnessHahaModelsBase1(l, v)
 }
