@@ -1,4 +1,6 @@
-package vacancyUseCase
+package summaryUseCase
+
+//go:generate mockgen -destination=../repository/mock/summary.go -package=mock joblessness/haha/summary/interfaces SummaryRepository
 
 import (
 	"github.com/golang/mock/gomock"
@@ -8,18 +10,16 @@ import (
 	baseModels "joblessness/haha/models/base"
 	pgModels "joblessness/haha/models/postgres"
 	summaryInterfaces "joblessness/haha/summary/interfaces"
-	"joblessness/haha/vacancy/repository/mock"
+	"joblessness/haha/summary/repository/mock"
 	"testing"
 	"time"
 )
 
-//go:generate mockgen -destination=../repository/mock/vacancy.go -package=mock joblessness/haha/vacancy/interfaces VacancyRepository
-
 type userSuite struct {
 	suite.Suite
 	controller   *gomock.Controller
-	uc           *VacancyUseCase
-	repo         *mock.MockVacancyRepository
+	uc           *SummaryUseCase
+	repo         *mock.MockSummaryRepository
 	summary    baseModels.Summary
 	education  pgModels.Education
 	experience pgModels.Experience

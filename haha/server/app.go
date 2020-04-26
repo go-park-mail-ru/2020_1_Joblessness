@@ -32,6 +32,7 @@ import (
 	"joblessness/haha/user/interfaces"
 	"joblessness/haha/user/repository/postgres"
 	"joblessness/haha/user/usecase"
+	"joblessness/haha/utils/chat"
 	"joblessness/haha/utils/database"
 	"joblessness/haha/vacancy/delivery/http"
 	"joblessness/haha/vacancy/interfaces"
@@ -97,7 +98,9 @@ func NewApp(c *middleware.CorsHandler) *App {
 	interviewRepo := interviewGrpc.NewInterviewGrpcRepository(interviewConn)
 	policy := bluemonday.UGCPolicy()
 
-	interviewUse, room := interviewUseCase.NewInterviewUseCase(interviewRepo, policy)
+	interviewUse := interviewUseCase.NewInterviewUseCase(interviewRepo, policy)
+	room := chat.NewRoom(interviewUse)
+	interviewUse.EnableRoom(room)
 
 	return &App{
 		userUse:           userUseCase.NewUserUseCase(userRepo, policy),

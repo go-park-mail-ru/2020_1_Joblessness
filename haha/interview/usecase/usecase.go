@@ -22,14 +22,17 @@ type InterviewUseCase struct {
 }
 
 func NewInterviewUseCase(interviewRepo interviewInterfaces.InterviewRepository,
-	policy *bluemonday.Policy) (useCase *InterviewUseCase, room chat.Room) {
+	policy *bluemonday.Policy) (useCase *InterviewUseCase) {
 	useCase = &InterviewUseCase{
 		interviewRepo: interviewRepo,
 		policy:        policy,
 	}
-	useCase.room = chat.NewRoom(useCase)
-	go useCase.room.Run()
-	return useCase, useCase.room
+	return useCase
+}
+
+func (u *InterviewUseCase) EnableRoom(room chat.Room) {
+	u.room = room
+	go u.room.Run()
 }
 
 func (u *InterviewUseCase) EnterChat(userID uint64, socket *websocket.Conn) {
@@ -48,10 +51,10 @@ func (u *InterviewUseCase) EnterChat(userID uint64, socket *websocket.Conn) {
 	chatter.Read()
 }
 
-func (u *InterviewUseCase) generateMessage(sendSummary *baseModels.SendSummary) (result *chat.Message) {
+func (u *InterviewUseCase) generateMessage(sendSummary *baseModels.SendSummary) (result *chat.Message, err error) {
 	credentials, err := u.GetResponseCredentials(sendSummary.SummaryID, sendSummary.VacancyID)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	var status string
@@ -70,7 +73,7 @@ func (u *InterviewUseCase) generateMessage(sendSummary *baseModels.SendSummary) 
 		UserTwoId: credentials.UserID,
 		UserTwo:   credentials.UserName,
 		Created:   time.Now(),
-	}
+	}, nil
 }
 
 func (u *InterviewUseCase) ResponseSummary(sendSummary *baseModels.SendSummary) (err error) {
@@ -78,10 +81,13 @@ func (u *InterviewUseCase) ResponseSummary(sendSummary *baseModels.SendSummary) 
 	if err != nil {
 		return err
 	}
-
 	err = u.interviewRepo.ResponseSummary(sendSummary)
 	if err == nil {
-		u.room.SendGeneratedMessage(u.generateMessage(sendSummary))
+		message, err := u.generateMessage(sendSummary)
+		if err != nil {
+			return err
+		}
+		u.room.SendGeneratedMessage(message)
 	}
 
 	return err
