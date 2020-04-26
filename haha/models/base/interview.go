@@ -31,4 +31,5 @@ type ConversationTitle struct {
 	InterviewDate time.Time `json:"interview_date"`
 }
 
+//easyjson:json
 type Conversations []*ConversationTitle

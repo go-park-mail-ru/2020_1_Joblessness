@@ -387,6 +387,42 @@ func (suite *userSuite) TestChangeSummaryFailed() {
 	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
 }
 
+func (suite *userSuite) TestChangeSummaryNotFound() {
+	suite.uc.EXPECT().
+		ChangeSummary(&suite.summary).
+		Return(summaryInterfaces.ErrSummaryNotFound).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		PersonSession("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("PUT", "/haha/summaries/3", suite.summaryByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
+}
+
+func (suite *userSuite) TestChangeSummaryNotOwner() {
+	suite.uc.EXPECT().
+		ChangeSummary(&suite.summary).
+		Return(summaryInterfaces.ErrPersonIsNotOwner).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		PersonSession("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("PUT", "/haha/summaries/3", suite.summaryByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 403, w.Code, "Status is not 403")
+}
+
 func (suite *userSuite) TestDeleteSummary() {
 	suite.uc.EXPECT().
 		DeleteSummary(uint64(3), uint64(12)).

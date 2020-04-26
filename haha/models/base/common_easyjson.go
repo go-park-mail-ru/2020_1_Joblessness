@@ -52,31 +52,18 @@ func easyjsonC803d3e7EncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in Res
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.ID != 0 {
 		const prefix string = ",\"id\":"
+		first = false
 		out.RawString(prefix[1:])
 		out.Uint64(uint64(in.ID))
 	}
 	out.RawByte('}')
 }
 
-// MarshalJSON supports json.Marshaler interface
-func (v ResponseID) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjsonC803d3e7EncodeJoblessnessHahaModelsBase(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ResponseID) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonC803d3e7EncodeJoblessnessHahaModelsBase(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *ResponseID) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjsonC803d3e7DecodeJoblessnessHahaModelsBase(&r, v)
-	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
@@ -118,31 +105,18 @@ func easyjsonC803d3e7EncodeJoblessnessHahaModelsBase1(out *jwriter.Writer, in Re
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.Like {
 		const prefix string = ",\"like\":"
+		first = false
 		out.RawString(prefix[1:])
 		out.Bool(bool(in.Like))
 	}
 	out.RawByte('}')
 }
 
-// MarshalJSON supports json.Marshaler interface
-func (v ResponseBool) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjsonC803d3e7EncodeJoblessnessHahaModelsBase1(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ResponseBool) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonC803d3e7EncodeJoblessnessHahaModelsBase1(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *ResponseBool) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjsonC803d3e7DecodeJoblessnessHahaModelsBase1(&r, v)
-	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface

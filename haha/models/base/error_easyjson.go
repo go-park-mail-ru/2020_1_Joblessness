@@ -52,31 +52,18 @@ func easyjsonE34310f8EncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in Err
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.Message != "" {
 		const prefix string = ",\"message\":"
+		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.Message))
 	}
 	out.RawByte('}')
 }
 
-// MarshalJSON supports json.Marshaler interface
-func (v Error) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjsonE34310f8EncodeJoblessnessHahaModelsBase(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Error) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonE34310f8EncodeJoblessnessHahaModelsBase(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *Error) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjsonE34310f8DecodeJoblessnessHahaModelsBase(&r, v)
-	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface

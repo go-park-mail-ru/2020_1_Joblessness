@@ -82,6 +82,7 @@ func (s *Summary) Sanitize(policy *bluemonday.Policy) {
 	s.Keywords = policy.Sanitize(s.Keywords)
 }
 
+//easyjson:json
 type Summaries []*Summary
 
 func (s *Summaries) Sanitize(policy *bluemonday.Policy) {
@@ -121,6 +122,7 @@ func (s *VacancyResponse) Sanitize(policy *bluemonday.Policy) {
 	s.SummaryName = policy.Sanitize(s.SummaryName)
 }
 
+//easyjson:json
 type OrgSummaries []*VacancyResponse
 
 func (s *OrgSummaries) Sanitize(policy *bluemonday.Policy) {

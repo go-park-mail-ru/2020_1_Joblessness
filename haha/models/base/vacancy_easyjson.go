@@ -133,23 +133,9 @@ func easyjson80a4d695EncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in Vac
 	out.RawByte('}')
 }
 
-// MarshalJSON supports json.Marshaler interface
-func (v VacancyOrganization) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson80a4d695EncodeJoblessnessHahaModelsBase(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
-}
-
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v VacancyOrganization) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjson80a4d695EncodeJoblessnessHahaModelsBase(w, v)
-}
-
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *VacancyOrganization) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjson80a4d695DecodeJoblessnessHahaModelsBase(&r, v)
-	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
@@ -265,7 +251,7 @@ func easyjson80a4d695EncodeJoblessnessHahaModelsBase1(out *jwriter.Writer, in Va
 		}
 		out.Int(int(in.SalaryTo))
 	}
-	{
+	if in.WithTax {
 		const prefix string = ",\"withTax\":"
 		if first {
 			first = false
@@ -277,27 +263,35 @@ func easyjson80a4d695EncodeJoblessnessHahaModelsBase1(out *jwriter.Writer, in Va
 	}
 	if in.Responsibilities != "" {
 		const prefix string = ",\"responsibilities\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.Responsibilities))
 	}
 	if in.Conditions != "" {
 		const prefix string = ",\"conditions\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.Conditions))
 	}
 	if in.Keywords != "" {
 		const prefix string = ",\"keywords\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.Keywords))
 	}
 	out.RawByte('}')
-}
-
-// MarshalJSON supports json.Marshaler interface
-func (v Vacancy) MarshalJSON() ([]byte, error) {
-	w := jwriter.Writer{}
-	easyjson80a4d695EncodeJoblessnessHahaModelsBase1(&w, v)
-	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
@@ -305,14 +299,71 @@ func (v Vacancy) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjson80a4d695EncodeJoblessnessHahaModelsBase1(w, v)
 }
 
-// UnmarshalJSON supports json.Unmarshaler interface
-func (v *Vacancy) UnmarshalJSON(data []byte) error {
-	r := jlexer.Lexer{Data: data}
-	easyjson80a4d695DecodeJoblessnessHahaModelsBase1(&r, v)
-	return r.Error()
-}
-
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Vacancy) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson80a4d695DecodeJoblessnessHahaModelsBase1(l, v)
+}
+func easyjson80a4d695DecodeJoblessnessHahaModelsBase2(in *jlexer.Lexer, out *Vacancies) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		in.Skip()
+		*out = nil
+	} else {
+		in.Delim('[')
+		if *out == nil {
+			if !in.IsDelim(']') {
+				*out = make(Vacancies, 0, 8)
+			} else {
+				*out = Vacancies{}
+			}
+		} else {
+			*out = (*out)[:0]
+		}
+		for !in.IsDelim(']') {
+			var v1 *Vacancy
+			if in.IsNull() {
+				in.Skip()
+				v1 = nil
+			} else {
+				if v1 == nil {
+					v1 = new(Vacancy)
+				}
+				(*v1).UnmarshalEasyJSON(in)
+			}
+			*out = append(*out, v1)
+			in.WantComma()
+		}
+		in.Delim(']')
+	}
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson80a4d695EncodeJoblessnessHahaModelsBase2(out *jwriter.Writer, in Vacancies) {
+	if in == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+		out.RawString("null")
+	} else {
+		out.RawByte('[')
+		for v2, v3 := range in {
+			if v2 > 0 {
+				out.RawByte(',')
+			}
+			if v3 == nil {
+				out.RawString("null")
+			} else {
+				(*v3).MarshalEasyJSON(out)
+			}
+		}
+		out.RawByte(']')
+	}
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v Vacancies) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson80a4d695EncodeJoblessnessHahaModelsBase2(w, v)
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *Vacancies) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson80a4d695DecodeJoblessnessHahaModelsBase2(l, v)
 }

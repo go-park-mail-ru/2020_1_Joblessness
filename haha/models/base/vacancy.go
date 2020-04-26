@@ -45,6 +45,7 @@ func (s *Vacancy) Sanitize(policy *bluemonday.Policy) {
 	s.Keywords = policy.Sanitize(s.Keywords)
 }
 
+//easyjson:json
 type Vacancies []*Vacancy
 
 func (s *Vacancies) Sanitize(policy *bluemonday.Policy) {

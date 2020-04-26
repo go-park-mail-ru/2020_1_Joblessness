@@ -31,6 +31,7 @@ func (s *Person) Sanitize(policy *bluemonday.Policy) {
 	s.Gender = policy.Sanitize(s.Gender)
 }
 
+//easyjson:json
 type Persons []*Person
 
 func (s *Persons) Sanitize(policy *bluemonday.Policy) {
@@ -64,6 +65,7 @@ func (s *Organization) Sanitize(policy *bluemonday.Policy) {
 	s.Site = policy.Sanitize(s.Site)
 }
 
+//easyjson:json
 type Organizations []*Organization
 
 func (s *Organizations) Sanitize(policy *bluemonday.Policy) {
