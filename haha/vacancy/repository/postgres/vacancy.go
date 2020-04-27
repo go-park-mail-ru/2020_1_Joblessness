@@ -140,7 +140,7 @@ func (r *VacancyRepository) CheckAuthor(vacancyID, authorID uint64) (err error) 
 	var isAuthor bool
 
 	checkAuthor := `SELECT organization_id = $1 FROM vacancy WHERE id = $2`
-	if err = r.db.QueryRow(checkAuthor, authorID, vacancyID).Scan(&isAuthor); err != nil {
+	if err = r.db.QueryRow(checkAuthor, authorID, vacancyID).Scan(&isAuthor); err != nil || !isAuthor {
 		return vacancyInterfaces.ErrOrgIsNotOwner
 	}
 
