@@ -140,7 +140,7 @@ func (c *Chatter) Read() {
 
 func (c *Chatter) Write() {
 	for msg := range c.Send {
-		golog.Error("Send by %d: %s",c.ID, msg)
+		golog.Errorf("Send by %d: %s",c.ID, msg)
 		if err := c.Socket.WriteMessage(websocket.TextMessage, msg); err != nil {
 			break
 		}
