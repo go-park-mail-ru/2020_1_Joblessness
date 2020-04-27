@@ -124,11 +124,11 @@ func (suite *userSuite) TestSearchOrganizationFailed() {
 }
 
 func (suite *userSuite) TestSearchVacancy() {
-	rows := sqlmock.NewRows([]string{"id", "name", "id", "name", "keywords", "salary_from", "salary_to", "with_tax"}).
-		AddRow(suite.organization.ID, suite.organization.Name, suite.vacancy.ID, suite.vacancy.Name,
+	rows := sqlmock.NewRows([]string{"id", "avatar", "name", "id", "name", "keywords", "salary_from", "salary_to", "with_tax"}).
+		AddRow(suite.organization.ID, suite.organization.Avatar, suite.organization.Name, suite.vacancy.ID, suite.vacancy.Name,
 			suite.vacancy.Keywords, suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax)
 	suite.mock.
-		ExpectQuery("SELECT users.id, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax").
+		ExpectQuery("SELECT users.id, users.avatar, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax").
 		WithArgs("req", 10, 10).
 		WillReturnRows(rows)
 
@@ -138,7 +138,7 @@ func (suite *userSuite) TestSearchVacancy() {
 
 func (suite *userSuite) TestSearchVacancyFailed() {
 	suite.mock.
-		ExpectQuery("SELECT users.id, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax").
+		ExpectQuery("SELECT users.id, users.avatar, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax").
 		WithArgs("req", 10, 10).
 		WillReturnError(errors.New(""))
 

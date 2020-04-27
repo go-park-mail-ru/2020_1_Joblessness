@@ -103,7 +103,7 @@ func (r SearchRepository) SearchVacancies(params *baseModels.SearchParams) (resu
 
 	page, _ := strconv.Atoi(params.Since)
 
-	getVacancies := `SELECT users.id, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax
+	getVacancies := `SELECT users.id, users.avatar, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax
 					FROM users
 					JOIN organization o on users.organization_id = o.id
 					JOIN vacancy v on users.id = v.organization_id
@@ -121,7 +121,7 @@ func (r SearchRepository) SearchVacancies(params *baseModels.SearchParams) (resu
 
 	for rows.Next() {
 		var vacancyDB baseModels.Vacancy
-		err := rows.Scan(&vacancyDB.Organization.ID, &vacancyDB.Organization.Name, &vacancyDB.ID,
+		err := rows.Scan(&vacancyDB.Organization.ID, &vacancyDB.Organization.Avatar, &vacancyDB.Organization.Name, &vacancyDB.ID,
 			&vacancyDB.Name, &vacancyDB.Keywords, &vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax)
 		if err != nil {
 			return nil, err

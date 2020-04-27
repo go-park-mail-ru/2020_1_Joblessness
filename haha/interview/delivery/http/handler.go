@@ -84,7 +84,7 @@ func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	userID := r.Context().Value("userID").(uint64)
 
-	golog.Error(r.Header.Get("Connection"))
+	golog.Infof("#%s: Connection is: %s", rID, r.Header.Get("Connection"))
 
 	socket, err := h.upGrader.Upgrade(w, r, nil)
 	if err != nil {
