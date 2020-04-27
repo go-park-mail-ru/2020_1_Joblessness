@@ -1,18 +1,18 @@
-package recommendationHttp
+package recommendHttp
 
 import (
 	"encoding/json"
 	"errors"
 	baseModels "joblessness/haha/models/base"
-	"joblessness/haha/recommendation/interfaces"
+	"joblessness/haha/recommend/interfaces"
 	"net/http"
 )
 
 type Handler struct {
-	useCase recommendationInterfaces.UseCase
+	useCase recommendInterfaces.RecommendUseCase
 }
 
-func NewHandler(useCase recommendationInterfaces.UseCase) *Handler {
+func NewHandler(useCase recommendInterfaces.RecommendUseCase) *Handler {
 	return &Handler{useCase: useCase}
 }
 
@@ -21,7 +21,11 @@ func (h *Handler) GetRecommendedVacancies(w http.ResponseWriter, r *http.Request
 		r.Context().Value("userID").(uint64),
 	)
 	switch true {
-	case errors.Is(err, recommendationInterfaces.ErrNoRecommendation):
+	case errors.Is(err, recommendInterfaces.ErrNoUser):
+		w.WriteHeader(http.StatusNotFound)
+		jsonData, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		w.Write(jsonData)
+	case errors.Is(err, recommendInterfaces.ErrNoRecommendation):
 		w.WriteHeader(http.StatusOK)
 		jsonData, _ := json.Marshal([]baseModels.Vacancy{})
 		w.Write(jsonData)
