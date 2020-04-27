@@ -51,13 +51,13 @@ func (u *VacancyUseCase) announceVacancy(vacancy *baseModels.Vacancy) (err error
 }
 
 func (u *VacancyUseCase) CreateVacancy(vacancy *baseModels.Vacancy) (vacancyID uint64, err error) {
-	vacancyID, err = u.vacancyRepo.CreateVacancy(vacancy)
+	vacancy.ID, err = u.vacancyRepo.CreateVacancy(vacancy)
 	if err != nil {
-		return vacancyID, err
+		return vacancy.ID, err
 	}
 
 	_ = u.announceVacancy(vacancy)
-	return vacancyID, err
+	return vacancy.ID, err
 }
 
 func (u *VacancyUseCase) GetVacancies(page string) (baseModels.Vacancies, error) {
