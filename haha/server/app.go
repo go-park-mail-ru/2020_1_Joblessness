@@ -130,6 +130,7 @@ func (app *App) StartRouter() {
 	router.Use(m.RecoveryMiddleware)
 	if !*noCors {
 		router.Use(app.corsHandler.CorsMiddleware)
+		golog.Info("Cors enabled")
 	}
 	router.Use(m.LogMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)

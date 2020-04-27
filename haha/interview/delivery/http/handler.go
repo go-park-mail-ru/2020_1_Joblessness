@@ -84,6 +84,9 @@ func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	userID := r.Context().Value("userID").(uint64)
 
+	a := r.Header.Get("connection")
+	golog.Error(a)
+	golog.Error(a == "Upgrade")
 	socket, err := h.upGrader.Upgrade(w, r, nil)
 	if err != nil {
 		golog.Errorf("#%s: Failed to start ws - %w", rID, err)
