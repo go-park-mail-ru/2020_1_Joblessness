@@ -144,7 +144,7 @@ func (app *App) StartRouter() {
 
 	http.Handle("/", router)
 	golog.Infof("Server started at port :%d", *port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), router)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
 		golog.Error("Server failed")
 	}

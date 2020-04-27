@@ -91,19 +91,6 @@ func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.useCase.EnterChat(userID, socket)
-	//chatter := &chat.Chatter{
-	//	ID:     userID,
-	//	Socket: socket,
-	//	Send:   make(chan []byte, messageBufferSize),
-	//	Room:   h.room,
-	//}
-	//
-	//h.room.Join(chatter)
-	//defer func() {
-	//	h.room.Leave(chatter)
-	//}()
-	//go chatter.Write()
-	//chatter.Read()
 }
 
 func (h *Handler) History(w http.ResponseWriter, r *http.Request) {

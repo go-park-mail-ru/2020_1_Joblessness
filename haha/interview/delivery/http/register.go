@@ -9,7 +9,7 @@ import (
 func RegisterHTTPEndpoints(router *mux.Router,
 	m *middleware.SessionHandler,
 	uc interviewInterfaces.InterviewUseCase,/*
-	room chat.Room*/) {
+	room chat.Room*/) *Handler {
 	h := NewHandler(uc)
 	chatRouter := router.PathPrefix("/chat").Subrouter()
 
@@ -17,4 +17,6 @@ func RegisterHTTPEndpoints(router *mux.Router,
 	chatRouter.HandleFunc("", m.UserRequired(h.EnterChat))
 	chatRouter.HandleFunc("/conversation/{user_id:[0-9]+}", m.UserRequired(h.History)).Methods("GET")
 	chatRouter.HandleFunc("/conversation", m.UserRequired(h.GetConversations)).Methods("GET")
+
+	return h
 }
