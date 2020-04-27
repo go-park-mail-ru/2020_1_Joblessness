@@ -77,7 +77,8 @@ func (h *Handler) PrintSummary(w http.ResponseWriter, r *http.Request) {
 		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
-		errOut := pdf.SummaryToPdf(w, *getSummary)
+		w.Header().Set("Content-Type", "application/pdf")
+		errOut := pdf.SummaryToPdf(w, getSummary)
 		if errOut != nil {
 			golog.Errorf("#%s: %w", rID, err)
 			w.WriteHeader(http.StatusInternalServerError)

@@ -14,7 +14,7 @@ var (
 	fontLocation  = filepath.Dir(file) + "/font/"
 )
 
-func SummaryToPdf(w io.Writer, summary baseModels.Summary) error {
+func SummaryToPdf(w io.Writer, summary *baseModels.Summary) error {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.SetFontLocation(fontLocation)
 
