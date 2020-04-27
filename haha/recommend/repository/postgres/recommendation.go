@@ -1,4 +1,4 @@
-package recommendationPostgres
+package recommendPostgres
 
 import (
 	"database/sql"
@@ -7,25 +7,32 @@ import (
 	"github.com/muesli/regommend"
 	"joblessness/haha/models/base"
 	"joblessness/haha/models/postgres"
-	"joblessness/haha/recommendation/interfaces"
+	"joblessness/haha/recommend/interfaces"
 	"joblessness/haha/vacancy/interfaces"
 	"strconv"
 	"strings"
 )
 
-type Repository struct {
+type repository struct {
 	db                *sql.DB
 	vacancyRepository vacancyInterfaces.VacancyRepository
 }
 
-func NewRepository(db *sql.DB, vacancyRepository vacancyInterfaces.VacancyRepository) *Repository {
-	return &Repository{
+func NewRecommendRepository(db *sql.DB, vacancyRepository vacancyInterfaces.VacancyRepository) *repository {
+	return &repository{
 		db:                db,
 		vacancyRepository: vacancyRepository,
 	}
 }
 
-func (r *Repository) GetRecommendedVacancies(userID uint64) (recommendations []baseModels.Vacancy, err error) {
+func (r *repository) GetRecommendedVacancies(userID uint64) (recommendations []baseModels.Vacancy, err error) {
+	var hasUser bool
+	checkUser := `SELECT COUNT(*) <> 0 FROM users WHERE id = $1`
+	err = r.db.QueryRow(checkUser, userID).Scan(&hasUser)
+	if err != nil {
+		return recommendations, recommendInterfaces.ErrNoUser
+	}
+
 	getUsersWithResponses := `
 		SELECT u.id, array_agg(r.vacancy_id)
 		FROM users u
@@ -68,7 +75,7 @@ func (r *Repository) GetRecommendedVacancies(userID uint64) (recommendations []b
 	}
 
 	if len(recs) == 0 {
-		return recommendations, recommendationInterfaces.ErrNoRecommendation
+		return recommendations, recommendInterfaces.ErrNoRecommendation
 	}
 
 	recKeys := make([]int, len(recs))
