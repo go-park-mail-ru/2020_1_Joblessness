@@ -223,8 +223,10 @@ func (r *UserRepository) LikeExists(userID, favoriteID uint64) (res bool, err er
 }
 
 func (r *UserRepository) GetUserFavorite(userID uint64) (res baseModels.Favorites, err error) {
-	getFavorite := `SELECT u.id, u.tag, u.person_id
+	getFavorite := `SELECT u.id, u.tag, u.avatar, u.person_id, o.name, p.name, p.surname
 				FROM favorite f, users u 
+				RIGHT JOIN organization o on u.organization_id = o.id
+				RIGHT JOIN person p on u.person_id = p.id
 				WHERE f.favorite_id = u.id
 				AND f.user_id = $1;`
 	rows, err := r.db.Query(getFavorite, userID)
@@ -235,20 +237,26 @@ func (r *UserRepository) GetUserFavorite(userID uint64) (res baseModels.Favorite
 
 	var (
 		personID sql.NullInt64
+		personName sql.NullString
+		personSurname sql.NullString
+		orgName sql.NullString
 	)
 	res = make(baseModels.Favorites, 0)
 
 	for rows.Next() {
 		var favorite baseModels.Favorite
-		err := rows.Scan(&favorite.ID, &favorite.Tag, &personID)
+		err := rows.Scan(&favorite.ID, &favorite.Tag, &favorite.Avatar, &personID, &orgName, &personName, &personSurname)
 		if err != nil {
 			return nil, err
 		}
 
 		if personID.Valid {
 			favorite.IsPerson = true
+			favorite.Name = personName.String
+			favorite.Surname = personSurname.String
 		} else {
 			favorite.IsPerson = false
+			favorite.Name = orgName.String
 		}
 		res = append(res, &favorite)
 	}

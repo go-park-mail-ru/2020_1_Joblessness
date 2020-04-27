@@ -84,7 +84,10 @@ type UserLogin struct {
 type Favorite struct {
 	ID       uint64 `json:"id"`
 	Tag      string `json:"tag"`
+	Avatar string `json:"avatar"`
 	IsPerson bool   `json:"isPerson"`
+	Name string `json:"name"`
+	Surname string `json:"surname"`
 }
 
 //easyjson:json

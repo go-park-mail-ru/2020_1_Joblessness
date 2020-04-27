@@ -122,6 +122,7 @@ type Chatter struct {
 func (c *Chatter) Read() {
 	for {
 		if _, msg, err := c.Socket.ReadMessage(); err == nil {
+			golog.Error(msg)
 			c.Room.Forward(msg)
 		} else {
 			break
@@ -132,6 +133,7 @@ func (c *Chatter) Read() {
 
 func (c *Chatter) Write() {
 	for msg := range c.Send {
+		golog.Error(msg)
 		if err := c.Socket.WriteMessage(websocket.TextMessage, msg); err != nil {
 			break
 		}

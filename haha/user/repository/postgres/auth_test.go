@@ -401,32 +401,34 @@ func (suite *userSuite) TestLikeUserDisFailed() {
 	assert.Error(suite.T(), err)
 }
 
-func (suite *userSuite) TestFavoritePer() {
-	rows := sqlmock.NewRows([]string{"userId", "tag", "person_id"})
-	rows = rows.AddRow(uint64(1), "tag", uint64(2))
+func (suite *userSuite) TestFavoriteOrg() {
+	rows := sqlmock.NewRows([]string{"userId", "tag", "avatar", "person_id", "name", "name", "surname"})
+	rows = rows.AddRow(uint64(1), "tag", "avatar", nil, "org", "person", "sur")
 	suite.mock.
-		ExpectQuery("SELECT u.id, u.tag, u.person_id").
+		ExpectQuery("SELECT u.id, u.tag").
 		WithArgs(suite.person.ID).
 		WillReturnRows(rows)
 
 	res, err := suite.rep.GetUserFavorite(suite.person.ID)
 
 	assert.NoError(suite.T(), err)
-	assert.True(suite.T(), res[0].IsPerson)
+	assert.Equal(suite.T(), "org", res[0].Name)
+	assert.False(suite.T(), res[0].IsPerson)
 }
 
-func (suite *userSuite) TestFavoriteOrg() {
-	rows := sqlmock.NewRows([]string{"userId", "tag", "person_id"})
-	rows = rows.AddRow(uint64(1), "tag", nil)
+func (suite *userSuite) TestFavoritePerson() {
+	rows := sqlmock.NewRows([]string{"userId", "tag", "avatar", "person_id", "name", "name", "surname"})
+	rows = rows.AddRow(uint64(1), "tag", "avatar", uint64(2), "org", "person", "sur")
 	suite.mock.
-		ExpectQuery("SELECT u.id, u.tag, u.person_id").
+		ExpectQuery("SELECT u.id, u.tag").
 		WithArgs(suite.person.ID).
 		WillReturnRows(rows)
 
 	res, err := suite.rep.GetUserFavorite(suite.person.ID)
 
 	assert.NoError(suite.T(), err)
-	assert.False(suite.T(), res[0].IsPerson)
+	assert.Equal(suite.T(), "person", res[0].Name)
+	assert.True(suite.T(), res[0].IsPerson)
 }
 
 func (suite *userSuite) TestFavoriteFailed() {

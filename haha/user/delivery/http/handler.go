@@ -272,7 +272,7 @@ func (h *Handler) GetUserFavorite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, _ := easyjson.Marshal(favorites)
+	jsonData, _ := json.Marshal(favorites)
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
