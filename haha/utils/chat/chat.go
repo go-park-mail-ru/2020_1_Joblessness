@@ -123,7 +123,11 @@ func (c *Chatter) Read() {
 	for {
 		if _, msg, err := c.Socket.ReadMessage(); err == nil {
 			golog.Error("Received", msg)
-			c.Room.Forward(msg)
+			if len(msg) != 0 {
+				c.Room.Forward(msg)
+			} else {
+				golog.Error("Received empty array")
+			}
 		} else {
 			break
 		}

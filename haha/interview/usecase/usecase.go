@@ -47,8 +47,8 @@ func (u *InterviewUseCase) EnterChat(userID uint64, socket *websocket.Conn) {
 	defer func() {
 		u.room.Leave(chatter)
 	}()
-	chatter.Write()
-	//chatter.Read()
+	go chatter.Write()
+	chatter.Read()
 }
 
 func (u *InterviewUseCase) generateMessage(sendSummary *baseModels.SendSummary) (result *chat.Message, err error) {
