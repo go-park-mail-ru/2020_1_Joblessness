@@ -56,10 +56,10 @@ func (r *RoomInstance) Run() {
 	for {
 		select {
 		case chatter := <-r.joinChan:
-			golog.Infof("new chatter in room")
+			golog.Infof("new chatter in room: %d", chatter.ID)
 			r.Chatters[chatter.ID] = chatter
 		case chatter := <-r.leaveChan:
-			golog.Infof("chatter leaving room")
+			golog.Infof("chatter leaving room: %d", chatter.ID)
 			delete(r.Chatters, chatter.ID)
 			close(chatter.Send)
 		case rawMessage := <-r.forwardChan:
@@ -72,13 +72,16 @@ func (r *RoomInstance) SendGeneratedMessage(message *Message) {
 	if err := r.messenger.SaveMessage(message); err == nil {
 		receiver, existReceiver := r.Chatters[message.UserTwoId]
 		if existReceiver {
-			rawMessage, _ := json.Marshal(message)
-
-			select {
-			case receiver.Send <- rawMessage:
-			default:
-				delete(r.Chatters, receiver.ID)
-				close(receiver.Send)
+			rawMessage, err := json.Marshal(message)
+			if err == nil {
+				select {
+				case receiver.Send <- rawMessage:
+				default:
+					delete(r.Chatters, receiver.ID)
+					close(receiver.Send)
+				}
+			} else {
+				golog.Errorf("Broken message: %s", message)
 			}
 		}
 	}
@@ -122,11 +125,11 @@ type Chatter struct {
 func (c *Chatter) Read() {
 	for {
 		if _, msg, err := c.Socket.ReadMessage(); err == nil {
-			golog.Error("Received", msg)
+			golog.Errorf("Received by %d: %s",c.ID, msg)
 			if len(msg) != 0 {
 				c.Room.Forward(msg)
 			} else {
-				golog.Error("Received empty array")
+				golog.Error("Received empty array by %d",c.ID)
 			}
 		} else {
 			break
@@ -137,7 +140,7 @@ func (c *Chatter) Read() {
 
 func (c *Chatter) Write() {
 	for msg := range c.Send {
-		golog.Error("Send", msg)
+		golog.Error("Send by %d: %s",c.ID, msg)
 		if err := c.Socket.WriteMessage(websocket.TextMessage, msg); err != nil {
 			break
 		}
