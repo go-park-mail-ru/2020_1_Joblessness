@@ -9,5 +9,5 @@ import (
 func RegisterHTTPEndpoints(router *mux.Router, m *middleware.SessionHandler, u recommendInterfaces.RecommendUseCase) {
 	h := NewHandler(u)
 
-	router.HandleFunc("/recommend", m.PersonRequired(h.GetRecommendedVacancies)).Methods("GET")
+	router.HandleFunc("/recommendation", m.PersonRequired(h.GetRecommendedVacancies)).Methods("GET")
 }
