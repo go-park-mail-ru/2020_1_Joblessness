@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+//easyjson:json
 type Person struct {
 	ID         uint64    `json:"id,omitempty"`
 	Login      string    `json:"login,omitempty" validate:"required,max=60"`
@@ -30,6 +31,7 @@ func (s *Person) Sanitize(policy *bluemonday.Policy) {
 	s.Gender = policy.Sanitize(s.Gender)
 }
 
+//easyjson:json
 type Persons []*Person
 
 func (s *Persons) Sanitize(policy *bluemonday.Policy) {
@@ -38,6 +40,7 @@ func (s *Persons) Sanitize(policy *bluemonday.Policy) {
 	}
 }
 
+//easyjson:json
 type Organization struct {
 	ID         uint64    `json:"id,omitempty"`
 	Login      string    `json:"login,omitempty" validate:"required,max=60"`
@@ -62,6 +65,7 @@ func (s *Organization) Sanitize(policy *bluemonday.Policy) {
 	s.Site = policy.Sanitize(s.Site)
 }
 
+//easyjson:json
 type Organizations []*Organization
 
 func (s *Organizations) Sanitize(policy *bluemonday.Policy) {
@@ -70,19 +74,23 @@ func (s *Organizations) Sanitize(policy *bluemonday.Policy) {
 	}
 }
 
+//easyjson:json
 type UserLogin struct {
 	Login    string `json:"login" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
 
+//easyjson:json
 type Favorite struct {
 	ID       uint64 `json:"id"`
 	Tag      string `json:"tag"`
 	IsPerson bool   `json:"isPerson"`
 }
 
+//easyjson:json
 type Favorites []*Favorite
 
+//easyjson:json
 type ResponseRole struct {
 	ID   uint64 `json:"id"`
 	Role string `json:"role"`

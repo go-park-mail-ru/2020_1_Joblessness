@@ -1,11 +1,11 @@
 package interviewHttp
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"github.com/kataras/golog"
+	"github.com/mailru/easyjson"
 	interviewInterfaces "joblessness/haha/interview/interfaces"
 	"joblessness/haha/models/base"
 	"joblessness/haha/summary/interfaces"
@@ -45,7 +45,7 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
 	var sendSummary baseModels.SendSummary
-	err := json.NewDecoder(r.Body).Decode(&sendSummary)
+	err := easyjson.UnmarshalFromReader(r.Body, &sendSummary)
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -60,12 +60,12 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, summaryInterfaces.ErrOrganizationIsNotOwner):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusForbidden)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case errors.Is(err, summaryInterfaces.ErrNoSummaryToRefresh):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		//if message, err := h.generateMessage(&sendSummary); err == nil {
@@ -75,7 +75,7 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -84,6 +84,8 @@ func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 	userID := r.Context().Value("userID").(uint64)
 
+	golog.Error(r.Header.Get("Connection"))
+
 	socket, err := h.upGrader.Upgrade(w, r, nil)
 	if err != nil {
 		golog.Errorf("#%s: Failed to start ws - %w", rID, err)
@@ -91,19 +93,6 @@ func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.useCase.EnterChat(userID, socket)
-	//chatter := &chat.Chatter{
-	//	ID:     userID,
-	//	Socket: socket,
-	//	Send:   make(chan []byte, messageBufferSize),
-	//	Room:   h.room,
-	//}
-	//
-	//h.room.Join(chatter)
-	//defer func() {
-	//	h.room.Leave(chatter)
-	//}()
-	//go chatter.Write()
-	//chatter.Read()
 }
 
 func (h *Handler) History(w http.ResponseWriter, r *http.Request) {
@@ -117,12 +106,12 @@ func (h *Handler) History(w http.ResponseWriter, r *http.Request) {
 	switch true {
 	case err == nil:
 		w.WriteHeader(http.StatusOK)
-		json, _ := json.Marshal(result)
+		json, _ := easyjson.Marshal(result)
 		w.Write(json)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -135,12 +124,12 @@ func (h *Handler) GetConversations(w http.ResponseWriter, r *http.Request) {
 	switch true {
 	case err == nil:
 		w.WriteHeader(http.StatusOK)
-		json, _ := json.Marshal(result)
+		json, _ := easyjson.Marshal(result)
 		w.Write(json)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }

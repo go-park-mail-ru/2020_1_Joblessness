@@ -269,7 +269,7 @@ CREATE TABLE public.users (
     password character varying(60) NOT NULL,
     organization_id integer,
     person_id integer,
-    tag character varying(20),
+    tag character varying(20) DEFAULT ''::character varying,
     email character varying(60) DEFAULT ''::character varying NOT NULL,
     phone character varying(20) DEFAULT ''::character varying NOT NULL,
     registered timestamp without time zone DEFAULT CURRENT_TIMESTAMP,

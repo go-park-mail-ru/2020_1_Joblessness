@@ -15,6 +15,7 @@ import (
 	"joblessness/haha/middleware"
 	"joblessness/haha/models/base"
 	summaryInterfaces "joblessness/haha/summary/interfaces"
+	"joblessness/haha/utils/chat"
 	"joblessness/haha/utils/chat/mock"
 	"net/http"
 	"net/http/httptest"
@@ -36,6 +37,8 @@ type userSuite struct {
 	sendSum        baseModels.SendSummary
 	params         baseModels.ChatParameters
 	summaryCredits baseModels.SummaryCredentials
+	message chat.Message
+	conversation baseModels.ConversationTitle
 	responseByte   *bytes.Buffer
 	sendSumByte    *bytes.Buffer
 	paramsByte     *bytes.Buffer
@@ -55,6 +58,22 @@ func (suite *userSuite) SetupTest() {
 		Name:    "session_id",
 		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
+	}
+
+	suite.message = chat.Message{
+		Message:   "awda",
+		UserOneId: 1,
+		UserOne:   "awd",
+		UserTwoId: 2,
+		UserTwo:   "awda",
+		Created:   time.Now(),
+		VacancyID: 0,
+	}
+
+	suite.conversation = baseModels.ConversationTitle{
+		ChatterID:     1,
+		ChatterName:   "awda",
+		InterviewDate: time.Now(),
 	}
 
 	suite.sendSum = baseModels.SendSummary{
@@ -209,7 +228,7 @@ func (suite *userSuite) TestResponseSummaryDefaultErr() {
 func (suite *userSuite) TestHistory() {
 	suite.uc.EXPECT().
 		GetHistory(&suite.params).
-		Return(baseModels.Messages{}, nil).
+		Return(baseModels.Messages{From:[]*chat.Message{&suite.message}, To:[]*chat.Message{&suite.message}}, nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		SessionExists("username").
@@ -245,7 +264,7 @@ func (suite *userSuite) TestHistoryFailed() {
 func (suite *userSuite) TestGetConversation() {
 	suite.uc.EXPECT().
 		GetConversations(suite.params.From).
-		Return(baseModels.Conversations{}, nil).
+		Return(baseModels.Conversations{&suite.conversation}, nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		SessionExists("username").

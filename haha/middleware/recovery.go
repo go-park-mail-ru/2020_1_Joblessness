@@ -33,7 +33,7 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 		r = r.WithContext(context.WithValue(r.Context(), "rID", requestNumber))
 
 		golog.Infof("#%s: %s %s", requestNumber, r.Method, r.URL)
-		next.ServeHTTP(sw, r)
+		next.ServeHTTP(w, r)
 		golog.Infof("#%s: code %d", requestNumber, sw.StatusCode)
 	})
 }

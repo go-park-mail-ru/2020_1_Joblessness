@@ -6,6 +6,7 @@ import (
 	"errors"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
+	"github.com/mailru/easyjson"
 	"joblessness/haha/models/base"
 	"joblessness/haha/summary/interfaces"
 	"joblessness/haha/utils/mail"
@@ -27,7 +28,7 @@ func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 	var newSummary baseModels.Summary
 	newSummary.Author.ID = r.Context().Value("userID").(uint64)
 
-	err := json.NewDecoder(r.Body).Decode(&newSummary)
+	err := easyjson.UnmarshalFromReader(r.Body, &newSummary)
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -41,12 +42,7 @@ func (h *Handler) CreateSummary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(baseModels.ResponseID{ID: newSummary.ID})
-	if err != nil {
-		golog.Errorf("#%s: %w", rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	jsonData, _ := easyjson.Marshal(baseModels.ResponseID{ID: newSummary.ID})
 
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
@@ -63,12 +59,7 @@ func (h *Handler) GetSummaries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(summaries)
-	if err != nil {
-		golog.Errorf("#%s: %w", rID, err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	jsonData, _ := easyjson.Marshal(summaries)
 
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
@@ -83,7 +74,7 @@ func (h *Handler) PrintSummary(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, sql.ErrNoRows):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		errOut := pdf.SummaryToPdf(w, *getSummary)
@@ -95,7 +86,7 @@ func (h *Handler) PrintSummary(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -109,21 +100,16 @@ func (h *Handler) GetSummary(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, sql.ErrNoRows):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
-		jsonData, err := json.Marshal(summary)
-		if err != nil {
-			golog.Errorf("#%s: %w", rID, err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+		jsonData, _ := easyjson.Marshal(summary)
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonData)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -140,12 +126,7 @@ func (h *Handler) GetUserSummaries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(summaries)
-	if err != nil {
-		golog.Errorf("#%s: %w", rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	jsonData, _ := easyjson.Marshal(summaries)
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
@@ -155,7 +136,7 @@ func (h *Handler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	summaryID, _ := strconv.ParseUint(mux.Vars(r)["summary_id"], 10, 64)
 
 	var newSummary baseModels.Summary
-	err := json.NewDecoder(r.Body).Decode(&newSummary)
+	err := easyjson.UnmarshalFromReader(r.Body, &newSummary)
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -170,19 +151,19 @@ func (h *Handler) ChangeSummary(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, summaryInterfaces.ErrSummaryNotFound):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case errors.Is(err, summaryInterfaces.ErrPersonIsNotOwner):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusForbidden)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -198,19 +179,19 @@ func (h *Handler) DeleteSummary(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, summaryInterfaces.ErrSummaryNotFound):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case errors.Is(err, summaryInterfaces.ErrPersonIsNotOwner):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusForbidden)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -219,7 +200,7 @@ func (h *Handler) SendSummary(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
 
 	var sendSummary baseModels.SendSummary
-	err := json.NewDecoder(r.Body).Decode(&sendSummary)
+	err := easyjson.UnmarshalFromReader(r.Body, &sendSummary)
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -234,19 +215,19 @@ func (h *Handler) SendSummary(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(err, summaryInterfaces.ErrPersonIsNotOwner):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusForbidden)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case errors.Is(err, summaryInterfaces.ErrNoSummaryToRefresh):
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
 		w.WriteHeader(http.StatusOK)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -262,12 +243,7 @@ func (h *Handler) GetOrgSendSummaries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(summaries)
-	if err != nil {
-		golog.Errorf("#%s: %w", rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	jsonData, _ := easyjson.Marshal(summaries)
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
@@ -283,12 +259,7 @@ func (h *Handler) GetUserSendSummaries(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(summaries)
-	if err != nil {
-		golog.Errorf("#%s: %w", rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	jsonData, _ := easyjson.Marshal(summaries)
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/juju/loggo"
 	"github.com/kataras/golog"
+	"github.com/mailru/easyjson"
 	"joblessness/haha/models/base"
 	"joblessness/haha/user/interfaces"
 	"net/http"
@@ -46,7 +47,7 @@ func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	case *userInterfaces.ErrorUploadAvatar:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusFailedDependency)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case nil:
 		golog.Infof("#%s: %s", rID, "Успешно")
@@ -54,7 +55,7 @@ func (h *Handler) SetAvatar(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -68,16 +69,16 @@ func (h *Handler) GetPerson(w http.ResponseWriter, r *http.Request) {
 	case *userInterfaces.ErrorUserNotPerson:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case nil:
-		jsonData, _ := json.Marshal(user)
+		jsonData, _ := easyjson.Marshal(user)
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonData)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -92,8 +93,8 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var person *baseModels.Person
-	err := json.NewDecoder(r.Body).Decode(&person)
+	var person baseModels.Person
+	err := easyjson.UnmarshalFromReader(r.Body, &person)
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -101,19 +102,19 @@ func (h *Handler) ChangePerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	person.ID = userID
-	err = h.useCase.ChangePerson(person)
+	err = h.useCase.ChangePerson(&person)
 	switch err.(type) {
 	case *userInterfaces.ErrorUserNotPerson:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -127,16 +128,16 @@ func (h *Handler) GetOrganization(w http.ResponseWriter, r *http.Request) {
 	case *userInterfaces.ErrorUserNotOrganization:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case nil:
-		jsonData, _ := json.Marshal(user)
+		jsonData, _ := easyjson.Marshal(user)
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonData)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -151,8 +152,8 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var org *baseModels.Organization
-	err := json.NewDecoder(r.Body).Decode(&org)
+	var org baseModels.Organization
+	err := easyjson.UnmarshalFromReader(r.Body, &org)
 	if err != nil {
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -160,19 +161,19 @@ func (h *Handler) ChangeOrganization(w http.ResponseWriter, r *http.Request) {
 	}
 
 	org.ID = userID
-	err = h.useCase.ChangeOrganization(org)
+	err = h.useCase.ChangeOrganization(&org)
 	switch err.(type) {
 	case *userInterfaces.ErrorUserNotOrganization:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case nil:
 		w.WriteHeader(http.StatusNoContent)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -186,16 +187,16 @@ func (h *Handler) GetListOfOrgs(w http.ResponseWriter, r *http.Request) {
 	case *userInterfaces.ErrorUserNotFound:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case nil:
-		jsonData, _ := json.Marshal(listOrgs)
+		jsonData, _ := easyjson.Marshal(listOrgs)
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonData)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -215,7 +216,7 @@ func (h *Handler) LikeUser(w http.ResponseWriter, r *http.Request) {
 	case *userInterfaces.ErrorUserNotFound:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusNotFound)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case nil:
 		jsonData, _ := json.Marshal(response)
@@ -224,7 +225,7 @@ func (h *Handler) LikeUser(w http.ResponseWriter, r *http.Request) {
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -243,13 +244,13 @@ func (h *Handler) LikeExists(w http.ResponseWriter, r *http.Request) {
 	response.Like, err = h.useCase.LikeExists(userID, favoriteID)
 	switch err.(type) {
 	case nil:
-		jsonData, _ := json.Marshal(response)
+		jsonData, _ := easyjson.Marshal(response)
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonData)
 	default:
 		golog.Errorf("#%s: %w", rID, err)
 		w.WriteHeader(http.StatusInternalServerError)
-		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	}
 }
@@ -271,7 +272,7 @@ func (h *Handler) GetUserFavorite(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, _ := json.Marshal(favorites)
+	jsonData, _ := easyjson.Marshal(favorites)
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }

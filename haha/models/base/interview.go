@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+//easyjson:json
 type Messages struct {
 	From []*chat.Message `json:"from"`
 	To   []*chat.Message `json:"to"`
@@ -23,10 +24,12 @@ type SummaryCredentials struct {
 	OrganizationName string
 }
 
+//easyjson:json
 type ConversationTitle struct {
 	ChatterID     uint64    `json:"chatter_id"`
 	ChatterName   string    `json:"chatter_name"`
 	InterviewDate time.Time `json:"interview_date"`
 }
 
+//easyjson:json
 type Conversations []*ConversationTitle

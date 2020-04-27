@@ -32,6 +32,7 @@ import (
 	"joblessness/haha/user/interfaces"
 	"joblessness/haha/user/repository/postgres"
 	"joblessness/haha/user/usecase"
+	"joblessness/haha/utils/chat"
 	"joblessness/haha/utils/database"
 	"joblessness/haha/vacancy/delivery/http"
 	"joblessness/haha/vacancy/interfaces"
@@ -97,7 +98,9 @@ func NewApp(c *middleware.CorsHandler) *App {
 	interviewRepo := interviewGrpc.NewInterviewGrpcRepository(interviewConn)
 	policy := bluemonday.UGCPolicy()
 
-	interviewUse, room := interviewUseCase.NewInterviewUseCase(interviewRepo, policy)
+	interviewUse := interviewUseCase.NewInterviewUseCase(interviewRepo, policy)
+	room := chat.NewRoom(interviewUse)
+	interviewUse.EnableRoom(room)
 
 	return &App{
 		userUse:           userUseCase.NewUserUseCase(userRepo, policy),
@@ -127,6 +130,7 @@ func (app *App) StartRouter() {
 	router.Use(m.RecoveryMiddleware)
 	if !*noCors {
 		router.Use(app.corsHandler.CorsMiddleware)
+		golog.Info("Cors enabled")
 	}
 	router.Use(m.LogMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
@@ -141,7 +145,7 @@ func (app *App) StartRouter() {
 
 	http.Handle("/", router)
 	golog.Infof("Server started at port :%d", *port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), router)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
 	if err != nil {
 		golog.Error("Server failed")
 	}

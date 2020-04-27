@@ -2,9 +2,9 @@ package vacancyHttp
 
 import (
 	"database/sql"
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
+	"github.com/mailru/easyjson"
 	"gopkg.in/go-playground/validator.v9"
 	"joblessness/haha/models/base"
 	"joblessness/haha/vacancy/interfaces"
@@ -25,7 +25,7 @@ func (h *Handler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 	var newVacancy baseModels.Vacancy
 	newVacancy.Organization.ID = r.Context().Value("userID").(uint64)
 
-	err := json.NewDecoder(r.Body).Decode(&newVacancy)
+	err := easyjson.UnmarshalFromReader(r.Body, &newVacancy)
 	if err != nil {
 		golog.Errorf("#%s: %s", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -45,12 +45,7 @@ func (h *Handler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(baseModels.ResponseID{ID: newVacancy.ID})
-	if err != nil {
-		golog.Errorf("#%s: %s", rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	jsonData, _ := easyjson.Marshal(baseModels.ResponseID{ID: newVacancy.ID})
 	w.WriteHeader(http.StatusCreated)
 	w.Write(jsonData)
 }
@@ -65,12 +60,7 @@ func (h *Handler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 		golog.Errorf("#%s: %s", rID, err)
 		w.WriteHeader(http.StatusNotFound)
 	case nil:
-		jsonData, err := json.Marshal(getVacancy)
-		if err != nil {
-			golog.Errorf("#%s: %s", rID, err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+		jsonData, _ := easyjson.Marshal(getVacancy)
 		w.WriteHeader(http.StatusOK)
 		w.Write(jsonData)
 	default:
@@ -90,12 +80,7 @@ func (h *Handler) GetVacancies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(vacancies)
-	if err != nil {
-		golog.Errorf("#%s: %s", rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	jsonData, _ := easyjson.Marshal(vacancies)
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
@@ -105,7 +90,7 @@ func (h *Handler) ChangeVacancy(w http.ResponseWriter, r *http.Request) {
 	vacancyID, _ := strconv.ParseUint(mux.Vars(r)["vacancy_id"], 10, 64)
 
 	var newVacancy baseModels.Vacancy
-	err := json.NewDecoder(r.Body).Decode(&newVacancy)
+	err := easyjson.UnmarshalFromReader(r.Body, &newVacancy)
 	if err != nil {
 		golog.Errorf("#%s: %s", rID, err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -152,12 +137,7 @@ func (h *Handler) GetOrgVacancies(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonData, err := json.Marshal(vacancies)
-	if err != nil {
-		golog.Errorf("#%s: %s", rID, err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	jsonData, _ := easyjson.Marshal(vacancies)
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
 }
