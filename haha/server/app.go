@@ -16,6 +16,7 @@ import (
 	"joblessness/haha/interview/repository/grpc"
 	"joblessness/haha/interview/usecase"
 	"joblessness/haha/middleware"
+	"joblessness/haha/prometheus"
 	"joblessness/haha/recommend/delivery/http"
 	"joblessness/haha/recommend/interfaces"
 	"joblessness/haha/recommend/repository/postgres"
@@ -142,6 +143,8 @@ func (app *App) StartRouter() {
 	searchHttp.RegisterHTTPEndpoints(router, app.searchUse)
 	recommendHttp.RegisterHTTPEndpoints(router, mAuth, app.recommendationUse)
 	interviewHttp.RegisterHTTPEndpoints(router, mAuth, app.interviewUse)
+
+	prometheus.RegisterPrometheus(router)
 
 	http.Handle("/", router)
 	golog.Infof("Server started at port :%d", *port)

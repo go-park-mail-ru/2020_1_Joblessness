@@ -4,9 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/kataras/golog"
+	"github.com/prometheus/client_golang/prometheus"
+	prom "joblessness/haha/prometheus"
 	"joblessness/haha/utils/custom_http"
 	"math/rand"
 	"net/http"
+	"time"
 )
 
 type RecoveryHandler struct{}
@@ -32,9 +35,22 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 		requestNumber := genRequestNumber(6)
 		r = r.WithContext(context.WithValue(r.Context(), "rID", requestNumber))
 
+		labels := prometheus.Labels{
+			"method": r.Method,
+			"path": r.URL.Path,
+		}
+
 		golog.Infof("#%s: %s %s", requestNumber, r.Method, r.URL)
+		prom.RequestCurrent.With(labels).Inc()
+		start := time.Now()
+
 		next.ServeHTTP(w, r)
+
+		prom.RequestDuration.With(labels).Observe(time.Since(start).Seconds())
+		prom.RequestCurrent.With(labels).Dec()
 		golog.Infof("#%s: code %d", requestNumber, sw.StatusCode)
+
+		prom.RequestCount.With(labels).Inc()
 	})
 }
 
