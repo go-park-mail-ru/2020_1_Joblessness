@@ -19,6 +19,9 @@ func NewHandler(useCase recommendInterfaces.RecommendUseCase) *Handler {
 
 func (h *Handler) GetRecommendedVacancies(w http.ResponseWriter, r *http.Request) {
 	page, err := strconv.ParseUint(r.FormValue("page"), 10, 64)
+	if page == 0 {
+		page = 1
+	}
 
 	vacancies, err := h.useCase.GetRecommendedVacancies(
 		r.Context().Value("userID").(uint64),
