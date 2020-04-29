@@ -28,7 +28,7 @@ func (h *Handler) GetRecommendedVacancies(w http.ResponseWriter, r *http.Request
 
 	vacancies, err := h.useCase.GetRecommendedVacancies(
 		r.Context().Value("userID").(uint64),
-		page-1,
+		page,
 	)
 	switch true {
 	case errors.Is(err, recommendInterfaces.ErrNoUser):

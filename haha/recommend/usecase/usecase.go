@@ -18,11 +18,15 @@ func NewUseCase(repository recommendInterfaces.RecommendRepository) *UseCase {
 func (u *UseCase) GetRecommendedVacancies(userID, pageNumber uint64) (recommendations []baseModels.Vacancy, err error) {
 	recommendations, recommendCount, err := u.repository.GetRecommendedVacancies(userID, pageSize, pageNumber*pageSize)
 	if err != nil {
-		return u.repository.GetPopularVacancies(pageSize, pageNumber*pageSize)
+		return u.repository.GetPopularVacancies(pageSize, (pageNumber-1)*pageSize)
 	}
 
 	if len(recommendations) < pageSize {
-		vacancies, err := u.repository.GetPopularVacancies(uint64(pageSize-len(recommendations)), pageNumber*pageSize-recommendCount)
+		offset := (pageNumber-1)*pageSize-recommendCount
+		if offset < 0 {
+			offset = 0
+		}
+		vacancies, err := u.repository.GetPopularVacancies(uint64(pageSize-len(recommendations)), offset)
 		if err != nil {
 			return recommendations, err
 		}
