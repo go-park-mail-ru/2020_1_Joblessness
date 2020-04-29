@@ -34,7 +34,7 @@ func (r *repository) GetPopularVacancies(limit, offset uint64) (vacancies []base
 		ORDER BY count
 		LIMIT $1 OFFSET $2`
 
-	rows, err := r.db.Query(getVacancies, limit, offset)
+	rows, err := r.db.Query(getVacancies, limit, int(offset))
 	if err != nil {
 		return vacancies, err
 	}

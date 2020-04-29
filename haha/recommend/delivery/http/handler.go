@@ -3,6 +3,7 @@ package recommendHttp
 import (
 	"encoding/json"
 	"errors"
+	"github.com/kataras/golog"
 	baseModels "joblessness/haha/models/base"
 	"joblessness/haha/recommend/interfaces"
 	"net/http"
@@ -18,6 +19,8 @@ func NewHandler(useCase recommendInterfaces.RecommendUseCase) *Handler {
 }
 
 func (h *Handler) GetRecommendedVacancies(w http.ResponseWriter, r *http.Request) {
+	rID := r.Context().Value("rID").(string)
+
 	page, err := strconv.ParseUint(r.FormValue("page"), 10, 64)
 	if page == 0 {
 		page = 1
@@ -25,17 +28,19 @@ func (h *Handler) GetRecommendedVacancies(w http.ResponseWriter, r *http.Request
 
 	vacancies, err := h.useCase.GetRecommendedVacancies(
 		r.Context().Value("userID").(uint64),
-		page - 1,
+		page-1,
 	)
 	switch true {
 	case errors.Is(err, recommendInterfaces.ErrNoUser):
 		w.WriteHeader(http.StatusNotFound)
 		jsonData, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(jsonData)
+		golog.Errorf("#%s: %w", rID, err)
 	case errors.Is(err, recommendInterfaces.ErrNoRecommendation):
 		w.WriteHeader(http.StatusOK)
 		jsonData, _ := json.Marshal([]baseModels.Vacancy{})
 		w.Write(jsonData)
+		golog.Errorf("#%s: %w", rID, err)
 	case err == nil:
 		w.WriteHeader(http.StatusOK)
 		jsonData, _ := json.Marshal(vacancies)
@@ -44,5 +49,6 @@ func (h *Handler) GetRecommendedVacancies(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusInternalServerError)
 		jsonData, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(jsonData)
+		golog.Errorf("#%s: %w", rID, err)
 	}
 }
