@@ -16,16 +16,16 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	controller   *gomock.Controller
-	uc           *VacancyUseCase
-	repo         *mock.MockVacancyRepository
+	controller *gomock.Controller
+	uc         *VacancyUseCase
+	repo       *mock.MockVacancyRepository
 	summary    baseModels.Summary
 	education  pgModels.Education
 	experience pgModels.Experience
 	user       pgModels.User
 	person     pgModels.Person
-	vacancy   baseModels.Vacancy
-	room *mockRoom.MockRoom
+	vacancy    baseModels.Vacancy
+	room       *mockRoom.MockRoom
 }
 
 func (suite *userSuite) SetupTest() {

@@ -236,10 +236,10 @@ func (r *UserRepository) GetUserFavorite(userID uint64) (res baseModels.Favorite
 	defer rows.Close()
 
 	var (
-		personID sql.NullInt64
-		personName sql.NullString
+		personID      sql.NullInt64
+		personName    sql.NullString
 		personSurname sql.NullString
-		orgName sql.NullString
+		orgName       sql.NullString
 	)
 	res = make(baseModels.Favorites, 0)
 

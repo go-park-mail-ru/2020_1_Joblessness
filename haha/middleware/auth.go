@@ -64,7 +64,7 @@ func (m *SessionHandler) PersonRequired(next http.HandlerFunc) http.HandlerFunc 
 		golog.Infof("#%s: %s", rID, session.Value)
 		userID, err := m.auth.PersonSession(session.Value)
 		switch err {
-		case authInterfaces.ErrUserNotPerson:
+		case authInterfaces.ErrUserNotPerson, authInterfaces.ErrWrongSID:
 			golog.Errorf("#%s: %w", rID, err)
 			w.WriteHeader(http.StatusUnauthorized)
 			return
@@ -97,7 +97,7 @@ func (m *SessionHandler) OrganizationRequired(next http.HandlerFunc) http.Handle
 		golog.Infof("#%s: %s", rID, session.Value)
 		userID, err := m.auth.OrganizationSession(session.Value)
 		switch err {
-		case authInterfaces.ErrUserNotOrganization:
+		case authInterfaces.ErrUserNotOrganization, authInterfaces.ErrWrongSID:
 			golog.Errorf("#%s: %w", rID, err)
 			w.WriteHeader(http.StatusUnauthorized)
 			return

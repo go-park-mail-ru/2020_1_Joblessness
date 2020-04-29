@@ -22,9 +22,9 @@ type userSuite struct {
 	suite.Suite
 	controller *gomock.Controller
 	grpcRepo   *interviewGrpc.InterviewGrpcRepository
-	repo 	*mock.MockInterviewRepository
+	repo       *mock.MockInterviewRepository
 	server     *grpc.Server
-	list net.Listener
+	list       net.Listener
 }
 
 func (suite *userSuite) SetupTest() {

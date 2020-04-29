@@ -11,5 +11,5 @@ type Message struct {
 	UserTwoId uint64    `json:"userTwoId,omitempty"`
 	UserTwo   string    `json:"userTwo,omitempty"`
 	Created   time.Time `json:"created,omitempty"`
-	VacancyID uint64 `json:"vacancyId,omitempty"`
+	VacancyID uint64    `json:"vacancyId,omitempty"`
 }

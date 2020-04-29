@@ -12,7 +12,7 @@ import (
 
 type VacancyUseCase struct {
 	vacancyRepo vacancyInterfaces.VacancyRepository
-	room chat.Room
+	room        chat.Room
 	policy      *bluemonday.Policy
 }
 
@@ -21,7 +21,7 @@ func NewVacancyUseCase(vacancyRepo vacancyInterfaces.VacancyRepository,
 	policy *bluemonday.Policy) *VacancyUseCase {
 	return &VacancyUseCase{
 		vacancyRepo: vacancyRepo,
-		room: room,
+		room:        room,
 		policy:      policy,
 	}
 }

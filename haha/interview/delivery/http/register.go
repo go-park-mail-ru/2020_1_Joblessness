@@ -8,8 +8,8 @@ import (
 
 func RegisterHTTPEndpoints(router *mux.Router,
 	m *middleware.SessionHandler,
-	uc interviewInterfaces.InterviewUseCase,/*
-	room chat.Room*/) *Handler {
+	uc interviewInterfaces.InterviewUseCase, /*
+		room chat.Room*/) *Handler {
 	h := NewHandler(uc)
 	chatRouter := router.PathPrefix("/chat").Subrouter()
 

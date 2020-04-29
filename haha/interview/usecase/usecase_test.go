@@ -19,7 +19,7 @@ type userSuite struct {
 	organization baseModels.Organization
 	repo         *mock.MockInterviewRepository
 	sidEx        string
-	room *mockRoom.MockRoom
+	room         *mockRoom.MockRoom
 }
 
 func (suite *userSuite) SetupTest() {
@@ -29,7 +29,6 @@ func (suite *userSuite) SetupTest() {
 	suite.repo = mock.NewMockInterviewRepository(suite.controller)
 	suite.uc = NewInterviewUseCase(suite.repo, bluemonday.UGCPolicy())
 	suite.room = mockRoom.NewMockRoom(suite.controller)
-
 
 	//suite.room.EXPECT().Run().Times(1)
 	//suite.uc.EnableRoom(suite.room)

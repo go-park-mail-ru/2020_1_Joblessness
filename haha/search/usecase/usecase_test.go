@@ -18,7 +18,7 @@ type userSuite struct {
 	organization baseModels.Organization
 	repo         *mock.MockSearchRepository
 	sidEx        string
-	params baseModels.SearchParams
+	params       baseModels.SearchParams
 }
 
 func (suite *userSuite) SetupTest() {

@@ -17,9 +17,9 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	controller   *gomock.Controller
-	uc           *SummaryUseCase
-	repo         *mock.MockSummaryRepository
+	controller *gomock.Controller
+	uc         *SummaryUseCase
+	repo       *mock.MockSummaryRepository
 	summary    baseModels.Summary
 	education  pgModels.Education
 	experience pgModels.Experience

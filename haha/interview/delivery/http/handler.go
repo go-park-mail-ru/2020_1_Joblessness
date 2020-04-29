@@ -24,7 +24,7 @@ type Handler struct {
 	//room     chat.Room
 }
 
-func NewHandler(useCase interviewInterfaces.InterviewUseCase/*, room chat.Room*/) *Handler {
+func NewHandler(useCase interviewInterfaces.InterviewUseCase /*, room chat.Room*/) *Handler {
 	handler := &Handler{
 		useCase: useCase,
 		upGrader: &websocket.Upgrader{

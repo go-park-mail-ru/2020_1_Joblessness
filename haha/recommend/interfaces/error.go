@@ -4,5 +4,5 @@ import "errors"
 
 var (
 	ErrNoRecommendation = errors.New("no recommend")
-	ErrNoUser = errors.New("no user")
+	ErrNoUser           = errors.New("no user")
 )

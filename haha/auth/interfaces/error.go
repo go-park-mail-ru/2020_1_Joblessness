@@ -12,9 +12,10 @@ var (
 	ErrUserNotOrganization  = errors.New("user is not a organization")
 	ErrUserAlreadyExists    = errors.New("user already exists")
 	ErrParseGrpcError       = errors.New("can't parse grpc error")
+	ErrNotFound             = errors.New("user not found")
 
-	AlreadyExists codes.Code = 400
+	AlreadyExists        codes.Code = 400
 	WrongLoginOrPassword codes.Code = 400
-	NotFound codes.Code = 404
-	WrongSID codes.Code = 500
+	NotFound             codes.Code = 404
+	WrongSID             codes.Code = 500
 )

@@ -6,6 +6,7 @@ import (
 	baseModels "joblessness/haha/models/base"
 	"joblessness/haha/recommend/interfaces"
 	"net/http"
+	"strconv"
 )
 
 type Handler struct {
@@ -17,8 +18,11 @@ func NewHandler(useCase recommendInterfaces.RecommendUseCase) *Handler {
 }
 
 func (h *Handler) GetRecommendedVacancies(w http.ResponseWriter, r *http.Request) {
+	page, err := strconv.ParseUint(r.FormValue("page"), 10, 64)
+
 	vacancies, err := h.useCase.GetRecommendedVacancies(
 		r.Context().Value("userID").(uint64),
+		page,
 	)
 	switch true {
 	case errors.Is(err, recommendInterfaces.ErrNoUser):

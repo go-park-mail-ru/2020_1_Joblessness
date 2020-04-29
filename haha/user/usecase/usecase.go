@@ -9,14 +9,14 @@ import (
 )
 
 type UserUseCase struct {
-	userRepo   userInterfaces.UserRepository
-	policy     *bluemonday.Policy
+	userRepo userInterfaces.UserRepository
+	policy   *bluemonday.Policy
 }
 
 func NewUserUseCase(userRepo userInterfaces.UserRepository, policy *bluemonday.Policy) *UserUseCase {
 	return &UserUseCase{
-		userRepo:   userRepo,
-		policy:     policy,
+		userRepo: userRepo,
+		policy:   policy,
 	}
 }
 

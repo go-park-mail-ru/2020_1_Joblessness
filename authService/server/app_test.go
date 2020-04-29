@@ -18,9 +18,9 @@ type userSuite struct {
 	suite.Suite
 	controller *gomock.Controller
 	grpcRepo   *authGrpcRepository.AuthRepository
-	repo 	*mock.MockAuthRepository
+	repo       *mock.MockAuthRepository
 	server     *grpc.Server
-	list net.Listener
+	list       net.Listener
 }
 
 func (suite *userSuite) SetupTest() {

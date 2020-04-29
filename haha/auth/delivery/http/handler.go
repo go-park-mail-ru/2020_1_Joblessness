@@ -1,10 +1,12 @@
 package authHttp
 
 import (
+	"database/sql"
+	"encoding/json"
+	"errors"
 	"github.com/juju/loggo"
 	"github.com/kataras/golog"
 	"github.com/mailru/easyjson"
-	"google.golang.org/grpc/status"
 	"gopkg.in/go-playground/validator.v9"
 	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/models/base"
@@ -41,26 +43,20 @@ func (h *Handler) RegisterPerson(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.useCase.RegisterPerson(user.Login, user.Password, user.FirstName)
-	if err != nil {
-		if e, ok := status.FromError(err); ok {
-			switch e.Code() {
-			case authInterfaces.AlreadyExists:
-				golog.Errorf("#%s: %w", rID, err)
-				w.WriteHeader(http.StatusBadRequest)
-				json, _ := easyjson.Marshal(baseModels.Error{Message: e.Message()})
-				w.Write(json)
-			default:
-				golog.Errorf("#%s: %w", rID, err)
-				w.WriteHeader(http.StatusInternalServerError)
-				json, _ := easyjson.Marshal(baseModels.Error{Message: e.Message()})
-				w.Write(json)
-			}
-		} else {
-			golog.Error(authInterfaces.ErrParseGrpcError.Error())
-		}
-	} else {
+	switch true {
+	case errors.Is(err, authInterfaces.ErrUserAlreadyExists):
+		golog.Errorf("#%s: %w", rID, err)
+		w.WriteHeader(http.StatusBadRequest)
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		w.Write(json)
+	case err == nil:
 		golog.Infof("#%s: %s", rID, "Успешно")
 		w.WriteHeader(http.StatusCreated)
+	default:
+		golog.Errorf("#%s: %w", rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -82,26 +78,20 @@ func (h *Handler) RegisterOrg(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.useCase.RegisterOrganization(org.Login, org.Password, org.Name)
-	if err != nil {
-		if e, ok := status.FromError(err); ok {
-			switch e.Code() {
-			case authInterfaces.AlreadyExists:
-				golog.Errorf("#%s: %s", rID, e.Message())
-				w.WriteHeader(http.StatusBadRequest)
-				json, _ := easyjson.Marshal(baseModels.Error{Message: e.Message()})
-				w.Write(json)
-			default:
-				golog.Errorf("#%s: %w", rID, err)
-				w.WriteHeader(http.StatusInternalServerError)
-				json, _ := easyjson.Marshal(baseModels.Error{Message: e.Message()})
-				w.Write(json)
-			}
-		} else {
-			golog.Error(authInterfaces.ErrParseGrpcError.Error())
-		}
-	} else {
+	switch true {
+	case errors.Is(err, authInterfaces.ErrUserAlreadyExists):
+		golog.Errorf("#%s: %w", rID, err)
+		w.WriteHeader(http.StatusBadRequest)
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		w.Write(json)
+	case err == nil:
 		golog.Infof("#%s: %s", rID, "success")
 		w.WriteHeader(http.StatusCreated)
+	default:
+		golog.Errorf("#%s: %w", rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -124,24 +114,13 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userId, role, sessionId, err := h.useCase.Login(user.Login, user.Password)
-	if err != nil {
-		if e, ok := status.FromError(err); ok {
-			switch e.Code() {
-			case authInterfaces.WrongLoginOrPassword:
-				golog.Errorf("#%s: %w", rID, err)
-				w.WriteHeader(http.StatusBadRequest)
-				json, _ := easyjson.Marshal(baseModels.Error{Message: e.Message()})
-				w.Write(json)
-			default:
-				golog.Errorf("#%s: %w", rID, err)
-				w.WriteHeader(http.StatusInternalServerError)
-				json, _ := easyjson.Marshal(baseModels.Error{Message: e.Message()})
-				w.Write(json)
-			}
-		} else {
-			golog.Error(authInterfaces.ErrParseGrpcError.Error())
-		}
-	} else {
+	switch true {
+	case errors.Is(err, authInterfaces.ErrWrongLoginOrPassword):
+		golog.Errorf("#%s: %w", rID, err)
+		w.WriteHeader(http.StatusBadRequest)
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		w.Write(json)
+	case err == nil:
 		cookie := &http.Cookie{
 			Name:     "session_id",
 			Value:    sessionId,
@@ -153,9 +132,14 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, cookie)
 
-		jsonData, _ := easyjson.Marshal(baseModels.ResponseRole{ID: userId, Role: role})
+		jsonData, _ := json.Marshal(baseModels.ResponseRole{ID: userId, Role: role})
 		w.WriteHeader(http.StatusCreated)
 		w.Write(jsonData)
+	default:
+		golog.Errorf("#%s: %w", rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }
 
@@ -187,26 +171,20 @@ func (h *Handler) Check(w http.ResponseWriter, r *http.Request) {
 	userID, _ := r.Context().Value("userID").(uint64)
 
 	role, err := h.useCase.GetRole(userID)
-	if err != nil {
-		if e, ok := status.FromError(err); ok {
-			switch e.Code() {
-			case authInterfaces.NotFound:
-				golog.Errorf("#%s: %w", rID, err)
-				w.WriteHeader(http.StatusNotFound)
-				json, _ := easyjson.Marshal(baseModels.Error{Message: e.Message()})
-				w.Write(json)
-			default:
-				golog.Errorf("#%s: %w", rID, err)
-				w.WriteHeader(http.StatusInternalServerError)
-				json, _ := easyjson.Marshal(baseModels.Error{Message: e.Message()})
-				w.Write(json)
-			}
-		} else {
-			golog.Error(authInterfaces.ErrParseGrpcError.Error())
-		}
-	} else {
-		jsonData, _ := easyjson.Marshal(baseModels.ResponseRole{ID: userID, Role: role})
+	switch true {
+	case errors.Is(err, sql.ErrNoRows):
+		golog.Errorf("#%s: %w", rID, err)
+		w.WriteHeader(http.StatusNotFound)
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		w.Write(json)
+	case err == nil:
+		jsonData, _ := json.Marshal(baseModels.ResponseRole{ID: userID, Role: role})
 		w.WriteHeader(http.StatusCreated)
 		w.Write(jsonData)
+	default:
+		golog.Errorf("#%s: %w", rID, err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json, _ := json.Marshal(baseModels.Error{Message: err.Error()})
+		w.Write(json)
 	}
 }

@@ -30,7 +30,7 @@ func (r *InterviewGrpcRepository) IsOrganizationVacancy(vacancyID, userID uint64
 	case 403:
 		return interviewInterfaces.ErrOrganizationIsNotOwner
 	case 200:
-		return  nil
+		return nil
 	default:
 		return err
 	}

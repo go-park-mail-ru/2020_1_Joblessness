@@ -25,12 +25,50 @@ func NewRecommendRepository(db *sql.DB, vacancyRepository vacancyInterfaces.Vaca
 	}
 }
 
-func (r *repository) GetRecommendedVacancies(userID uint64) (recommendations []baseModels.Vacancy, err error) {
+func (r *repository) GetPopularVacancies(limit, offset uint64) (vacancies []baseModels.Vacancy, err error) {
+	getVacancies := `
+		SELECT v.id, v.organization_id, v.name, v.description, v.with_tax, v.responsibilities, v.conditions, v.keywords, v.salary_from, v.salary_to, COUNT(*) count
+		FROM vacancy v
+		JOIN response r ON v.id = r.vacancy_id
+		GROUP BY v.id
+		ORDER BY count
+		LIMIT $1 OFFSET $2`
+
+	rows, err := r.db.Query(getVacancies, limit, offset)
+	if err != nil {
+		return vacancies, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var vacancy pgModels.Vacancy
+
+		var count uint64
+		err = rows.Scan(&vacancy.ID, &vacancy.OrganizationID, &vacancy.Name, &vacancy.Description, &vacancy.WithTax, &vacancy.Responsibilities, &vacancy.Conditions, &vacancy.Keywords, &vacancy.SalaryFrom, &vacancy.SalaryTo, &count)
+		if err != nil {
+			return vacancies, err
+		}
+		user, organization, err := r.vacancyRepository.GetVacancyOrganization(vacancy.OrganizationID)
+		if err != nil {
+			return vacancies, err
+		}
+
+		vacancies = append(vacancies, *pgModels.ToBaseVacancy(&vacancy, user, organization))
+	}
+
+	if len(vacancies) == 0 {
+		return vacancies, recommendInterfaces.ErrNoRecommendation
+	}
+
+	return vacancies, err
+}
+
+func (r *repository) GetRecommendedVacancies(userID, limit, offset uint64) (recommends []baseModels.Vacancy, recommendCount uint64, err error) {
 	var hasUser bool
 	checkUser := `SELECT COUNT(*) <> 0 FROM users WHERE id = $1`
 	err = r.db.QueryRow(checkUser, userID).Scan(&hasUser)
 	if err != nil {
-		return recommendations, recommendInterfaces.ErrNoUser
+		return recommends, recommendCount, recommendInterfaces.ErrNoUser
 	}
 
 	getUsersWithResponses := `
@@ -42,17 +80,18 @@ func (r *repository) GetRecommendedVacancies(userID uint64) (recommendations []b
 		HAVING u.person_id IS NOT NULL`
 	rows, err := r.db.Query(getUsersWithResponses)
 	if err != nil {
-		return recommendations, err
+		return recommends, recommendCount, err
 	}
+	defer rows.Close()
 
-	table := regommend.Table("recommendations")
+	table := regommend.Table("recommends")
 
 	for rows.Next() {
 		var userID uint64
 		var vacanciesRaw string
 
 		if err = rows.Scan(&userID, &vacanciesRaw); err != nil {
-			return recommendations, err
+			return recommends, recommendCount, err
 		}
 
 		vacanciesMap := make(map[interface{}]float64)
@@ -71,11 +110,11 @@ func (r *repository) GetRecommendedVacancies(userID uint64) (recommendations []b
 
 	recs, err := table.Recommend(int(userID))
 	if err != nil {
-		return recommendations, err
+		return recommends, recommendCount, recommendInterfaces.ErrNoRecommendation
 	}
 
 	if len(recs) == 0 {
-		return recommendations, recommendInterfaces.ErrNoRecommendation
+		return recommends, recommendCount, recommendInterfaces.ErrNoRecommendation
 	}
 
 	recKeys := make([]int, len(recs))
@@ -88,10 +127,11 @@ func (r *repository) GetRecommendedVacancies(userID uint64) (recommendations []b
 	getRecommendations := `
 		SELECT id, organization_id, name, description, with_tax, responsibilities, conditions, keywords, salary_from, salary_to
 		FROM vacancy
-		WHERE id = ANY($1)`
-	rows, err = r.db.Query(getRecommendations, pq.Array(recKeys))
+		WHERE id = ANY($1)
+		LIMIT $2 OFFSET $3`
+	rows, err = r.db.Query(getRecommendations, pq.Array(recKeys), limit, int(offset))
 	if err != nil {
-		return recommendations, err
+		return recommends, recommendCount, err
 	}
 
 	for rows.Next() {
@@ -99,15 +139,16 @@ func (r *repository) GetRecommendedVacancies(userID uint64) (recommendations []b
 
 		err = rows.Scan(&vacancy.ID, &vacancy.OrganizationID, &vacancy.Name, &vacancy.Description, &vacancy.WithTax, &vacancy.Responsibilities, &vacancy.Conditions, &vacancy.Keywords, &vacancy.SalaryFrom, &vacancy.SalaryTo)
 		if err != nil {
-			return recommendations, err
+			return recommends, recommendCount, err
 		}
 		user, organization, err := r.vacancyRepository.GetVacancyOrganization(vacancy.OrganizationID)
 		if err != nil {
-			return recommendations, err
+			return recommends, recommendCount, err
 		}
 
-		recommendations = append(recommendations, *pgModels.ToBaseVacancy(&vacancy, user, organization))
+		recommends = append(recommends, *pgModels.ToBaseVacancy(&vacancy, user, organization))
+		recommendCount++
 	}
 
-	return recommendations, err
+	return recommends, recommendCount, err
 }

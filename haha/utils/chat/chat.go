@@ -81,7 +81,7 @@ func (r *RoomInstance) SendGeneratedMessage(message *Message) {
 					close(receiver.Send)
 				}
 			} else {
-				golog.Errorf("Broken message: %s", message)
+				golog.Errorf("Broken message: %+v", message)
 			}
 		}
 	}
@@ -125,11 +125,11 @@ type Chatter struct {
 func (c *Chatter) Read() {
 	for {
 		if _, msg, err := c.Socket.ReadMessage(); err == nil {
-			golog.Errorf("Received by %d: %s",c.ID, msg)
+			golog.Errorf("Received by %d: %s", c.ID, msg)
 			if len(msg) != 0 {
 				c.Room.Forward(msg)
 			} else {
-				golog.Error("Received empty array by %d",c.ID)
+				golog.Errorf("Received empty array by %d", c.ID)
 			}
 		} else {
 			break
@@ -140,7 +140,7 @@ func (c *Chatter) Read() {
 
 func (c *Chatter) Write() {
 	for msg := range c.Send {
-		golog.Errorf("Send by %d: %s",c.ID, msg)
+		golog.Errorf("Send by %d: %s", c.ID, msg)
 		if err := c.Socket.WriteMessage(websocket.TextMessage, msg); err != nil {
 			break
 		}

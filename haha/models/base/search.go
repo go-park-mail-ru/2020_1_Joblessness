@@ -4,9 +4,9 @@ import "github.com/microcosm-cc/bluemonday"
 
 //easyjson:json
 type SearchResult struct {
-	Persons       Persons      `json:"persons"`
+	Persons       Persons       `json:"persons"`
 	Organizations Organizations `json:"organizations"`
-	Vacancies     Vacancies      `json:"vacancies"`
+	Vacancies     Vacancies     `json:"vacancies"`
 }
 
 func (s *SearchResult) Sanitize(policy *bluemonday.Policy) {

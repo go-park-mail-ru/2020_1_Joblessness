@@ -37,8 +37,8 @@ type userSuite struct {
 	sendSum        baseModels.SendSummary
 	params         baseModels.ChatParameters
 	summaryCredits baseModels.SummaryCredentials
-	message chat.Message
-	conversation baseModels.ConversationTitle
+	message        chat.Message
+	conversation   baseModels.ConversationTitle
 	responseByte   *bytes.Buffer
 	sendSumByte    *bytes.Buffer
 	paramsByte     *bytes.Buffer
@@ -228,7 +228,7 @@ func (suite *userSuite) TestResponseSummaryDefaultErr() {
 func (suite *userSuite) TestHistory() {
 	suite.uc.EXPECT().
 		GetHistory(&suite.params).
-		Return(baseModels.Messages{From:[]*chat.Message{&suite.message}, To:[]*chat.Message{&suite.message}}, nil).
+		Return(baseModels.Messages{From: []*chat.Message{&suite.message}, To: []*chat.Message{&suite.message}}, nil).
 		Times(1)
 	suite.authUseCase.EXPECT().
 		SessionExists("username").

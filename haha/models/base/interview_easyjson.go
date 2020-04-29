@@ -17,6 +17,7 @@ var (
 	_ *jwriter.Writer
 	_ easyjson.Marshaler
 )
+
 func easyjsonF9aeba63EncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in Messages) {
 	out.RawByte('{')
 	first := true

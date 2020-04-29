@@ -25,7 +25,7 @@ func TransformMessageRPC(m *chat.Message) *interviewRpc.Message {
 	return res
 }
 
-func TransformMessageBase(m *interviewRpc.Message) *chat.Message{
+func TransformMessageBase(m *interviewRpc.Message) *chat.Message {
 	if m == nil {
 		return nil
 	}
@@ -43,7 +43,7 @@ func TransformMessageBase(m *interviewRpc.Message) *chat.Message{
 	return res
 }
 
-func TransformChatParamsRPC(c *baseModels.ChatParameters) *interviewRpc.ChatParameters{
+func TransformChatParamsRPC(c *baseModels.ChatParameters) *interviewRpc.ChatParameters {
 	if c == nil {
 		return nil
 	}
@@ -56,7 +56,7 @@ func TransformChatParamsRPC(c *baseModels.ChatParameters) *interviewRpc.ChatPara
 	return res
 }
 
-func TransformChatParamsBase(c *interviewRpc.ChatParameters) *baseModels.ChatParameters{
+func TransformChatParamsBase(c *interviewRpc.ChatParameters) *baseModels.ChatParameters {
 	if c == nil {
 		return nil
 	}
@@ -78,7 +78,7 @@ func TransformMessagesRPC(m *baseModels.Messages) *interviewRpc.Messages {
 	for i, mes := range m.From {
 		created, _ := ptypes.TimestampProto(mes.Created)
 
-		from[i] =  &interviewRpc.Message{
+		from[i] = &interviewRpc.Message{
 			Message:   mes.Message,
 			UserOneId: mes.UserOneId,
 			UserOne:   mes.UserOne,
@@ -92,7 +92,7 @@ func TransformMessagesRPC(m *baseModels.Messages) *interviewRpc.Messages {
 	for i, mes := range m.To {
 		created, _ := ptypes.TimestampProto(mes.Created)
 
-		to[i] =  &interviewRpc.Message{
+		to[i] = &interviewRpc.Message{
 			Message:   mes.Message,
 			UserOneId: mes.UserOneId,
 			UserOne:   mes.UserOne,
@@ -108,7 +108,7 @@ func TransformMessagesRPC(m *baseModels.Messages) *interviewRpc.Messages {
 	}
 }
 
-func TransformMessagesBase(m *interviewRpc.Messages) *baseModels.Messages{
+func TransformMessagesBase(m *interviewRpc.Messages) *baseModels.Messages {
 	if m == nil {
 		return nil
 	}
@@ -117,7 +117,7 @@ func TransformMessagesBase(m *interviewRpc.Messages) *baseModels.Messages{
 	for i, mes := range m.From {
 		created, _ := ptypes.Timestamp(mes.Created)
 
-		from[i] =  &chat.Message{
+		from[i] = &chat.Message{
 			Message:   mes.Message,
 			UserOneId: mes.UserOneId,
 			UserOne:   mes.UserOne,
@@ -131,7 +131,7 @@ func TransformMessagesBase(m *interviewRpc.Messages) *baseModels.Messages{
 	for i, mes := range m.To {
 		created, _ := ptypes.Timestamp(mes.Created)
 
-		to[i] =  &chat.Message{
+		to[i] = &chat.Message{
 			Message:   mes.Message,
 			UserOneId: mes.UserOneId,
 			UserOne:   mes.UserOne,
@@ -184,7 +184,7 @@ func TransformConversationsRPC(c baseModels.Conversations) *interviewRpc.Convers
 	for i, title := range c {
 		interviewDate, _ := ptypes.TimestampProto(title.InterviewDate)
 
-		res[i] =  &interviewRpc.ConversationTitle{
+		res[i] = &interviewRpc.ConversationTitle{
 			ChatterId:     title.ChatterID,
 			ChatterName:   title.ChatterName,
 			InterviewDate: interviewDate,
@@ -203,7 +203,7 @@ func TransformConversationsBase(c *interviewRpc.Conversations) baseModels.Conver
 	for i, title := range c.Title {
 		interviewDate, _ := ptypes.Timestamp(title.InterviewDate)
 
-		res[i] =  &baseModels.ConversationTitle{
+		res[i] = &baseModels.ConversationTitle{
 			ChatterID:     title.ChatterId,
 			ChatterName:   title.ChatterName,
 			InterviewDate: interviewDate,

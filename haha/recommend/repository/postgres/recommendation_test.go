@@ -18,7 +18,6 @@ type recommendSuite struct {
 	vacancyRepository vacancyInterfaces.VacancyRepository
 	db                *sql.DB
 	sqlMock           sqlmock.Sqlmock
-
 }
 
 func (suite *recommendSuite) SetupTest() {
@@ -37,6 +36,6 @@ func TestSuite(t *testing.T) {
 }
 
 func (suite *recommendSuite) TestNoUser() {
-	_, err := suite.repository.GetRecommendedVacancies(1)
+	_, _, err := suite.repository.GetRecommendedVacancies(1, 10, 0)
 	assert.True(suite.T(), errors.Is(err, recommendInterfaces.ErrNoUser))
 }

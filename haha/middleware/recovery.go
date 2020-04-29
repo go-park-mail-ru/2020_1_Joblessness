@@ -37,7 +37,7 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 
 		labels := prometheus.Labels{
 			"method": r.Method,
-			"path": r.URL.Path,
+			"path":   r.URL.Path,
 		}
 
 		golog.Infof("#%s: %s %s", requestNumber, r.Method, r.URL)

@@ -17,7 +17,7 @@ const (
 
 type InterviewUseCase struct {
 	interviewRepo interviewInterfaces.InterviewRepository
-	room chat.Room
+	room          chat.Room
 	policy        *bluemonday.Policy
 }
 
