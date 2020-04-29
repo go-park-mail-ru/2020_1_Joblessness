@@ -69,7 +69,7 @@ func (r *AuthRepository) Login(login, password, SID string) (userId uint64, err 
 
 	insertSession := `INSERT INTO session (user_id, session_id, expires) 
 					VALUES($1, $2, $3)`
-	_, err = r.db.Exec(insertSession, userId, SID, time.Now().Add(time.Hour))
+	_, err = r.db.Exec(insertSession, userId, SID, time.Now().Add(10*time.Hour))
 
 	return userId, err
 }

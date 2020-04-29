@@ -64,12 +64,12 @@ func (r *repository) GetPopularVacancies(limit, offset uint64) (vacancies []base
 }
 
 func (r *repository) GetRecommendedVacancies(userID, limit, offset uint64) (recommends []baseModels.Vacancy, recommendCount uint64, err error) {
-	var hasUser bool
-	checkUser := `SELECT COUNT(*) <> 0 FROM users WHERE id = $1`
-	err = r.db.QueryRow(checkUser, userID).Scan(&hasUser)
-	if err != nil {
-		return recommends, recommendCount, recommendInterfaces.ErrNoUser
-	}
+	//var hasUser bool
+	//checkUser := `SELECT COUNT(*) <> 0 FROM users WHERE id = $1`
+	//err = r.db.QueryRow(checkUser, userID).Scan(&hasUser)
+	//if err != nil {
+	//	return recommends, recommendCount, recommendInterfaces.ErrNoUser
+	//}
 
 	getUsersWithResponses := `
 		SELECT u.id, array_agg(r.vacancy_id)

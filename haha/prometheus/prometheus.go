@@ -10,7 +10,7 @@ var (
 	RequestCount = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "request_count",
 		Help: "Requests count",
-	}, []string{"method", "path"})
+	}, []string{"method", "path", "status"})
 
 	RequestCurrent = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "request_current",

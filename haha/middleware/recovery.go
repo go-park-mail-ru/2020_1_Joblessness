@@ -44,13 +44,18 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 		prom.RequestCurrent.With(labels).Inc()
 		start := time.Now()
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(sw, r)
 
 		prom.RequestDuration.With(labels).Observe(time.Since(start).Seconds())
 		prom.RequestCurrent.With(labels).Dec()
 		golog.Infof("#%s: code %d", requestNumber, sw.StatusCode)
 
-		prom.RequestCount.With(labels).Inc()
+		statusLabels := prometheus.Labels{
+			"method": r.Method,
+			"path": r.URL.Path,
+			"status": string(sw.StatusCode),
+		}
+		prom.RequestCount.With(statusLabels).Inc()
 	})
 }
 

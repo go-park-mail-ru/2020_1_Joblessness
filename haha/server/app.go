@@ -123,28 +123,34 @@ var (
 func (app *App) StartRouter() {
 	flag.Parse()
 
-	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	router := mux.NewRouter()
+
+	commonRouter := router.PathPrefix("/api").Subrouter()
+	prometheusRouter := router.PathPrefix("/prometheus").Subrouter()
+	interviewRouter := router.PathPrefix("api").Subrouter()
 
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
 
 	router.Use(m.RecoveryMiddleware)
 	if !*noCors {
-		router.Use(app.corsHandler.CorsMiddleware)
+		commonRouter.Use(app.corsHandler.CorsMiddleware)
+		interviewRouter.Use(app.corsHandler.CorsMiddleware)
 		golog.Info("Cors enabled")
 	}
-	router.Use(m.LogMiddleware)
+	commonRouter.Use(m.LogMiddleware)
+	prometheusRouter.Use(m.LogMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
-	authHttp.RegisterHTTPEndpoints(router, mAuth, app.authUse)
-	userHttp.RegisterHTTPEndpoints(router, mAuth, app.userUse)
-	vacancyHttp.RegisterHTTPEndpoints(router, mAuth, app.vacancyUse)
-	summaryHttp.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
-	searchHttp.RegisterHTTPEndpoints(router, app.searchUse)
-	recommendHttp.RegisterHTTPEndpoints(router, mAuth, app.recommendationUse)
-	interviewHttp.RegisterHTTPEndpoints(router, mAuth, app.interviewUse)
+	authHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.authUse)
+	userHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.userUse)
+	vacancyHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.vacancyUse)
+	summaryHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.summaryUse)
+	searchHttp.RegisterHTTPEndpoints(commonRouter, app.searchUse)
+	recommendHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.recommendationUse)
+	interviewHttp.RegisterHTTPEndpoints(interviewRouter, mAuth, app.interviewUse)
 
-	prometheus.RegisterPrometheus(router)
+	prometheus.RegisterPrometheus(prometheusRouter)
 
 	http.Handle("/", router)
 	golog.Infof("Server started at port :%d", *port)
