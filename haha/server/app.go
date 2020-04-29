@@ -126,7 +126,6 @@ func (app *App) StartRouter() {
 	router := mux.NewRouter()
 
 	commonRouter := router.PathPrefix("/api").Subrouter()
-	prometheusRouter := router.PathPrefix("/prometheus").Subrouter()
 	interviewRouter := router.PathPrefix("api").Subrouter()
 
 	m := middleware.NewMiddleware()
@@ -134,12 +133,10 @@ func (app *App) StartRouter() {
 
 	router.Use(m.RecoveryMiddleware)
 	if !*noCors {
-		commonRouter.Use(app.corsHandler.CorsMiddleware)
-		interviewRouter.Use(app.corsHandler.CorsMiddleware)
+		router.Use(app.corsHandler.CorsMiddleware)
 		golog.Info("Cors enabled")
 	}
 	commonRouter.Use(m.LogMiddleware)
-	prometheusRouter.Use(m.LogMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
 	authHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.authUse)
@@ -150,7 +147,7 @@ func (app *App) StartRouter() {
 	recommendHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.recommendationUse)
 	interviewHttp.RegisterHTTPEndpoints(interviewRouter, mAuth, app.interviewUse)
 
-	prometheus.RegisterPrometheus(prometheusRouter)
+	prometheus.RegisterPrometheus(commonRouter)
 
 	http.Handle("/", router)
 	golog.Infof("Server started at port :%d", *port)
