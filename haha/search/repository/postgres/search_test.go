@@ -1,4 +1,4 @@
-package searchRepoPostgres
+package searchPostgres
 
 import (
 	"database/sql"
@@ -6,18 +6,18 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"testing"
 )
 
 type userSuite struct {
 	suite.Suite
-	rep *SearchRepository
-	db *sql.DB
-	mock sqlmock.Sqlmock
-	person models.Person
-	organization models.Organization
-	vacancy models.Vacancy
+	rep          *SearchRepository
+	db           *sql.DB
+	mock         sqlmock.Sqlmock
+	person       baseModels.Person
+	organization baseModels.Organization
+	vacancy      baseModels.Vacancy
 }
 
 func (suite *userSuite) SetupTest() {
@@ -26,9 +26,9 @@ func (suite *userSuite) SetupTest() {
 	assert.NoError(suite.T(), err)
 	suite.rep = NewSearchRepository(suite.db)
 
-	suite.vacancy = models.Vacancy{
-		ID:              3,
-		Organization:     models.VacancyOrganization{
+	suite.vacancy = baseModels.Vacancy{
+		ID: 3,
+		Organization: baseModels.VacancyOrganization{
 			ID:     12,
 			Tag:    "tag",
 			Email:  "email",
@@ -47,26 +47,26 @@ func (suite *userSuite) SetupTest() {
 		Keywords:         "word",
 	}
 
-	suite.person = models.Person{
-		ID: 1,
-		Login:       "login",
-		Password:    "password",
-		FirstName:   "first",
-		LastName:    "name",
-		Email:       "email",
-		Phone: "phone",
-		Tag: "tag",
+	suite.person = baseModels.Person{
+		ID:        1,
+		Login:     "login",
+		Password:  "password",
+		FirstName: "first",
+		LastName:  "name",
+		Email:     "email",
+		Phone:     "phone",
+		Tag:       "tag",
 	}
 
-	suite.organization = models.Organization{
-		ID: 1,
-		Login:       "login",
-		Password:    "password",
-		Name:   "name",
-		Site:    "site",
-		Email:       "email",
-		Phone: "phone",
-		Tag: "tag",
+	suite.organization = baseModels.Organization{
+		ID:       1,
+		Login:    "login",
+		Password: "password",
+		Name:     "name",
+		Site:     "site",
+		Email:    "email",
+		Phone:    "phone",
+		Tag:      "tag",
 	}
 }
 
@@ -79,15 +79,15 @@ func TestSuite(t *testing.T) {
 }
 
 func (suite *userSuite) TestSearchPersons() {
-	rows := sqlmock.NewRows([]string{"userId", "name", "tag", "avatar"}).
-		AddRow(suite.person.ID, suite.person.FirstName + " " + suite.person.LastName, suite.person.Tag,
+	rows := sqlmock.NewRows([]string{"userId", "name", "surname", "tag", "avatar"}).
+		AddRow(suite.person.ID, suite.person.FirstName, suite.person.LastName, suite.person.Tag,
 			suite.person.Avatar)
 	suite.mock.
-		ExpectQuery("SELECT users.id as userId, p.name, tag, avatar").
+		ExpectQuery("SELECT users.id as userId, p.name, p.surname, tag, avatar").
 		WithArgs("req", 10, 10).
 		WillReturnRows(rows)
 
-	_, err := suite.rep.SearchPersons("req", "1", "true")
+	_, err := suite.rep.SearchPersons(&baseModels.SearchParams{"req", "1", "true"})
 	assert.NoError(suite.T(), err)
 }
 
@@ -97,7 +97,7 @@ func (suite *userSuite) TestSearchPersonsFailed() {
 		WithArgs("req", 10, 10).
 		WillReturnError(errors.New(""))
 
-	_, err := suite.rep.SearchPersons("req", "1", "true")
+	_, err := suite.rep.SearchPersons(&baseModels.SearchParams{"req", "1", "true"})
 	assert.Error(suite.T(), err)
 }
 
@@ -109,7 +109,7 @@ func (suite *userSuite) TestSearchOrganization() {
 		WithArgs("req", 10, 10).
 		WillReturnRows(rows)
 
-	_, err := suite.rep.SearchOrganizations("req", "1", "true")
+	_, err := suite.rep.SearchOrganizations(&baseModels.SearchParams{"req", "1", "true"})
 	assert.NoError(suite.T(), err)
 }
 
@@ -119,29 +119,29 @@ func (suite *userSuite) TestSearchOrganizationFailed() {
 		WithArgs("req", 10, 10).
 		WillReturnError(errors.New(""))
 
-	_, err := suite.rep.SearchOrganizations("req", "1", "true")
+	_, err := suite.rep.SearchOrganizations(&baseModels.SearchParams{"req", "1", "true"})
 	assert.Error(suite.T(), err)
 }
 
 func (suite *userSuite) TestSearchVacancy() {
-	rows := sqlmock.NewRows([]string{"id", "name", "id", "name", "keywords", "salary_from", "salary_to", "with_tax"}).
-		AddRow(suite.organization.ID, suite.organization.Name, suite.vacancy.ID, suite.vacancy.Name,
-			suite.vacancy.Keywords, suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax )
+	rows := sqlmock.NewRows([]string{"id", "avatar", "name", "id", "name", "keywords", "salary_from", "salary_to", "with_tax"}).
+		AddRow(suite.organization.ID, suite.organization.Avatar, suite.organization.Name, suite.vacancy.ID, suite.vacancy.Name,
+			suite.vacancy.Keywords, suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax)
 	suite.mock.
-		ExpectQuery("SELECT users.id, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax").
+		ExpectQuery("SELECT users.id, users.avatar, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax").
 		WithArgs("req", 10, 10).
 		WillReturnRows(rows)
 
-	_, err := suite.rep.SearchVacancies("req", "1", "true")
+	_, err := suite.rep.SearchVacancies(&baseModels.SearchParams{"req", "1", "true"})
 	assert.NoError(suite.T(), err)
 }
 
 func (suite *userSuite) TestSearchVacancyFailed() {
 	suite.mock.
-		ExpectQuery("SELECT users.id, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax").
+		ExpectQuery("SELECT users.id, users.avatar, o.name, v.id, v.name, v.keywords, v.salary_from, v.salary_to, v.with_tax").
 		WithArgs("req", 10, 10).
 		WillReturnError(errors.New(""))
 
-	_, err := suite.rep.SearchVacancies("req", "1", "true")
+	_, err := suite.rep.SearchVacancies(&baseModels.SearchParams{"req", "1", "true"})
 	assert.Error(suite.T(), err)
 }

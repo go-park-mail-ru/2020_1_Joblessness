@@ -1,4 +1,4 @@
-package httpSearch
+package searchHttp
 
 //go:generate mockgen -destination=../../usecase/mock/search.go -package=mock joblessness/haha/search/interfaces SearchUseCase
 
@@ -11,8 +11,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
-	"joblessness/haha/middleware/xss"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	searchInterfaces "joblessness/haha/search/interfaces"
 	searchUseCaseMock "joblessness/haha/search/usecase/mock"
 	"net/http"
@@ -22,24 +21,21 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	router *mux.Router
-	mainMiddleware *middleware.RecoveryHandler
-	authMiddleware *middleware.SessionHandler
-	xssMiddleware *xss.XssHandler
-	controller *gomock.Controller
-	authUseCase *mock.MockAuthUseCase
-	uc *searchUseCaseMock.MockSearchUseCase
-	person models.Person
-	personByte *bytes.Buffer
-	organization models.Organization
+	router           *mux.Router
+	mainMiddleware   *middleware.RecoveryHandler
+	authMiddleware   *middleware.SessionHandler
+	controller       *gomock.Controller
+	authUseCase      *mock.MockAuthUseCase
+	uc               *searchUseCaseMock.MockSearchUseCase
+	person           baseModels.Person
+	personByte       *bytes.Buffer
+	organization     baseModels.Organization
 	organizationByte *bytes.Buffer
 }
 
 func (suite *userSuite) SetupTest() {
-	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
+	suite.router = mux.NewRouter().PathPrefix("/haha").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
-	suite.xssMiddleware = xss.NewXssHandler()
-	suite.router.Use(suite.xssMiddleware.SanitizeMiddleware)
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())
@@ -57,10 +53,10 @@ func TestSuite(t *testing.T) {
 func (suite *userSuite) TestSearch() {
 	suite.uc.EXPECT().
 		Search(gomock.Any(), gomock.Any(), "1", "true").
-		Return(models.SearchResult{}, nil).
+		Return(baseModels.SearchResult{}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -70,10 +66,10 @@ func (suite *userSuite) TestSearch() {
 func (suite *userSuite) TestSearchWrongReq() {
 	suite.uc.EXPECT().
 		Search(gomock.Any(), gomock.Any(), "1", "true").
-		Return(models.SearchResult{}, searchInterfaces.ErrUnknownRequest).
+		Return(baseModels.SearchResult{}, searchInterfaces.ErrUnknownRequest).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -83,10 +79,10 @@ func (suite *userSuite) TestSearchWrongReq() {
 func (suite *userSuite) TestSearchFailed() {
 	suite.uc.EXPECT().
 		Search(gomock.Any(), gomock.Any(), "1", "true").
-		Return(models.SearchResult{}, errors.New("")).
+		Return(baseModels.SearchResult{}, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 

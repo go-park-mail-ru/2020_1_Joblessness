@@ -3,5 +3,5 @@ package vacancyInterfaces
 import "errors"
 
 var (
-	ErrOrgIsNotOwner = errors.New("organization doesnt own this vacancy")
+	ErrOrgIsNotOwner = errors.New("organization doesn't own this vacancy")
 )

@@ -1,81 +1,11 @@
-package vacancyRepoPostgres
+package vacancyPostgres
 
 import (
 	"database/sql"
-	"joblessness/haha/models"
-	vacancyInterfaces "joblessness/haha/vacancy/interfaces"
-	"time"
+	"joblessness/haha/models/base"
+	"joblessness/haha/models/postgres"
+	"joblessness/haha/vacancy/interfaces"
 )
-
-type Vacancy struct {
-	ID uint64
-	OrganizationID uint64
-	Name string
-	Description string
-	SalaryFrom int
-	SalaryTo int
-	WithTax bool
-	Responsibilities string
-	Conditions string
-	Keywords string
-}
-
-type User struct {
-	ID             uint64
-	OrganizationID uint64
-	PersonID       uint64
-	Tag            string
-	Email          string
-	Phone          string
-	Registered     time.Time
-	Avatar         string
-}
-
-type Organization struct {
-	ID uint64
-	Name string
-	Site string
-}
-
-func toPostgres(v *models.Vacancy) *Vacancy {
-	return &Vacancy{
-		ID:               v.ID,
-		OrganizationID:   v.Organization.ID,
-		Name:             v.Name,
-		Description:      v.Description,
-		SalaryFrom:       v.SalaryFrom,
-		SalaryTo:         v.SalaryTo,
-		WithTax:          v.WithTax,
-		Responsibilities: v.Responsibilities,
-		Conditions:       v.Conditions,
-		Keywords:         v.Keywords,
-	}
-}
-
-func toModel(v *Vacancy, u *User, o *Organization) *models.Vacancy {
-	organization := models.VacancyOrganization{
-		ID:     u.ID,
-		Tag:    u.Tag,
-		Email:  u.Email,
-		Phone:  u.Phone,
-		Avatar: u.Avatar,
-		Name:   o.Name,
-		Site:   o.Site,
-	}
-
-	return &models.Vacancy{
-		ID:               v.ID,
-		Organization:     organization,
-		Name:             v.Name,
-		Description:      v.Description,
-		SalaryFrom:       v.SalaryFrom,
-		SalaryTo:         v.SalaryTo,
-		WithTax:          v.WithTax,
-		Responsibilities: v.Responsibilities,
-		Conditions:       v.Conditions,
-		Keywords:         v.Keywords,
-	}
-}
 
 type VacancyRepository struct {
 	db *sql.DB
@@ -85,15 +15,48 @@ func NewVacancyRepository(db *sql.DB) *VacancyRepository {
 	return &VacancyRepository{db}
 }
 
-func (r *VacancyRepository) CreateVacancy(vacancy *models.Vacancy) (vacancyID uint64, err error) {
-	vacancyDB := toPostgres(vacancy)
+func (r *VacancyRepository) GetRelatedUsers(organizationID uint64) (res []uint64, orgName string, err error) {
+	getName := `SELECT o.name
+					FROM users u
+					JOIN organization o on u.organization_id = o.id
+					WHERE u.id = $1;`
+	err = r.db.QueryRow(getName, organizationID).Scan(&orgName)
+	if err != nil {
+		return nil, orgName, err
+	}
+
+	res = make([]uint64, 0)
+	getRelated := `SELECT f.user_id
+					FROM favorite f
+					WHERE f.favorite_id = $1;`
+	rows, err := r.db.Query(getRelated, organizationID)
+	if err != nil {
+		return nil, orgName, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var userID uint64
+		err = rows.Scan(&userID)
+		if err != nil {
+			return nil, orgName, err
+		}
+
+		res = append(res, userID)
+	}
+
+	return res, orgName, nil
+}
+
+func (r *VacancyRepository) CreateVacancy(vacancy *baseModels.Vacancy) (vacancyID uint64, err error) {
+	vacancyDB := pgModels.ToPgVacancy(vacancy)
 
 	createVacancy := `INSERT INTO vacancy (organization_id, name, description, salary_from, salary_to, with_tax,
                      					   responsibilities, conditions, keywords)
 					  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id;`
 	err = r.db.QueryRow(createVacancy, &vacancyDB.OrganizationID, &vacancyDB.Name, &vacancyDB.Description,
-						&vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
-						&vacancyDB.Conditions, &vacancyDB.Keywords).Scan(&vacancyID)
+		&vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
+		&vacancyDB.Conditions, &vacancyDB.Keywords).Scan(&vacancyID)
 	if err != nil {
 		return vacancyID, err
 	}
@@ -101,9 +64,9 @@ func (r *VacancyRepository) CreateVacancy(vacancy *models.Vacancy) (vacancyID ui
 	return vacancyID, nil
 }
 
-func (r *VacancyRepository) GetVacancyOrganization(organizationID uint64) (*User, *Organization, error) {
-	user := User{ID: organizationID}
-	var organization Organization
+func (r *VacancyRepository) GetVacancyOrganization(organizationID uint64) (*pgModels.User, *pgModels.Organization, error) {
+	user := pgModels.User{ID: organizationID}
+	var organization pgModels.Organization
 
 	getUser := `SELECT organization_id, tag, email, phone, avatar, name, site
 				FROM users u
@@ -119,8 +82,8 @@ func (r *VacancyRepository) GetVacancyOrganization(organizationID uint64) (*User
 	return &user, &organization, nil
 }
 
-func (r *VacancyRepository) GetVacancy(vacancyID uint64) (vacancy *models.Vacancy, err error) {
-	var vacancyDB Vacancy
+func (r *VacancyRepository) GetVacancy(vacancyID uint64) (vacancy *baseModels.Vacancy, err error) {
+	var vacancyDB pgModels.Vacancy
 
 	getVacancy := `SELECT v.id, v.organization_id, v.name, v.description, v.salary_from, v.salary_to, v.with_tax, v.responsibilities,
        					  v.conditions, v.keywords
@@ -137,10 +100,10 @@ func (r *VacancyRepository) GetVacancy(vacancyID uint64) (vacancy *models.Vacanc
 		return nil, err
 	}
 
-	return toModel(&vacancyDB, userDB, organizationDB), nil
+	return pgModels.ToBaseVacancy(&vacancyDB, userDB, organizationDB), nil
 }
 
-func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, err error) {
+func (r *VacancyRepository) GetVacancies(page int) (vacancies baseModels.Vacancies, err error) {
 	getVacancies := `SELECT id, organization_id, name, description, salary_from, salary_to, with_tax, responsibilities,
        						conditions, keywords
 					 FROM vacancy
@@ -151,13 +114,13 @@ func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, 
 	}
 	defer rows.Close()
 
-	vacancies = make([]models.Vacancy, 0)
+	vacancies = make(baseModels.Vacancies, 0)
 
 	for rows.Next() {
-		var vacancyDB Vacancy
+		var vacancyDB pgModels.Vacancy
 		err = rows.Scan(&vacancyDB.ID, &vacancyDB.OrganizationID, &vacancyDB.Name, &vacancyDB.Description,
-						&vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
-						&vacancyDB.Conditions, &vacancyDB.Keywords)
+			&vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax, &vacancyDB.Responsibilities,
+			&vacancyDB.Conditions, &vacancyDB.Keywords)
 		if err != nil {
 			return vacancies, err
 		}
@@ -167,7 +130,7 @@ func (r *VacancyRepository) GetVacancies(page int) (vacancies []models.Vacancy, 
 			return nil, err
 		}
 
-		vacancies = append(vacancies, *toModel(&vacancyDB, userDB, organizationDB))
+		vacancies = append(vacancies, pgModels.ToBaseVacancy(&vacancyDB, userDB, organizationDB))
 	}
 
 	return vacancies, nil
@@ -177,23 +140,29 @@ func (r *VacancyRepository) CheckAuthor(vacancyID, authorID uint64) (err error) 
 	var isAuthor bool
 
 	checkAuthor := `SELECT organization_id = $1 FROM vacancy WHERE id = $2`
-	if err = r.db.QueryRow(checkAuthor, authorID, vacancyID).Scan(&isAuthor); err != nil {
+	if err = r.db.QueryRow(checkAuthor, authorID, vacancyID).Scan(&isAuthor); err != nil || !isAuthor {
 		return vacancyInterfaces.ErrOrgIsNotOwner
 	}
 
 	return err
 }
 
-func (r *VacancyRepository) ChangeVacancy(vacancy *models.Vacancy) (err error) {
-	vacancyDB := toPostgres(vacancy)
+func (r *VacancyRepository) ChangeVacancy(vacancy *baseModels.Vacancy) (err error) {
+	vacancyDB := pgModels.ToPgVacancy(vacancy)
 
 	changeVacancy := `UPDATE vacancy
-					  SET name = $1, description = $2, salary_from = $3, salary_to = $4,
-						  with_tax = $5, responsibilities = $6, conditions = $7, keywords = $8
+					  SET name = COALESCE(NULLIF($1, ''), name), 
+					      description = COALESCE(NULLIF($2, ''), description), 
+					      salary_from = COALESCE(NULLIF($3, 0), salary_from), 
+					      salary_to = COALESCE(NULLIF($4, 0), salary_to),
+						  with_tax = $5, 
+					      responsibilities = COALESCE(NULLIF($6, ''), responsibilities), 
+					      conditions = COALESCE(NULLIF($7, ''), conditions), 
+					      keywords = COALESCE(NULLIF($8, ''), keywords)
 					  WHERE id = $9;`
 	_, err = r.db.Exec(changeVacancy, vacancyDB.Name, vacancyDB.Description,
-						 vacancyDB.SalaryFrom, vacancyDB.SalaryTo, vacancyDB.WithTax, vacancyDB.Responsibilities,
-						 vacancyDB.Conditions, vacancyDB.Keywords, vacancyDB.ID)
+		vacancyDB.SalaryFrom, vacancyDB.SalaryTo, vacancyDB.WithTax, vacancyDB.Responsibilities,
+		vacancyDB.Conditions, vacancyDB.Keywords, vacancyDB.ID)
 
 	return err
 }
@@ -210,7 +179,7 @@ func (r *VacancyRepository) DeleteVacancy(vacancyID uint64) (err error) {
 	return nil
 }
 
-func (r *VacancyRepository) GetOrgVacancies(userID uint64) (vacancies []models.Vacancy, err error) {
+func (r *VacancyRepository) GetOrgVacancies(userID uint64) (vacancies baseModels.Vacancies, err error) {
 	getVacancies := `SELECT id, name, salary_from, salary_to, with_tax, keywords
 					 FROM vacancy
 					WHERE organization_id = $1;`
@@ -220,17 +189,17 @@ func (r *VacancyRepository) GetOrgVacancies(userID uint64) (vacancies []models.V
 	}
 	defer rows.Close()
 
-	vacancies = make([]models.Vacancy, 0)
+	vacancies = make(baseModels.Vacancies, 0)
 
 	for rows.Next() {
-		var vacancyDB models.Vacancy
+		var vacancyDB baseModels.Vacancy
 		err = rows.Scan(&vacancyDB.ID, &vacancyDB.Name, &vacancyDB.SalaryFrom, &vacancyDB.SalaryTo, &vacancyDB.WithTax,
 			&vacancyDB.Keywords)
 		if err != nil {
 			return vacancies, err
 		}
 
-		vacancies = append(vacancies, vacancyDB)
+		vacancies = append(vacancies, &vacancyDB)
 	}
 
 	return vacancies, nil

@@ -21,10 +21,10 @@ func (corsList *CorsHandler) AddOrigin(originName string) {
 }
 
 func (corsList *CorsHandler) Preflight(w http.ResponseWriter, req *http.Request) {
-	corsList.PrivateApi(&w, req)
+	corsList.PrivateApi(w, req)
 }
 
-func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Request) bool {
+func (corsList *CorsHandler) PrivateApi(w http.ResponseWriter, req *http.Request) bool {
 	referer := req.Header.Get("Referer")
 	origin := req.Header.Get("Origin")
 
@@ -39,12 +39,12 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 
 	if result {
 		golog.Info("Allowed")
-		(*w).Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Origin, " +
-			"Set-Cookie, Access-Control-Allow-Methods, Access-Control-Allow-Credentials")
-		(*w).Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-		(*w).Header().Set("Access-Control-Allow-Origin", origin)
-		(*w).Header().Set("Access-Control-Allow-Credentials", "true")
-		(*w).Header().Set("Content-Type", "application/json")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Origin, "+
+			"Set-Cookie, Access-Control-Allow-Methods, Access-Control-Allow-Credentials, Connection")
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Content-Type", "application/json")
 	}
 	return result
 }
@@ -52,7 +52,7 @@ func (corsList *CorsHandler) PrivateApi (w *http.ResponseWriter, req *http.Reque
 func (corsList *CorsHandler) CorsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		if corsList.PrivateApi(&w, r) {
+		if corsList.PrivateApi(w, r) {
 			next.ServeHTTP(w, r)
 		} else {
 			golog.Info("Not allowed origin")

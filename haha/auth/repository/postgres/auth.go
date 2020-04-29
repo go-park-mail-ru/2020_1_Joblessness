@@ -1,9 +1,9 @@
-package postgresAuth
+package authPostgres
 
 import (
 	"database/sql"
-	"joblessness/haha/auth/interfaces"
-	"joblessness/haha/models"
+	"google.golang.org/grpc/status"
+	authInterfaces "joblessness/haha/auth/interfaces"
 	"joblessness/haha/utils/salt"
 	"time"
 )
@@ -18,116 +18,45 @@ func NewAuthRepository(db *sql.DB) *AuthRepository {
 	}
 }
 
-type User struct {
-	ID             uint64
-	Login          string
-	Password       string
-	OrganizationID uint64
-	PersonID       uint64
-	Tag            string
-	Email          string
-	Phone          string
-	Registered     time.Time
-	Avatar         string
-}
+func (r AuthRepository) CreateUser(login, password string, personID, organizationID uint64) (err error) {
+	hashedPassword, err := salt.HashAndSalt(password)
 
-type Person struct {
-	ID uint64
-	Name string
-	Gender string
-	Birthday time.Time
-}
-
-type Organization struct {
-	ID uint64
-	Name string
-	Site string
-	About string
-}
-
-func toPostgresPerson(p *models.Person) (*User, *Person) {
-	name := p.FirstName
-	if p.LastName != "" {
-		name += " " + p.LastName
-	}
-
-	return &User{
-			ID:             p.ID,
-			Login:          p.Login,
-			Password:       p.Password,
-			Tag:            p.Tag,
-			Email:          p.Email,
-			Phone:          p.Phone,
-			Registered:     p.Registered,
-			Avatar:         p.Avatar,
-		},
-		&Person{
-			Name:     name,
-			Gender:   p.Gender,
-			Birthday: p.Birthday,
-		}
-}
-
-func toPostgresOrg(o *models.Organization) (*User, *Organization) {
-	return &User{
-			ID:             o.ID,
-			Login:          o.Login,
-			Password:       o.Password,
-			Tag:            o.Tag,
-			Email:          o.Email,
-			Phone:          o.Phone,
-			Registered:     o.Registered,
-			Avatar:         o.Avatar,
-		},
-		&Organization{
-			Name: o.Name,
-			Site: o.Site,
-			About: o.About,
-		}
-}
-
-func (r AuthRepository) CreateUser(user *User) (err error) {
-	user.Password, err = salt.HashAndSalt(user.Password)
-
-	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone, tag) 
-					VALUES(NULLIF($1, ''), NULLIF($2, ''), NULLIF($3, 0), NULLIF($4, 0), $5, $6, $7)`
-	_, err = r.db.Exec(insertUser, user.Login, user.Password, user.OrganizationID,
-		user.PersonID, user.Email, user.Phone, user.Tag)
+	insertUser := `INSERT INTO users (login, password, organization_id, person_id) 
+					VALUES(NULLIF($1, ''), NULLIF($2, ''), NULLIF($3, 0), NULLIF($4, 0))`
+	_, err = r.db.Exec(insertUser, login, hashedPassword, organizationID, personID)
 
 	return err
 }
 
-func (r AuthRepository) CreatePerson(user *models.Person) (err error) {
-	dbUser, dbPerson := toPostgresPerson(user)
+func (r *AuthRepository) RegisterPerson(login, password, name string) (err error) {
+	var personID uint64
 
-	err = r.db.QueryRow("INSERT INTO person (name, gender, birthday) VALUES($1, $2, $3) RETURNING id",
-		dbPerson.Name, dbPerson.Gender, dbPerson.Birthday).
-		Scan(&dbUser.PersonID)
+	err = r.db.QueryRow("INSERT INTO person (name) VALUES($1) RETURNING id", name).
+		Scan(&personID)
 	if err != nil {
 		return err
 	}
 	//TODO исполнять как единая транзация
-	err = r.CreateUser(dbUser)
+	err = r.CreateUser(login, password, personID, 0)
 
 	return err
 }
 
-func (r AuthRepository) CreateOrganization(org *models.Organization) (err error) {
-	dbUser, dbOrg := toPostgresOrg(org)
+func (r *AuthRepository) RegisterOrganization(login, password, name string) (err error) {
+	var organizationID uint64
 
-	err = r.db.QueryRow("INSERT INTO organization (name, site, about) VALUES($1, $2, $3) RETURNING id",
-		dbOrg.Name, dbOrg.Site, dbOrg.About).
-		Scan(&dbUser.OrganizationID)
+	err = r.db.QueryRow("INSERT INTO organization (name) VALUES($1) RETURNING id", name).
+		Scan(&organizationID)
 	if err != nil {
 		return err
 	}
 	//TODO исполнять как единая транзация
-	err = r.CreateUser(dbUser)
+	err = r.CreateUser(login, password, 0, organizationID)
 
 	return err
 }
 
-func (r AuthRepository) Login(login, password, SID string) (userId uint64, err error) {
+func (r *AuthRepository) Login(login, password, SID string) (userId uint64, err error) {
 	//TODO user_id, session_id уникальные
 
 	checkUser := "SELECT id, password FROM users WHERE login = $1"
@@ -135,7 +64,7 @@ func (r AuthRepository) Login(login, password, SID string) (userId uint64, err e
 	rows := r.db.QueryRow(checkUser, login)
 	err = rows.Scan(&userId, &hashedPwd)
 	if err != nil || !salt.ComparePasswords(hashedPwd, password) {
-		return 0, authInterfaces.NewErrorWrongLoginOrPassword()
+		return 0, status.Error(authInterfaces.WrongLoginOrPassword, "wrong login or password")
 	}
 
 	insertSession := `INSERT INTO session (user_id, session_id, expires) 
@@ -145,7 +74,7 @@ func (r AuthRepository) Login(login, password, SID string) (userId uint64, err e
 	return userId, err
 }
 
-func (r AuthRepository) Logout(sessionId string) (err error) {
+func (r *AuthRepository) Logout(sessionId string) (err error) {
 	//TODO user_id, session_id уникальные
 
 	deleteRow := "DELETE FROM session WHERE session_id = $1;"
@@ -154,14 +83,14 @@ func (r AuthRepository) Logout(sessionId string) (err error) {
 	return err
 }
 
-func (r AuthRepository) SessionExists(sessionId string) (userId uint64, err error) {
+func (r *AuthRepository) SessionExists(sessionId string) (userId uint64, err error) {
 	//TODO session_id - pk, возвращать тип сессии
 
 	checkUser := "SELECT user_id, expires FROM session WHERE session_id = $1;"
 	var expires time.Time
-	err = r.db.QueryRow(checkUser, sessionId).Scan(&userId,  &expires)
+	err = r.db.QueryRow(checkUser, sessionId).Scan(&userId, &expires)
 	if err != nil {
-		return 0, authInterfaces.NewErrorWrongSID()
+		return 0, status.Error(authInterfaces.WrongSID, "wrong sid")
 	}
 
 	if expires.Before(time.Now()) {
@@ -171,13 +100,13 @@ func (r AuthRepository) SessionExists(sessionId string) (userId uint64, err erro
 			return 0, err
 		}
 		userId = 0
-		return userId, authInterfaces.NewErrorWrongSID()
+		return userId, status.Error(authInterfaces.WrongSID, "wrong sid")
 	}
 
 	return userId, err
 }
 
-func (r AuthRepository) DoesUserExists(login string) (err error) {
+func (r *AuthRepository) DoesUserExists(login string) (err error) {
 	var columnCount int
 	checkUser := "SELECT count(*) FROM users WHERE login = $1"
 	err = r.db.QueryRow(checkUser, login).Scan(&columnCount)
@@ -187,17 +116,17 @@ func (r AuthRepository) DoesUserExists(login string) (err error) {
 	}
 
 	if columnCount != 0 {
-		return authInterfaces.NewErrorUserAlreadyExists(login)
+		return status.Error(authInterfaces.AlreadyExists, "user already exists")
 	}
 	return nil
 }
 
-func (r AuthRepository) GetRole(userID uint64) (string, error) {
+func (r *AuthRepository) GetRole(userID uint64) (string, error) {
 	var personID, organizationID sql.NullInt64
 	checkUser := "SELECT person_id, organization_id FROM users WHERE id = $1;"
 	err := r.db.QueryRow(checkUser, userID).Scan(&personID, &organizationID)
 	if err != nil {
-		return "", err
+		return "", status.Error(authInterfaces.NotFound, "not found")
 	}
 
 	if personID.Valid {

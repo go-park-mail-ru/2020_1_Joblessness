@@ -1,6 +1,6 @@
-package httpAuth
+package authHttp
 
-//go:generate mockgen -destination=../../usecase/mock/auth.go -package=mock joblessness/haha/auth/interfaces AuthUseCase
+//go:generate mockgen -destination=../../usecase/mock/usecase.go -package=mock joblessness/haha/auth/interfaces AuthUseCase
 
 import (
 	"bytes"
@@ -10,11 +10,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	authInterfaces "joblessness/haha/auth/interfaces"
+	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
-	"joblessness/haha/middleware/xss"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -24,58 +23,55 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	router *mux.Router
-	mainMiddleware *middleware.RecoveryHandler
-	authMiddleware *middleware.SessionHandler
-	xssMiddleware *xss.XssHandler
-	controller *gomock.Controller
-	uc *mock.MockAuthUseCase
-	person models.Person
-	personByte *bytes.Buffer
-	organization models.Organization
+	router           *mux.Router
+	mainMiddleware   *middleware.RecoveryHandler
+	authMiddleware   *middleware.SessionHandler
+	controller       *gomock.Controller
+	uc               *mock.MockAuthUseCase
+	person           baseModels.Person
+	personByte       *bytes.Buffer
+	organization     baseModels.Organization
 	organizationByte *bytes.Buffer
 }
 
 func (suite *userSuite) SetupTest() {
-	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
+	suite.router = mux.NewRouter().PathPrefix("/haha").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
-	suite.xssMiddleware = xss.NewXssHandler()
-	suite.router.Use(suite.xssMiddleware.SanitizeMiddleware)
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())
 	suite.uc = mock.NewMockAuthUseCase(suite.controller)
 	suite.authMiddleware = middleware.NewAuthMiddleware(suite.uc)
 
-	suite.person = models.Person{
-		ID: 12,
-		Login:       "new username",
-		Password:    "NewPassword123",
-		FirstName:   "new first name",
-		LastName:    "new last name",
-		Email:       "new@email.ru",
-		Phone: "new phone number",
+	suite.person = baseModels.Person{
+		ID:        12,
+		Login:     "new username",
+		Password:  "NewPassword123",
+		FirstName: "new first name",
+		LastName:  "new last name",
+		Email:     "new@email.ru",
+		Phone:     "new phone number",
 	}
 	var err error
 	personJSON, err := json.Marshal(suite.person)
 	suite.personByte = bytes.NewBuffer(personJSON)
 	assert.NoError(suite.T(), err)
 
-	suite.organization = models.Organization{
-		ID: 12,
-		Login:       "new username",
-		Password:    "NewPassword123",
-		Name:   "new name",
-		Site:    "new site",
-		Email:       "new@email.ru",
-		Phone: "new phone number",
-		Tag: "awdawdawd",
+	suite.organization = baseModels.Organization{
+		ID:       12,
+		Login:    "new username",
+		Password: "NewPassword123",
+		Name:     "new name",
+		Site:     "new site",
+		Email:    "new@email.ru",
+		Phone:    "new phone number",
+		Tag:      "awdawdawd",
 	}
 	organizationJSON, err := json.Marshal(suite.organization)
 	suite.organizationByte = bytes.NewBuffer(organizationJSON)
 	assert.NoError(suite.T(), err)
 
-	RegisterHTTPEndpoints(suite.router,suite.authMiddleware, suite.uc)
+	RegisterHTTPEndpoints(suite.router, suite.authMiddleware, suite.uc)
 }
 
 func TestSuite(t *testing.T) {
@@ -87,9 +83,10 @@ const message = `
 Content-Disposition: form-data; name="file"; filename="file.png"
 Content-Type: text/plain
 `
+
 func newTestMultipartRequest(t *testing.T) *http.Request {
 	b := strings.NewReader(strings.ReplaceAll(message, "\n", "\r\n"))
-	req, err := http.NewRequest("POST", "/api/users/12/avatar", b)
+	req, err := http.NewRequest("POST", "/haha/users/12/avatar", b)
 	if err != nil {
 		t.Fatal("NewRequest:", err)
 	}
@@ -101,11 +98,11 @@ func newTestMultipartRequest(t *testing.T) *http.Request {
 func (suite *userSuite) TestRegistrationPerson() {
 
 	suite.uc.EXPECT().
-		RegisterPerson(&suite.person).
+		RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName).
 		Return(nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/users", suite.personByte)
+	r, _ := http.NewRequest("POST", "/haha/users", suite.personByte)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -114,11 +111,11 @@ func (suite *userSuite) TestRegistrationPerson() {
 
 func (suite *userSuite) TestFailedRegistrationPerson() {
 	suite.uc.EXPECT().
-		RegisterPerson(&suite.person).
-		Return(authInterfaces.NewErrorUserAlreadyExists("")).
+		RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName).
+		Return(authInterfaces.ErrUserAlreadyExists).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/users", suite.personByte)
+	r, _ := http.NewRequest("POST", "/haha/users", suite.personByte)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -127,11 +124,11 @@ func (suite *userSuite) TestFailedRegistrationPerson() {
 
 func (suite *userSuite) TestRegistrationOrganization() {
 	suite.uc.EXPECT().
-		RegisterOrganization(&suite.organization).
+		RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name).
 		Return(nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/organizations", suite.organizationByte)
+	r, _ := http.NewRequest("POST", "/haha/organizations", suite.organizationByte)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -140,11 +137,11 @@ func (suite *userSuite) TestRegistrationOrganization() {
 
 func (suite *userSuite) TestFailedRegistrationOrganization() {
 	suite.uc.EXPECT().
-		RegisterOrganization(&suite.organization).
-		Return(authInterfaces.NewErrorUserAlreadyExists("")).
+		RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name).
+		Return(authInterfaces.ErrUserAlreadyExists).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/organizations", suite.organizationByte)
+	r, _ := http.NewRequest("POST", "/haha/organizations", suite.organizationByte)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -153,7 +150,7 @@ func (suite *userSuite) TestFailedRegistrationOrganization() {
 
 func (suite *userSuite) TestLogin() {
 
-	userLogin := models.UserLogin{
+	userLogin := baseModels.UserLogin{
 		Login:    "username",
 		Password: "Password123",
 	}
@@ -165,7 +162,7 @@ func (suite *userSuite) TestLogin() {
 		Return(uint64(1), "organization", "sid", nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(userJSON))
+	r, _ := http.NewRequest("POST", "/haha/users/login", bytes.NewBuffer(userJSON))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -174,7 +171,7 @@ func (suite *userSuite) TestLogin() {
 }
 
 func (suite *userSuite) TestFailedLoginNotFound() {
-	userLogin := models.UserLogin{
+	userLogin := baseModels.UserLogin{
 		Login:    "username",
 		Password: "Password123",
 	}
@@ -183,10 +180,10 @@ func (suite *userSuite) TestFailedLoginNotFound() {
 
 	suite.uc.EXPECT().
 		Login(userLogin.Login, userLogin.Password).
-		Return(uint64(0), "organization", "", authInterfaces.NewErrorWrongLoginOrPassword()).
+		Return(uint64(0), "organization", "", authInterfaces.ErrWrongLoginOrPassword).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/users/login", bytes.NewBuffer(userJSON))
+	r, _ := http.NewRequest("POST", "/haha/users/login", bytes.NewBuffer(userJSON))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -195,9 +192,9 @@ func (suite *userSuite) TestFailedLoginNotFound() {
 
 func (suite *userSuite) TestLogout() {
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
@@ -206,7 +203,7 @@ func (suite *userSuite) TestLogout() {
 		Return(nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/users/logout", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/logout", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -220,7 +217,7 @@ func (suite *userSuite) TestLogoutNoCookie() {
 		Logout(gomock.Any()).
 		Times(0)
 
-	r, _ := http.NewRequest("POST", "/api/users/logout", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/logout", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -229,9 +226,9 @@ func (suite *userSuite) TestLogoutNoCookie() {
 
 func (suite *userSuite) TestLogoutSomethingWentWrong() {
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
@@ -240,7 +237,7 @@ func (suite *userSuite) TestLogoutSomethingWentWrong() {
 		Return(errors.New("err")).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/users/logout", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/logout", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -250,9 +247,9 @@ func (suite *userSuite) TestLogoutSomethingWentWrong() {
 
 func (suite *userSuite) TestCheck() {
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
@@ -265,7 +262,7 @@ func (suite *userSuite) TestCheck() {
 		Return("organization", nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/check", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -278,7 +275,7 @@ func (suite *userSuite) TestCheckNoCookie() {
 		SessionExists(gomock.Any()).
 		Times(0)
 
-	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/check", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -287,18 +284,18 @@ func (suite *userSuite) TestCheckNoCookie() {
 
 func (suite *userSuite) TestCheckWrongSid() {
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
 	suite.uc.EXPECT().
 		SessionExists(cookie.Value).
-		Return(uint64(0), authInterfaces.NewErrorWrongSID()).
+		Return(uint64(0), authInterfaces.ErrWrongSID).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/check", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -308,9 +305,9 @@ func (suite *userSuite) TestCheckWrongSid() {
 
 func (suite *userSuite) TestCheckSomethingWentWrong() {
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
@@ -319,7 +316,7 @@ func (suite *userSuite) TestCheckSomethingWentWrong() {
 		Return(uint64(0), errors.New("err")).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/users/check", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/check", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)

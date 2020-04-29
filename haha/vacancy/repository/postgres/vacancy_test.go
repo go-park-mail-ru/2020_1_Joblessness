@@ -1,4 +1,4 @@
-package vacancyRepoPostgres
+package vacancyPostgres
 
 import (
 	"database/sql"
@@ -6,19 +6,21 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
+	pgModels "joblessness/haha/models/postgres"
+	vacancyInterfaces "joblessness/haha/vacancy/interfaces"
 	"testing"
 	"time"
 )
 
 type vacancySuite struct {
 	suite.Suite
-	rep *VacancyRepository
-	db *sql.DB
-	mock sqlmock.Sqlmock
-	vacancy models.Vacancy
-	user User
-	organization Organization
+	rep          *VacancyRepository
+	db           *sql.DB
+	mock         sqlmock.Sqlmock
+	vacancy      baseModels.Vacancy
+	user         pgModels.User
+	organization pgModels.Organization
 }
 
 func (suite *vacancySuite) SetupTest() {
@@ -27,9 +29,9 @@ func (suite *vacancySuite) SetupTest() {
 	assert.NoError(suite.T(), err)
 	suite.rep = NewVacancyRepository(suite.db)
 
-	suite.vacancy = models.Vacancy{
-		ID:              3,
-		Organization:     models.VacancyOrganization{
+	suite.vacancy = baseModels.Vacancy{
+		ID: 3,
+		Organization: baseModels.VacancyOrganization{
 			ID:     12,
 			Tag:    "tag",
 			Email:  "email",
@@ -48,7 +50,7 @@ func (suite *vacancySuite) SetupTest() {
 		Keywords:         "word",
 	}
 
-	suite.user = User{
+	suite.user = pgModels.User{
 		ID:             12,
 		OrganizationID: 1,
 		PersonID:       0,
@@ -59,7 +61,7 @@ func (suite *vacancySuite) SetupTest() {
 		Avatar:         "avatar",
 	}
 
-	suite.organization = Organization{
+	suite.organization = pgModels.Organization{
 		ID:   1,
 		Name: "name",
 		Site: "site",
@@ -72,6 +74,50 @@ func (suite *vacancySuite) TearDown() {
 
 func TestSuite(t *testing.T) {
 	suite.Run(t, new(vacancySuite))
+}
+
+func (suite *vacancySuite) TestGetRelatedUsers() {
+	rows := sqlmock.NewRows([]string{"name"}).AddRow(suite.organization.Name)
+	suite.mock.
+		ExpectQuery("SELECT o.name").
+		WithArgs(suite.vacancy.Organization.ID).
+		WillReturnRows(rows)
+
+	rows = sqlmock.NewRows([]string{"user_id"}).AddRow(uint64(1)).AddRow(uint64(2))
+	suite.mock.
+		ExpectQuery("SELECT f.user_id").
+		WithArgs(suite.vacancy.Organization.ID).
+		WillReturnRows(rows)
+
+	_, name, err := suite.rep.GetRelatedUsers(suite.vacancy.Organization.ID)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), suite.organization.Name, name)
+}
+
+func (suite *vacancySuite) TestGetRelatedUsersFailedOne() {
+	suite.mock.
+		ExpectQuery("SELECT o.name").
+		WithArgs(suite.vacancy.Organization.ID).
+		WillReturnError(errors.New(""))
+
+	_, _, err := suite.rep.GetRelatedUsers(suite.vacancy.Organization.ID)
+	assert.Error(suite.T(), err)
+}
+
+func (suite *vacancySuite) TestGetRelatedUsersFailedTwo() {
+	rows := sqlmock.NewRows([]string{"name"}).AddRow(suite.organization.Name)
+	suite.mock.
+		ExpectQuery("SELECT o.name").
+		WithArgs(suite.vacancy.Organization.ID).
+		WillReturnRows(rows)
+
+	suite.mock.
+		ExpectQuery("SELECT f.user_id").
+		WithArgs(suite.vacancy.Organization.ID).
+		WillReturnError(errors.New(""))
+
+	_, _, err := suite.rep.GetRelatedUsers(suite.vacancy.Organization.ID)
+	assert.Error(suite.T(), err)
 }
 
 func (suite *vacancySuite) TestCreateVacancy() {
@@ -179,7 +225,7 @@ func (suite *vacancySuite) TestGetVacancies() {
 
 	vacancy, err := suite.rep.GetVacancies(1)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), suite.vacancy, vacancy[0])
+	assert.Equal(suite.T(), &suite.vacancy, vacancy[0])
 }
 
 func (suite *vacancySuite) TestGetVacanciesFailedOne() {
@@ -211,12 +257,44 @@ func (suite *vacancySuite) TestGetVacanciesFailedTwo() {
 	assert.Error(suite.T(), err)
 }
 
+func (suite *vacancySuite) TestCheckAuthor() {
+	rows := sqlmock.NewRows([]string{"id"}).AddRow(true)
+	suite.mock.
+		ExpectQuery("SELECT organization_id").
+		WithArgs(suite.vacancy.Organization.ID, suite.vacancy.ID).
+		WillReturnRows(rows)
+
+	err := suite.rep.CheckAuthor(suite.vacancy.ID, suite.vacancy.Organization.ID)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *vacancySuite) TestCheckAuthorFailed() {
+	suite.mock.
+		ExpectQuery("SELECT organization_id").
+		WithArgs(suite.vacancy.Organization.ID, suite.vacancy.ID).
+		WillReturnError(errors.New(""))
+
+	err := suite.rep.CheckAuthor(suite.vacancy.ID, suite.vacancy.Organization.ID)
+	assert.Error(suite.T(), err)
+}
+
+func (suite *vacancySuite) TestCheckAuthorNotAuthor() {
+	rows := sqlmock.NewRows([]string{"id"}).AddRow(false)
+	suite.mock.
+		ExpectQuery("SELECT organization_id").
+		WithArgs(suite.vacancy.Organization.ID, suite.vacancy.ID).
+		WillReturnRows(rows)
+
+	err := suite.rep.CheckAuthor(suite.vacancy.ID, suite.vacancy.Organization.ID)
+	assert.EqualError(suite.T(), vacancyInterfaces.ErrOrgIsNotOwner, err.Error())
+}
+
 func (suite *vacancySuite) TestChangeVacancy() {
 	suite.mock.
 		ExpectExec("UPDATE vacancy SET name =").
 		WithArgs(suite.vacancy.Name, suite.vacancy.Description,
-		suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax, suite.vacancy.Responsibilities,
-		suite.vacancy.Conditions, suite.vacancy.Keywords, suite.vacancy.ID).
+			suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, suite.vacancy.WithTax, suite.vacancy.Responsibilities,
+			suite.vacancy.Conditions, suite.vacancy.Keywords, suite.vacancy.ID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	err := suite.rep.ChangeVacancy(&suite.vacancy)

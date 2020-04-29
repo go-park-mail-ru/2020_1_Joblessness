@@ -6,7 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	models "joblessness/haha/models"
+	"joblessness/haha/models/base"
 	reflect "reflect"
 )
 
@@ -14,6 +14,10 @@ import (
 type MockSummaryUseCase struct {
 	ctrl     *gomock.Controller
 	recorder *MockSummaryUseCaseMockRecorder
+}
+
+func (m *MockSummaryUseCase) SendSummaryByMail(summaryID, authorID uint64, to string) (err error) {
+	panic("implement me")
 }
 
 // MockSummaryUseCaseMockRecorder is the mock recorder for MockSummaryUseCase
@@ -34,7 +38,7 @@ func (m *MockSummaryUseCase) EXPECT() *MockSummaryUseCaseMockRecorder {
 }
 
 // ChangeSummary mocks base method
-func (m *MockSummaryUseCase) ChangeSummary(arg0 *models.Summary) error {
+func (m *MockSummaryUseCase) ChangeSummary(arg0 *baseModels.Summary) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ChangeSummary", arg0)
 	ret0, _ := ret[0].(error)
@@ -48,7 +52,7 @@ func (mr *MockSummaryUseCaseMockRecorder) ChangeSummary(arg0 interface{}) *gomoc
 }
 
 // CreateSummary mocks base method
-func (m *MockSummaryUseCase) CreateSummary(arg0 *models.Summary) (uint64, error) {
+func (m *MockSummaryUseCase) CreateSummary(arg0 *baseModels.Summary) (uint64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateSummary", arg0)
 	ret0, _ := ret[0].(uint64)
@@ -77,10 +81,10 @@ func (mr *MockSummaryUseCaseMockRecorder) DeleteSummary(arg0, arg1 interface{}) 
 }
 
 // GetAllSummaries mocks base method
-func (m *MockSummaryUseCase) GetAllSummaries(arg0 string) ([]models.Summary, error) {
+func (m *MockSummaryUseCase) GetAllSummaries(arg0 string) (baseModels.Summaries, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllSummaries", arg0)
-	ret0, _ := ret[0].([]models.Summary)
+	ret0, _ := ret[0].(baseModels.Summaries)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -92,10 +96,10 @@ func (mr *MockSummaryUseCaseMockRecorder) GetAllSummaries(arg0 interface{}) *gom
 }
 
 // GetOrgSendSummaries mocks base method
-func (m *MockSummaryUseCase) GetOrgSendSummaries(arg0 uint64) (models.OrgSummaries, error) {
+func (m *MockSummaryUseCase) GetOrgSendSummaries(arg0 uint64) (baseModels.OrgSummaries, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOrgSendSummaries", arg0)
-	ret0, _ := ret[0].(models.OrgSummaries)
+	ret0, _ := ret[0].(baseModels.OrgSummaries)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -107,10 +111,10 @@ func (mr *MockSummaryUseCaseMockRecorder) GetOrgSendSummaries(arg0 interface{}) 
 }
 
 // GetSummary mocks base method
-func (m *MockSummaryUseCase) GetSummary(arg0 uint64) (*models.Summary, error) {
+func (m *MockSummaryUseCase) GetSummary(arg0 uint64) (*baseModels.Summary, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSummary", arg0)
-	ret0, _ := ret[0].(*models.Summary)
+	ret0, _ := ret[0].(*baseModels.Summary)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -122,10 +126,10 @@ func (mr *MockSummaryUseCaseMockRecorder) GetSummary(arg0 interface{}) *gomock.C
 }
 
 // GetUserSendSummaries mocks base method
-func (m *MockSummaryUseCase) GetUserSendSummaries(arg0 uint64) (models.OrgSummaries, error) {
+func (m *MockSummaryUseCase) GetUserSendSummaries(arg0 uint64) (baseModels.OrgSummaries, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserSendSummaries", arg0)
-	ret0, _ := ret[0].(models.OrgSummaries)
+	ret0, _ := ret[0].(baseModels.OrgSummaries)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -137,10 +141,10 @@ func (mr *MockSummaryUseCaseMockRecorder) GetUserSendSummaries(arg0 interface{})
 }
 
 // GetUserSummaries mocks base method
-func (m *MockSummaryUseCase) GetUserSummaries(arg0 string, arg1 uint64) ([]models.Summary, error) {
+func (m *MockSummaryUseCase) GetUserSummaries(arg0 string, arg1 uint64) (baseModels.Summaries, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUserSummaries", arg0, arg1)
-	ret0, _ := ret[0].([]models.Summary)
+	ret0, _ := ret[0].(baseModels.Summaries)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -152,7 +156,7 @@ func (mr *MockSummaryUseCaseMockRecorder) GetUserSummaries(arg0, arg1 interface{
 }
 
 // ResponseSummary mocks base method
-func (m *MockSummaryUseCase) ResponseSummary(arg0 *models.SendSummary) error {
+func (m *MockSummaryUseCase) ResponseSummary(arg0 *baseModels.SendSummary) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ResponseSummary", arg0)
 	ret0, _ := ret[0].(error)
@@ -166,7 +170,7 @@ func (mr *MockSummaryUseCaseMockRecorder) ResponseSummary(arg0 interface{}) *gom
 }
 
 // SendSummary mocks base method
-func (m *MockSummaryUseCase) SendSummary(arg0 *models.SendSummary) error {
+func (m *MockSummaryUseCase) SendSummary(arg0 *baseModels.SendSummary) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendSummary", arg0)
 	ret0, _ := ret[0].(error)

@@ -1,9 +1,10 @@
-package httpVacancy
+package vacancyHttp
 
 //go:generate  mockgen -destination=../../usecase/mock/vacancy.go -package=mock joblessness/haha/vacancy/interfaces VacancyUseCase
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"github.com/golang/mock/gomock"
@@ -12,8 +13,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	mockAuth "joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
-	"joblessness/haha/middleware/xss"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	vacancyUseCaseMock "joblessness/haha/vacancy/usecase/mock"
 	"net/http"
 	"net/http/httptest"
@@ -23,23 +23,20 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	router *mux.Router
+	router         *mux.Router
 	mainMiddleware *middleware.RecoveryHandler
 	authMiddleware *middleware.SessionHandler
-	xssMiddleware *xss.XssHandler
-	controller *gomock.Controller
-	authUseCase *mockAuth.MockAuthUseCase
-	uc *vacancyUseCaseMock.MockVacancyUseCase
-	vacancy models.Vacancy
-	vacancyByte *bytes.Buffer
-	cookie *http.Cookie
+	controller     *gomock.Controller
+	authUseCase    *mockAuth.MockAuthUseCase
+	uc             *vacancyUseCaseMock.MockVacancyUseCase
+	vacancy        baseModels.Vacancy
+	vacancyByte    *bytes.Buffer
+	cookie         *http.Cookie
 }
 
 func (suite *userSuite) SetupTest() {
-	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
+	suite.router = mux.NewRouter().PathPrefix("/haha").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
-	suite.xssMiddleware = xss.NewXssHandler()
-	suite.router.Use(suite.xssMiddleware.SanitizeMiddleware)
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())
@@ -47,9 +44,9 @@ func (suite *userSuite) SetupTest() {
 	suite.authUseCase = mockAuth.NewMockAuthUseCase(suite.controller)
 	suite.authMiddleware = middleware.NewAuthMiddleware(suite.authUseCase)
 
-	suite.vacancy = models.Vacancy{
-		ID:              3,
-		Organization:     models.VacancyOrganization{
+	suite.vacancy = baseModels.Vacancy{
+		ID: 3,
+		Organization: baseModels.VacancyOrganization{
 			ID:     12,
 			Tag:    "",
 			Email:  "",
@@ -72,13 +69,13 @@ func (suite *userSuite) SetupTest() {
 	suite.vacancyByte = bytes.NewBuffer(vacancyJSON)
 	assert.NoError(suite.T(), err)
 
-	suite.cookie = &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	suite.cookie = &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	RegisterHTTPEndpoints(suite.router,suite.authMiddleware, suite.uc)
+	RegisterHTTPEndpoints(suite.router, suite.authMiddleware, suite.uc)
 }
 
 func TestSuite(t *testing.T) {
@@ -95,7 +92,7 @@ func (suite *userSuite) TestCreateVacancy() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/vacancies", suite.vacancyByte)
+	r, _ := http.NewRequest("POST", "/haha/vacancies", suite.vacancyByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -120,7 +117,7 @@ func (suite *userSuite) TestCreateVacancyEmptyName() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/vacancies", vacancyByte)
+	r, _ := http.NewRequest("POST", "/haha/vacancies", vacancyByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -138,7 +135,7 @@ func (suite *userSuite) TestCreateVacancyWrongJson() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/vacancies", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/vacancies", bytes.NewBuffer([]byte{}))
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -156,7 +153,7 @@ func (suite *userSuite) TestCreateVacancyFailed() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/vacancies", suite.vacancyByte)
+	r, _ := http.NewRequest("POST", "/haha/vacancies", suite.vacancyByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -170,11 +167,24 @@ func (suite *userSuite) TestGetVacancy() {
 		Return(&suite.vacancy, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/vacancies/3", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/vacancies/3", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
 	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
+
+func (suite *userSuite) TestGetVacancyNotFound() {
+	suite.uc.EXPECT().
+		GetVacancy(uint64(3)).
+		Return(nil, sql.ErrNoRows).
+		Times(1)
+
+	r, _ := http.NewRequest("GET", "/haha/vacancies/3", bytes.NewBuffer([]byte{}))
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
 }
 
 func (suite *userSuite) TestGetVacancyFailed() {
@@ -183,7 +193,7 @@ func (suite *userSuite) TestGetVacancyFailed() {
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/vacancies/3", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/vacancies/3", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -196,7 +206,7 @@ func (suite *userSuite) TestGetVacancyWrongUrl() {
 		Return(&suite.vacancy, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/vacancies/a", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/vacancies/a", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -206,10 +216,10 @@ func (suite *userSuite) TestGetVacancyWrongUrl() {
 func (suite *userSuite) TestGetVacancies() {
 	suite.uc.EXPECT().
 		GetVacancies("1").
-		Return([]models.Vacancy{suite.vacancy}, nil).
+		Return(baseModels.Vacancies{&suite.vacancy}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/vacancies?page=1", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/vacancies?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -219,10 +229,10 @@ func (suite *userSuite) TestGetVacancies() {
 func (suite *userSuite) TestGetVacanciesEmpty() {
 	suite.uc.EXPECT().
 		GetVacancies("1").
-		Return([]models.Vacancy{}, nil).
+		Return(baseModels.Vacancies{}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/vacancies?page=1", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/vacancies?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -235,7 +245,7 @@ func (suite *userSuite) TestGetVacanciesFailed() {
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/vacancies?page=1", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/vacancies?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -252,7 +262,7 @@ func (suite *userSuite) TestChangeVacancy() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("PUT", "/api/vacancies/3", suite.vacancyByte)
+	r, _ := http.NewRequest("PUT", "/haha/vacancies/3", suite.vacancyByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -270,7 +280,7 @@ func (suite *userSuite) TestChangeVacancyWrongUrl() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("PUT", "/api/vacancies/a", suite.vacancyByte)
+	r, _ := http.NewRequest("PUT", "/haha/vacancies/a", suite.vacancyByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -288,7 +298,7 @@ func (suite *userSuite) TestChangeVacancyWrongJson() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("PUT", "/api/vacancies/3", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("PUT", "/haha/vacancies/3", bytes.NewBuffer([]byte{}))
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -306,7 +316,7 @@ func (suite *userSuite) TestChangeVacancyFailed() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("PUT", "/api/vacancies/3", suite.vacancyByte)
+	r, _ := http.NewRequest("PUT", "/haha/vacancies/3", suite.vacancyByte)
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -324,7 +334,7 @@ func (suite *userSuite) TestDeleteVacancy() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("DELETE", "/api/vacancies/3", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("DELETE", "/haha/vacancies/3", bytes.NewBuffer([]byte{}))
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -342,7 +352,7 @@ func (suite *userSuite) TestDeleteVacancyWrongUrl() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("DELETE", "/api/vacancies/a", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("DELETE", "/haha/vacancies/a", bytes.NewBuffer([]byte{}))
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -360,7 +370,7 @@ func (suite *userSuite) TestDeleteVacancyFailed() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("DELETE", "/api/vacancies/3", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("DELETE", "/haha/vacancies/3", bytes.NewBuffer([]byte{}))
 	r.AddCookie(suite.cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -371,10 +381,10 @@ func (suite *userSuite) TestDeleteVacancyFailed() {
 func (suite *userSuite) TestGetOrgVacancies() {
 	suite.uc.EXPECT().
 		GetOrgVacancies(uint64(1)).
-		Return([]models.Vacancy{suite.vacancy}, nil).
+		Return(baseModels.Vacancies{&suite.vacancy}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations/1/vacancies", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/organizations/1/vacancies", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -384,10 +394,10 @@ func (suite *userSuite) TestGetOrgVacancies() {
 func (suite *userSuite) TestGetOrgVacanciesEmpty() {
 	suite.uc.EXPECT().
 		GetOrgVacancies(uint64(1)).
-		Return([]models.Vacancy{}, nil).
+		Return(baseModels.Vacancies{}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations/1/vacancies", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/organizations/1/vacancies", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -400,7 +410,7 @@ func (suite *userSuite) TestGetOrgVacanciesFailed() {
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations/1/vacancies", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/organizations/1/vacancies", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 

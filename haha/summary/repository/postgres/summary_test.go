@@ -1,4 +1,4 @@
-package summaryRepoPostgres
+package summaryPostgres
 
 import (
 	"database/sql"
@@ -6,7 +6,8 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
+	pgModels "joblessness/haha/models/postgres"
 	summaryInterfaces "joblessness/haha/summary/interfaces"
 	"testing"
 	"time"
@@ -14,16 +15,16 @@ import (
 
 type summarySuite struct {
 	suite.Suite
-	rep *SummaryRepository
-	db *sql.DB
-	mock sqlmock.Sqlmock
-	summary models.Summary
-	education Education
-	experience Experience
-	user User
-	person Person
-	response models.VacancyResponse
-	sendSum models.SendSummary
+	rep        *SummaryRepository
+	db         *sql.DB
+	mock       sqlmock.Sqlmock
+	summary    baseModels.Summary
+	education  pgModels.Education
+	experience pgModels.Experience
+	user       pgModels.User
+	person     pgModels.Person
+	response   baseModels.VacancyResponse
+	sendSum    baseModels.SendSummary
 }
 
 func (suite *summarySuite) SetupTest() {
@@ -32,28 +33,28 @@ func (suite *summarySuite) SetupTest() {
 	assert.NoError(suite.T(), err)
 	suite.rep = NewSummaryRepository(suite.db)
 
-	suite.summary = models.Summary{
-		ID:          3,
-		Author:      models.Author{
+	suite.summary = baseModels.Summary{
+		ID: 3,
+		Author: baseModels.Author{
 			ID:        12,
 			Tag:       "tag",
 			Email:     "email",
 			Phone:     "phone",
 			Avatar:    "avatar",
-			FirstName: "first",
-			LastName:  "name",
+			FirstName: "name",
+			LastName:  "first",
 			Gender:    "gender",
 		},
-		Keywords:    "key",
-		Educations:  []models.Education{
-			models.Education{
+		Keywords: "key",
+		Educations: []baseModels.Education{
+			baseModels.Education{
 				Institution: "was",
 				Speciality:  "is",
 				Type:        "none",
 			},
 		},
-		Experiences: []models.Experience{
-			models.Experience{
+		Experiences: []baseModels.Experience{
+			baseModels.Experience{
 				CompanyName:      "comp",
 				Role:             "role",
 				Responsibilities: "response",
@@ -63,7 +64,7 @@ func (suite *summarySuite) SetupTest() {
 		},
 	}
 
-	suite.user = User{
+	suite.user = pgModels.User{
 		ID:             12,
 		OrganizationID: 0,
 		PersonID:       3,
@@ -74,14 +75,15 @@ func (suite *summarySuite) SetupTest() {
 		Avatar:         "avatar",
 	}
 
-	suite.person = Person{
+	suite.person = pgModels.Person{
 		ID:       uint64(3),
 		Name:     "name",
+		LastName: "last",
 		Gender:   "gender",
 		Birthday: time.Now(),
 	}
 
-	suite.response = models.VacancyResponse{
+	suite.response = baseModels.VacancyResponse{
 		UserID:    suite.person.ID,
 		Tag:       suite.user.Tag,
 		VacancyID: uint64(7),
@@ -89,10 +91,10 @@ func (suite *summarySuite) SetupTest() {
 		Keywords:  suite.summary.Keywords,
 	}
 
-	suite.sendSum = models.SendSummary{
+	suite.sendSum = baseModels.SendSummary{
 		VacancyID:      uint64(7),
 		SummaryID:      suite.summary.ID,
-		UserID:    		suite.person.ID,
+		UserID:         suite.person.ID,
 		OrganizationID: uint64(13),
 		Accepted:       true,
 		Denied:         false,
@@ -118,12 +120,12 @@ func (suite *summarySuite) TestCreateSummary() {
 	suite.mock.
 		ExpectExec("INSERT INTO education").
 		WithArgs(suite.summary.ID, suite.summary.Educations[0].Institution, suite.summary.Educations[0].Speciality,
-		nil , suite.summary.Educations[0].Type).
+			nil, suite.summary.Educations[0].Type).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	suite.mock.
 		ExpectExec("INSERT INTO experience").
 		WithArgs(suite.summary.ID, suite.summary.Experiences[0].CompanyName, suite.summary.Experiences[0].Role,
-		suite.summary.Experiences[0].Responsibilities, suite.summary.Experiences[0].Start, suite.summary.Experiences[0].Stop).
+			suite.summary.Experiences[0].Responsibilities, suite.summary.Experiences[0].Start, suite.summary.Experiences[0].Stop).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	summaryID, err := suite.rep.CreateSummary(&suite.summary)
@@ -151,7 +153,7 @@ func (suite *summarySuite) TestCreateSummaryFailedTwo() {
 	suite.mock.
 		ExpectExec("INSERT INTO education").
 		WithArgs(suite.summary.ID, suite.summary.Educations[0].Institution, suite.summary.Educations[0].Speciality,
-			nil , suite.summary.Educations[0].Type).
+			nil, suite.summary.Educations[0].Type).
 		WillReturnError(errors.New(""))
 
 	_, err := suite.rep.CreateSummary(&suite.summary)
@@ -168,7 +170,7 @@ func (suite *summarySuite) TestCreateSummaryFailedThree() {
 	suite.mock.
 		ExpectExec("INSERT INTO education").
 		WithArgs(suite.summary.ID, suite.summary.Educations[0].Institution, suite.summary.Educations[0].Speciality,
-			nil , suite.summary.Educations[0].Type).
+			nil, suite.summary.Educations[0].Type).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	suite.mock.
 		ExpectExec("INSERT INTO experience").
@@ -206,11 +208,12 @@ func (suite *summarySuite) TestGetSummary() {
 		WithArgs(suite.summary.ID).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"tag", "email", "phone", "avatar", "name", "gender", "birthday"}).
+	rows = sqlmock.NewRows([]string{"tag", "email", "phone", "avatar", "name", "surname", "gender", "birthday"}).
 		AddRow(suite.summary.Author.Tag, suite.summary.Author.Email, suite.summary.Author.Phone,
-			suite.summary.Author.Avatar, "first name", suite.summary.Author.Gender, suite.summary.Author.Birthday)
+			suite.summary.Author.Avatar, suite.summary.Author.FirstName, suite.summary.Author.LastName,
+			suite.summary.Author.Gender, suite.summary.Author.Birthday)
 	suite.mock.
-		ExpectQuery("SELECT tag, email, phone, avatar, name, gender, birthday").
+		ExpectQuery("SELECT tag, email, phone, avatar, name, surname, gender, birthday").
 		WithArgs(suite.summary.Author.ID).
 		WillReturnRows(rows)
 
@@ -331,17 +334,18 @@ func (suite *summarySuite) TestGetSummaries() {
 		WithArgs(suite.summary.ID).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"tag", "email", "phone", "avatar", "name", "gender", "birthday"}).
+	rows = sqlmock.NewRows([]string{"tag", "email", "phone", "avatar", "name", "surname", "gender", "birthday"}).
 		AddRow(suite.summary.Author.Tag, suite.summary.Author.Email, suite.summary.Author.Phone,
-			suite.summary.Author.Avatar, "first name", suite.summary.Author.Gender, suite.summary.Author.Birthday)
+			suite.summary.Author.Avatar, suite.summary.Author.FirstName, suite.summary.Author.LastName,
+			suite.summary.Author.Gender, suite.summary.Author.Birthday)
 	suite.mock.
-		ExpectQuery("SELECT tag, email, phone, avatar, name, gender, birthday").
+		ExpectQuery("SELECT tag, email, phone, avatar, name, surname, gender, birthday").
 		WithArgs(suite.summary.Author.ID).
 		WillReturnRows(rows)
 
 	summaries, err := suite.rep.GetAllSummaries(1)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), suite.summary, summaries[0])
+	assert.Equal(suite.T(), &suite.summary, summaries[0])
 }
 
 func (suite *summarySuite) TestGetUserSummaries() {
@@ -370,17 +374,18 @@ func (suite *summarySuite) TestGetUserSummaries() {
 		WithArgs(suite.summary.ID).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"tag", "email", "phone", "avatar", "name", "gender", "birthday"}).
+	rows = sqlmock.NewRows([]string{"tag", "email", "phone", "avatar", "name", "surname", "gender", "birthday"}).
 		AddRow(suite.summary.Author.Tag, suite.summary.Author.Email, suite.summary.Author.Phone,
-			suite.summary.Author.Avatar, "first name", suite.summary.Author.Gender, suite.summary.Author.Birthday)
+			suite.summary.Author.Avatar, suite.summary.Author.FirstName, suite.summary.Author.LastName,
+			suite.summary.Author.Gender, suite.summary.Author.Birthday)
 	suite.mock.
-		ExpectQuery("SELECT tag, email, phone, avatar, name, gender, birthday").
+		ExpectQuery("SELECT tag, email, phone, avatar, name, surname, gender, birthday").
 		WithArgs(suite.summary.Author.ID).
 		WillReturnRows(rows)
 
 	summaries, err := suite.rep.GetUserSummaries(0, uint64(12))
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), suite.summary, summaries[0])
+	assert.Equal(suite.T(), &suite.summary, summaries[0])
 }
 
 func (suite *summarySuite) TestCheckAuthor() {
@@ -406,7 +411,7 @@ func (suite *summarySuite) TestCheckAuthorNotOwner() {
 		WillReturnRows(rows)
 
 	err := suite.rep.CheckAuthor(suite.summary.ID, suite.summary.Author.ID)
-	assert.Equal(suite.T(), summaryInterfaces.NewErrorPersonIsNotOwner(uint64(12), uint64(3)), err)
+	assert.True(suite.T(), errors.Is(err, summaryInterfaces.ErrPersonIsNotOwner))
 }
 
 func (suite *summarySuite) TestChangeSummary() {
@@ -418,7 +423,7 @@ func (suite *summarySuite) TestChangeSummary() {
 	suite.mock.
 		ExpectExec("UPDATE education").
 		WithArgs(suite.summary.Educations[0].Institution, suite.summary.Educations[0].Speciality,
-		nil, suite.summary.Educations[0].Type, suite.summary.ID).
+			nil, suite.summary.Educations[0].Type, suite.summary.ID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	suite.mock.
@@ -501,40 +506,6 @@ func (suite *summarySuite) TestDeleteSummaryFailed() {
 	assert.Error(suite.T(), err)
 }
 
-func (suite *summarySuite) TestIsOrganizationSummaryTrue() {
-	rows := sqlmock.NewRows([]string{"id"}).
-		AddRow(true)
-	suite.mock.
-		ExpectQuery("SELECT v.organization_id").
-		WithArgs(suite.summary.ID, suite.summary.Author.ID).
-		WillReturnRows(rows)
-
-	err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
-	assert.NoError(suite.T(), err)
-}
-
-func (suite *summarySuite) TestIsOrganizationSummaryFalse() {
-	rows := sqlmock.NewRows([]string{"id"}).
-		AddRow(false)
-	suite.mock.
-		ExpectQuery("SELECT v.organization_id").
-		WithArgs(suite.summary.ID, suite.summary.Author.ID).
-		WillReturnRows(rows)
-
-	err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
-	assert.Equal(suite.T(), summaryInterfaces.NewErrorOrganizationIsNotOwner(), err)
-}
-
-func (suite *summarySuite) TestIsOrganizationSummaryFailed() {
-	suite.mock.
-		ExpectQuery("SELECT v.organization_id").
-		WithArgs(suite.summary.ID, suite.summary.Author.ID).
-		WillReturnError(errors.New(""))
-
-	err := suite.rep.IsOrganizationVacancy(suite.summary.ID, suite.summary.Author.ID)
-	assert.EqualError(suite.T(), err, "")
-}
-
 func (suite *summarySuite) TestSendSummary() {
 	suite.mock.
 		ExpectExec("INSERT INTO response").
@@ -552,7 +523,7 @@ func (suite *summarySuite) TestSendSummaryAlreadySend() {
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
 	err := suite.rep.SendSummary(&suite.sendSum)
-	assert.Equal(suite.T(), summaryInterfaces.NewErrorSummaryAlreadySent(), err)
+	assert.True(suite.T(), errors.Is(err, summaryInterfaces.ErrSummaryAlreadySent))
 }
 
 func (suite *summarySuite) TestSendSummaryFailed() {
@@ -582,7 +553,7 @@ func (suite *summarySuite) TestRefreshSummaryNoSummary() {
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
 	err := suite.rep.RefreshSummary(suite.sendSum.SummaryID, suite.sendSum.VacancyID)
-	assert.Equal(suite.T(), summaryInterfaces.NewErrorNoSummaryToRefresh(), err)
+	assert.True(suite.T(), errors.Is(err, summaryInterfaces.ErrNoSummaryToRefresh))
 }
 
 func (suite *summarySuite) TestRefreshSummaryFailed() {
@@ -593,26 +564,6 @@ func (suite *summarySuite) TestRefreshSummaryFailed() {
 
 	err := suite.rep.RefreshSummary(suite.sendSum.SummaryID, suite.sendSum.VacancyID)
 	assert.Error(suite.T(), err)
-}
-
-func (suite *summarySuite) TestResponseSummary() {
-	suite.mock.
-		ExpectExec("UPDATE response").
-		WithArgs(suite.sendSum.Accepted, suite.sendSum.Denied, suite.sendSum.SummaryID, suite.sendSum.VacancyID).
-		WillReturnResult(sqlmock.NewResult(1, 1))
-
-	err := suite.rep.ResponseSummary(&suite.sendSum)
-	assert.NoError(suite.T(), err)
-}
-
-func (suite *summarySuite) TestResponseSummaryNo() {
-	suite.mock.
-		ExpectExec("UPDATE response").
-		WithArgs(suite.sendSum.Accepted, suite.sendSum.Denied, suite.sendSum.SummaryID, suite.sendSum.VacancyID).
-		WillReturnResult(sqlmock.NewResult(1, 0))
-
-	err := suite.rep.ResponseSummary(&suite.sendSum)
-	assert.Equal(suite.T(), summaryInterfaces.NewErrorNoSummaryToRefresh(), err)
 }
 
 func (suite *summarySuite) TestResponseSummaryFailed() {

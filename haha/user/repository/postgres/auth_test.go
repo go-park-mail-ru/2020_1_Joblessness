@@ -1,4 +1,4 @@
-package postgresUser
+package userPostgres
 
 import (
 	"database/sql"
@@ -6,17 +6,17 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"testing"
 )
 
 type userSuite struct {
 	suite.Suite
-	rep *UserRepository
-	db *sql.DB
-	mock sqlmock.Sqlmock
-	person models.Person
-	organization models.Organization
+	rep          *UserRepository
+	db           *sql.DB
+	mock         sqlmock.Sqlmock
+	person       baseModels.Person
+	organization baseModels.Organization
 }
 
 func (suite *userSuite) SetupTest() {
@@ -25,26 +25,26 @@ func (suite *userSuite) SetupTest() {
 	assert.NoError(suite.T(), err)
 	suite.rep = NewUserRepository(suite.db)
 
-	suite.person = models.Person{
-		ID: 1,
-		Login:       "login",
-		Password:    "password",
-		FirstName:   "first",
-		LastName:    "name",
-		Email:       "email",
-		Phone: "phone",
-		Tag: "tag",
+	suite.person = baseModels.Person{
+		ID:        1,
+		Login:     "login",
+		Password:  "password",
+		FirstName: "first",
+		LastName:  "name",
+		Email:     "email",
+		Phone:     "phone",
+		Tag:       "tag",
 	}
 
-	suite.organization = models.Organization{
-		ID: 1,
-		Login:       "login",
-		Password:    "password",
-		Name:   "name",
-		Site:    "site",
-		Email:       "email",
-		Phone: "phone",
-		Tag: "tag",
+	suite.organization = baseModels.Organization{
+		ID:       1,
+		Login:    "login",
+		Password: "password",
+		Name:     "name",
+		Site:     "site",
+		Email:    "email",
+		Phone:    "phone",
+		Tag:      "tag",
 	}
 }
 
@@ -67,7 +67,6 @@ func (suite *userSuite) TestSaveAvatar() {
 	assert.NoError(suite.T(), err)
 }
 
-
 func (suite *userSuite) TestSaveAvatarEmpty() {
 	err := suite.rep.SaveAvatarLink("", 1)
 
@@ -83,8 +82,8 @@ func (suite *userSuite) TestGetPerson() {
 		WithArgs(1).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"name", "gender", "birthday"})
-	rows = rows.AddRow(suite.person.LastName + " " + suite.person.LastName, suite.person.Gender, suite.person.Birthday)
+	rows = sqlmock.NewRows([]string{"name", "surname", "gender", "birthday"})
+	rows = rows.AddRow(suite.person.LastName, suite.person.LastName, suite.person.Gender, suite.person.Birthday)
 	suite.mock.
 		ExpectQuery("SELECT name").
 		WithArgs(suite.person.ID).
@@ -140,14 +139,14 @@ func (suite *userSuite) TestChangePerson() {
 
 	suite.mock.
 		ExpectExec("UPDATE person").
-		WithArgs(suite.person.FirstName + " " + suite.person.LastName, suite.person.Gender, nil, 1).
+		WithArgs(suite.person.FirstName, suite.person.LastName, suite.person.Gender, nil, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	suite.mock.
 		ExpectExec("UPDATE user").
 		WithArgs(suite.person.Password, suite.person.Tag, suite.person.Email, suite.person.Phone, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := suite.rep.ChangePerson(suite.person)
+	err := suite.rep.ChangePerson(&suite.person)
 
 	assert.NoError(suite.T(), err)
 }
@@ -160,7 +159,7 @@ func (suite *userSuite) TestChangePersonFailedOne() {
 		WithArgs(suite.person.ID).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.ChangePerson(suite.person)
+	err := suite.rep.ChangePerson(&suite.person)
 
 	assert.Error(suite.T(), err)
 }
@@ -175,10 +174,10 @@ func (suite *userSuite) TestChangePersonFailedTwo() {
 
 	suite.mock.
 		ExpectExec("UPDATE person").
-		WithArgs(suite.person.FirstName + " " + suite.person.LastName, 12).
+		WithArgs(suite.person.FirstName+" "+suite.person.LastName, 12).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.ChangePerson(suite.person)
+	err := suite.rep.ChangePerson(&suite.person)
 
 	assert.Error(suite.T(), err)
 }
@@ -255,7 +254,7 @@ func (suite *userSuite) TestChangeOrganization() {
 		WithArgs(suite.organization.Password, suite.organization.Tag, suite.organization.Email, suite.organization.Phone, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := suite.rep.ChangeOrganization(suite.organization)
+	err := suite.rep.ChangeOrganization(&suite.organization)
 
 	assert.NoError(suite.T(), err)
 }
@@ -268,7 +267,7 @@ func (suite *userSuite) TestChangeOrganizationFailedOne() {
 		WithArgs(suite.organization.ID).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.ChangeOrganization(suite.organization)
+	err := suite.rep.ChangeOrganization(&suite.organization)
 
 	assert.Error(suite.T(), err)
 }
@@ -286,7 +285,7 @@ func (suite *userSuite) TestChangeOrganizationFailedTwo() {
 		WithArgs(suite.organization.Name, 12).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.ChangeOrganization(suite.organization)
+	err := suite.rep.ChangeOrganization(&suite.organization)
 
 	assert.Error(suite.T(), err)
 }
@@ -349,7 +348,7 @@ func (suite *userSuite) TestLikeUserLikeFailed() {
 
 func (suite *userSuite) TestLikeExists() {
 	rows := sqlmock.NewRows([]string{"count"}).
-	AddRow(1)
+		AddRow(1)
 	suite.mock.
 		ExpectQuery("SELECT count").
 		WithArgs(suite.person.ID, suite.person.ID).
@@ -402,32 +401,34 @@ func (suite *userSuite) TestLikeUserDisFailed() {
 	assert.Error(suite.T(), err)
 }
 
-func (suite *userSuite) TestFavoritePer() {
-	rows := sqlmock.NewRows([]string{"userId", "tag", "person_id"})
-	rows = rows.AddRow(uint64(1), "tag", uint64(2))
+func (suite *userSuite) TestFavoriteOrg() {
+	rows := sqlmock.NewRows([]string{"userId", "tag", "avatar", "person_id", "name", "name", "surname"})
+	rows = rows.AddRow(uint64(1), "tag", "avatar", nil, "org", "person", "sur")
 	suite.mock.
-		ExpectQuery("SELECT u.id, u.tag, u.person_id").
+		ExpectQuery("SELECT u.id, u.tag").
 		WithArgs(suite.person.ID).
 		WillReturnRows(rows)
 
 	res, err := suite.rep.GetUserFavorite(suite.person.ID)
 
 	assert.NoError(suite.T(), err)
-	assert.True(suite.T(), res[0].IsPerson)
+	assert.Equal(suite.T(), "org", res[0].Name)
+	assert.False(suite.T(), res[0].IsPerson)
 }
 
-func (suite *userSuite) TestFavoriteOrg() {
-	rows := sqlmock.NewRows([]string{"userId", "tag", "person_id"})
-	rows = rows.AddRow(uint64(1), "tag", nil)
+func (suite *userSuite) TestFavoritePerson() {
+	rows := sqlmock.NewRows([]string{"userId", "tag", "avatar", "person_id", "name", "name", "surname"})
+	rows = rows.AddRow(uint64(1), "tag", "avatar", uint64(2), "org", "person", "sur")
 	suite.mock.
-		ExpectQuery("SELECT u.id, u.tag, u.person_id").
+		ExpectQuery("SELECT u.id, u.tag").
 		WithArgs(suite.person.ID).
 		WillReturnRows(rows)
 
 	res, err := suite.rep.GetUserFavorite(suite.person.ID)
 
 	assert.NoError(suite.T(), err)
-	assert.False(suite.T(), res[0].IsPerson)
+	assert.Equal(suite.T(), "person", res[0].Name)
+	assert.True(suite.T(), res[0].IsPerson)
 }
 
 func (suite *userSuite) TestFavoriteFailed() {

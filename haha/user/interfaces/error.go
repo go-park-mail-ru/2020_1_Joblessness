@@ -14,7 +14,7 @@ func (e *ErrorUserNotFound) Error() string {
 	return fmt.Sprintf("User with id %d not found", e.ID)
 }
 
-type ErrorWrongSID struct {}
+type ErrorWrongSID struct{}
 
 func NewErrorWrongSID() *ErrorWrongSID {
 	return &ErrorWrongSID{}
@@ -24,7 +24,7 @@ func (e *ErrorWrongSID) Error() string {
 	return "Wrong SID"
 }
 
-type ErrorWrongLoginOrPassword struct {}
+type ErrorWrongLoginOrPassword struct{}
 
 func NewErrorWrongLoginOrPassword() *ErrorWrongLoginOrPassword {
 	return &ErrorWrongLoginOrPassword{}
@@ -70,7 +70,7 @@ func (e *ErrorUserNotOrganization) Error() string {
 	return fmt.Sprintf("User with id %d is not a organization", e.ID)
 }
 
-type ErrorAvatarParse struct {}
+type ErrorAvatarParse struct{}
 
 func NewErrorAvatarParse() *ErrorAvatarParse {
 	return &ErrorAvatarParse{}
@@ -80,7 +80,7 @@ func (e *ErrorAvatarParse) Error() string {
 	return "Not able to parse avatar"
 }
 
-type ErrorUploadAvatar struct {}
+type ErrorUploadAvatar struct{}
 
 func NewErrorUploadAvatar() *ErrorUploadAvatar {
 	return &ErrorUploadAvatar{}
@@ -90,7 +90,7 @@ func (e *ErrorUploadAvatar) Error() string {
 	return "Not able to upload avatar"
 }
 
-type ErrorNoFile struct {}
+type ErrorNoFile struct{}
 
 func NewErrorNoFile() *ErrorNoFile {
 	return &ErrorNoFile{}

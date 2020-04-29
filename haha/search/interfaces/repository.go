@@ -1,9 +1,11 @@
 package searchInterfaces
 
-import "joblessness/haha/models"
+import (
+	"joblessness/haha/models/base"
+)
 
 type SearchRepository interface {
-	SearchPersons(request, since, desc string) (result []*models.Person, err error)
-	SearchOrganizations(request, since, desc string) (result []*models.Organization, err error)
-	SearchVacancies(request, since, desc string) (result []*models.Vacancy, err error)
+	SearchPersons(params *baseModels.SearchParams) (result []*baseModels.Person, err error)
+	SearchOrganizations(params *baseModels.SearchParams) (result []*baseModels.Organization, err error)
+	SearchVacancies(params *baseModels.SearchParams) (result []*baseModels.Vacancy, err error)
 }

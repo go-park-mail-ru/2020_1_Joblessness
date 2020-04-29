@@ -4,12 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/kataras/golog"
+	"github.com/prometheus/client_golang/prometheus"
+	prom "joblessness/haha/prometheus"
 	"joblessness/haha/utils/custom_http"
 	"math/rand"
 	"net/http"
+	"time"
 )
 
-type RecoveryHandler struct {}
+type RecoveryHandler struct{}
 
 func NewMiddleware() *RecoveryHandler {
 	return &RecoveryHandler{}
@@ -32,9 +35,22 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 		requestNumber := genRequestNumber(6)
 		r = r.WithContext(context.WithValue(r.Context(), "rID", requestNumber))
 
+		labels := prometheus.Labels{
+			"method": r.Method,
+			"path":   r.URL.Path,
+		}
+
 		golog.Infof("#%s: %s %s", requestNumber, r.Method, r.URL)
-		next.ServeHTTP(sw, r)
+		prom.RequestCurrent.With(labels).Inc()
+		start := time.Now()
+
+		next.ServeHTTP(w, r)
+
+		prom.RequestDuration.With(labels).Observe(time.Since(start).Seconds())
+		prom.RequestCurrent.With(labels).Dec()
 		golog.Infof("#%s: code %d", requestNumber, sw.StatusCode)
+
+		prom.RequestCount.With(labels).Inc()
 	})
 }
 
@@ -46,7 +62,7 @@ func (m *RecoveryHandler) RecoveryMiddleware(next http.Handler) http.Handler {
 			err := recover()
 			if err != nil {
 				if ok {
-					golog.Errorf("#%s Panic: %w",  rID, err)
+					golog.Errorf("#%s Panic: %w", rID, err)
 				} else {
 					golog.Errorf("Panic with no id: %w", err)
 				}

@@ -1,4 +1,4 @@
-package httpUser
+package userHttp
 
 //go:generate mockgen -destination=../../usecase/mock/user.go -package=mock joblessness/haha/user/interfaces UserUseCase
 
@@ -12,8 +12,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	mockAuth "joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
-	"joblessness/haha/middleware/xss"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
 	"joblessness/haha/user/usecase/mock"
 	"net/http"
 	"net/http/httptest"
@@ -24,24 +23,21 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	router *mux.Router
-	mainMiddleware *middleware.RecoveryHandler
-	authMiddleware *middleware.SessionHandler
-	xssMiddleware *xss.XssHandler
-	controller *gomock.Controller
-	uc *mock.MockUserUseCase
-	ucAuth *mockAuth.MockAuthUseCase
-	person models.Person
-	personByte *bytes.Buffer
-	organization models.Organization
+	router           *mux.Router
+	mainMiddleware   *middleware.RecoveryHandler
+	authMiddleware   *middleware.SessionHandler
+	controller       *gomock.Controller
+	uc               *mock.MockUserUseCase
+	ucAuth           *mockAuth.MockAuthUseCase
+	person           baseModels.Person
+	personByte       *bytes.Buffer
+	organization     baseModels.Organization
 	organizationByte *bytes.Buffer
 }
 
 func (suite *userSuite) SetupTest() {
-	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
+	suite.router = mux.NewRouter().PathPrefix("/haha").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
-	suite.xssMiddleware = xss.NewXssHandler()
-	suite.router.Use(suite.xssMiddleware.SanitizeMiddleware)
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
 	suite.controller = gomock.NewController(suite.T())
@@ -49,35 +45,35 @@ func (suite *userSuite) SetupTest() {
 	suite.ucAuth = mockAuth.NewMockAuthUseCase(suite.controller)
 	suite.authMiddleware = middleware.NewAuthMiddleware(suite.ucAuth)
 
-	suite.person = models.Person{
-		ID: 12,
-		Login:       "new username",
-		Password:    "NewPassword123",
-		FirstName:   "new first name",
-		LastName:    "new last name",
-		Email:       "new@email.ru",
-		Phone: "new phone number",
+	suite.person = baseModels.Person{
+		ID:        12,
+		Login:     "new username",
+		Password:  "NewPassword123",
+		FirstName: "new first name",
+		LastName:  "new last name",
+		Email:     "new@email.ru",
+		Phone:     "new phone number",
 	}
 	var err error
 	personJSON, err := json.Marshal(suite.person)
 	suite.personByte = bytes.NewBuffer(personJSON)
 	assert.NoError(suite.T(), err)
 
-	suite.organization = models.Organization{
-		ID: 12,
-		Login:       "new username",
-		Password:    "NewPassword123",
-		Name:   "new name",
-		Site:    "new site",
-		Email:       "new@email.ru",
-		Phone: "new phone number",
-		Tag: "awdawdawd",
+	suite.organization = baseModels.Organization{
+		ID:       12,
+		Login:    "new username",
+		Password: "NewPassword123",
+		Name:     "new name",
+		Site:     "new site",
+		Email:    "new@email.ru",
+		Phone:    "new phone number",
+		Tag:      "awdawdawd",
 	}
 	organizationJSON, err := json.Marshal(suite.organization)
 	suite.organizationByte = bytes.NewBuffer(organizationJSON)
 	assert.NoError(suite.T(), err)
 
-	RegisterHTTPEndpoints(suite.router,suite.authMiddleware, suite.uc)
+	RegisterHTTPEndpoints(suite.router, suite.authMiddleware, suite.uc)
 }
 
 func TestSuite(t *testing.T) {
@@ -89,9 +85,10 @@ const message = `
 Content-Disposition: form-data; name="file"; filename="file.png"
 Content-Type: text/plain
 `
+
 func newTestMultipartRequest(t *testing.T) *http.Request {
 	b := strings.NewReader(strings.ReplaceAll(message, "\n", "\r\n"))
-	req, err := http.NewRequest("POST", "/api/users/12/avatar", b)
+	req, err := http.NewRequest("POST", "/haha/users/12/avatar", b)
 	if err != nil {
 		t.Fatal("NewRequest:", err)
 	}
@@ -110,9 +107,9 @@ func (suite *userSuite) TestSetAvatar() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
@@ -151,9 +148,9 @@ func (suite *userSuite) TestSetAvatarWrongId() {
 		Return(uint64(13), nil).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
@@ -175,13 +172,13 @@ func (suite *userSuite) TestSetAvatarNotMultipart() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("POST", "/api/users/12/avatar", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/12/avatar", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -195,7 +192,7 @@ func (suite *userSuite) TestGetPerson() {
 		Return(&suite.person, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/users/12", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/12", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -208,7 +205,7 @@ func (suite *userSuite) TestGetPersonWentWrong() {
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/users/12", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/12", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -221,17 +218,17 @@ func (suite *userSuite) TestChangePerson() {
 		Return(uint64(12), nil).
 		Times(1)
 	suite.uc.EXPECT().
-		ChangePerson(suite.person).
+		ChangePerson(&suite.person).
 		Return(nil).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("PUT", "/api/users/12", suite.personByte)
+	r, _ := http.NewRequest("PUT", "/haha/users/12", suite.personByte)
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -245,11 +242,11 @@ func (suite *userSuite) TestChangePersonNoCookie() {
 		Return(uint64(12), nil).
 		Times(1)
 	suite.uc.EXPECT().
-		ChangePerson(suite.person).
+		ChangePerson(&suite.person).
 		Return(nil).
 		Times(1)
 
-	r, _ := http.NewRequest("PUT", "/api/users/12", suite.personByte)
+	r, _ := http.NewRequest("PUT", "/haha/users/12", suite.personByte)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -262,17 +259,17 @@ func (suite *userSuite) TestChangePersonWrongId() {
 		Return(uint64(12), nil).
 		Times(1)
 	suite.uc.EXPECT().
-		ChangePerson(suite.person).
+		ChangePerson(&suite.person).
 		Return(nil).
 		Times(0)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("PUT", "/api/users/13", suite.personByte)
+	r, _ := http.NewRequest("PUT", "/haha/users/13", suite.personByte)
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -286,7 +283,7 @@ func (suite *userSuite) TestGetOrganization() {
 		Return(&suite.organization, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations/12", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/organizations/12", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -299,7 +296,7 @@ func (suite *userSuite) TestGetOrganizationWentWrong() {
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations/12", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/organizations/12", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -312,17 +309,17 @@ func (suite *userSuite) TestChangeOrganization() {
 		Return(uint64(12), nil).
 		Times(1)
 	suite.uc.EXPECT().
-		ChangeOrganization(suite.organization).
+		ChangeOrganization(&suite.organization).
 		Return(nil).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("PUT", "/api/organizations/12", suite.organizationByte)
+	r, _ := http.NewRequest("PUT", "/haha/organizations/12", suite.organizationByte)
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -340,7 +337,7 @@ func (suite *userSuite) TestChangeOrganizationNoCookie() {
 		Return(nil).
 		Times(1)
 
-	r, _ := http.NewRequest("PUT", "/api/organizations/12", suite.organizationByte)
+	r, _ := http.NewRequest("PUT", "/haha/organizations/12", suite.organizationByte)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -357,13 +354,13 @@ func (suite *userSuite) TestChangeOrganizationWrongId() {
 		Return(nil).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("PUT", "/api/organizations/13", suite.organizationByte)
+	r, _ := http.NewRequest("PUT", "/haha/organizations/13", suite.organizationByte)
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -374,10 +371,10 @@ func (suite *userSuite) TestChangeOrganizationWrongId() {
 func (suite *userSuite) TestListOrgs() {
 	suite.uc.EXPECT().
 		GetListOfOrgs(1).
-		Return([]models.Organization{}, nil).
+		Return(baseModels.Organizations{}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations?page=1", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/organizations?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -390,7 +387,7 @@ func (suite *userSuite) TestListOrgsFailed() {
 		Return(nil, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/organizations?page=1", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/organizations?page=1", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -407,13 +404,13 @@ func (suite *userSuite) TestLikeUser() {
 		Return(false, nil).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("POST", "/api/users/1/like",  bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/1/like", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -427,7 +424,7 @@ func (suite *userSuite) TestLikeUserNoSession() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("POST", "/api/users/1/like",  bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/1/like", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -444,13 +441,13 @@ func (suite *userSuite) TestLikeUserFailed() {
 		Return(false, errors.New("")).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("POST", "/api/users/1/like",  bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("POST", "/haha/users/1/like", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -468,13 +465,13 @@ func (suite *userSuite) TestLikeExists() {
 		Return(false, nil).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("GET", "/api/users/1/like",  bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/1/like", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -492,13 +489,13 @@ func (suite *userSuite) TestLikeExistsFailed() {
 		Return(false, errors.New("")).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("GET", "/api/users/1/like",  bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/1/like", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -513,16 +510,16 @@ func (suite *userSuite) TestGetFavorite() {
 		Times(1)
 	suite.uc.EXPECT().
 		GetUserFavorite(uint64(12)).
-		Return(models.Favorites{}, nil).
+		Return(baseModels.Favorites{}, nil).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("GET", "/api/users/12/favorite",  bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/12/favorite", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -536,7 +533,7 @@ func (suite *userSuite) TestGetFavoriteNoSession() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/api/users/12/favorite",  bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/12/favorite", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -549,13 +546,13 @@ func (suite *userSuite) TestGetFavoriteWrongId() {
 		Return(uint64(12), nil).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("GET", "/api/users/13/favorite",  bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/13/favorite", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
@@ -573,13 +570,13 @@ func (suite *userSuite) TestGetFavoriteFailed() {
 		Return(nil, errors.New("")).
 		Times(1)
 
-	cookie := &http.Cookie {
-		Name: "session_id",
-		Value: "username",
+	cookie := &http.Cookie{
+		Name:    "session_id",
+		Value:   "username",
 		Expires: time.Now().Add(time.Hour),
 	}
 
-	r, _ := http.NewRequest("GET", "/api/users/12/favorite",  bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/haha/users/12/favorite", bytes.NewBuffer([]byte{}))
 	r.AddCookie(cookie)
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)

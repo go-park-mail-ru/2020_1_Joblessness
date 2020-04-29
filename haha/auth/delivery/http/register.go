@@ -1,4 +1,4 @@
-package httpAuth
+package authHttp
 
 import (
 	"github.com/gorilla/mux"

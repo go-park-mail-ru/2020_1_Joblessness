@@ -1,4 +1,4 @@
-package postgresAuth
+package authPostgres
 
 import (
 	"database/sql"
@@ -6,8 +6,10 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"google.golang.org/grpc/status"
 	authInterfaces "joblessness/haha/auth/interfaces"
-	"joblessness/haha/models"
+	"joblessness/haha/models/base"
+	pgModels "joblessness/haha/models/postgres"
 	"joblessness/haha/utils/salt"
 	"testing"
 	"time"
@@ -15,11 +17,11 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	rep *AuthRepository
-	db *sql.DB
-	mock sqlmock.Sqlmock
-	person models.Person
-	organization models.Organization
+	rep          *AuthRepository
+	db           *sql.DB
+	mock         sqlmock.Sqlmock
+	person       baseModels.Person
+	organization baseModels.Organization
 }
 
 func (suite *userSuite) SetupTest() {
@@ -28,26 +30,26 @@ func (suite *userSuite) SetupTest() {
 	assert.NoError(suite.T(), err)
 	suite.rep = NewAuthRepository(suite.db)
 
-	suite.person = models.Person{
-		ID: 1,
-		Login:       "login",
-		Password:    "password",
-		FirstName:   "first",
-		LastName:    "name",
-		Email:       "email",
-		Phone: "phone",
-		Tag: "tag",
+	suite.person = baseModels.Person{
+		ID:        1,
+		Login:     "login",
+		Password:  "password",
+		FirstName: "first",
+		LastName:  "name",
+		Email:     "email",
+		Phone:     "phone",
+		Tag:       "tag",
 	}
 
-	suite.organization = models.Organization{
-		ID: 1,
-		Login:       "login",
-		Password:    "password",
-		Name:   "name",
-		Site:    "site",
-		Email:       "email",
-		Phone: "phone",
-		Tag: "tag",
+	suite.organization = baseModels.Organization{
+		ID:       1,
+		Login:    "login",
+		Password: "password",
+		Name:     "name",
+		Site:     "site",
+		Email:    "email",
+		Phone:    "phone",
+		Tag:      "tag",
 	}
 }
 
@@ -78,8 +80,10 @@ func (suite *userSuite) TestDoesExists() {
 		WillReturnRows(rows)
 
 	err := suite.rep.DoesUserExists("name")
+	e, ok := status.FromError(err)
 
-	assert.IsType(suite.T(), authInterfaces.NewErrorUserAlreadyExists(""), err)
+	assert.True(suite.T(), ok)
+	assert.True(suite.T(), e.Code() == authInterfaces.AlreadyExists)
 }
 
 func (suite *userSuite) TestDoesExistsErr() {
@@ -93,8 +97,8 @@ func (suite *userSuite) TestDoesExistsErr() {
 }
 
 func (suite *userSuite) TestCreateUserNoId() {
-	user, _ := toPostgresPerson(&suite.person)
-	err := suite.rep.CreateUser(user)
+	user, _ := pgModels.ToPgPerson(&suite.person)
+	err := suite.rep.CreateUser(user.Login, user.Password, user.PersonID, 0)
 
 	assert.Error(suite.T(), err)
 }
@@ -104,14 +108,14 @@ func (suite *userSuite) TestCreatePerson() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO person ").
-		WithArgs(suite.person.FirstName + " " + suite.person.LastName, suite.person.Gender, suite.person.Birthday).
+		WithArgs(suite.person.FirstName).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
-		WithArgs("login", sqlmock.AnyArg(), 0, 1, "email", "phone", "tag").
+		WithArgs("login", sqlmock.AnyArg(), 0, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := suite.rep.CreatePerson(&suite.person)
+	err := suite.rep.RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName)
 
 	assert.NoError(suite.T(), err)
 }
@@ -122,7 +126,7 @@ func (suite *userSuite) TestCreatePersonFailed() {
 		WithArgs(suite.person.FirstName + " " + suite.person.LastName).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.CreatePerson(&suite.person)
+	err := suite.rep.RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName)
 
 	assert.Error(suite.T(), err)
 }
@@ -132,14 +136,14 @@ func (suite *userSuite) TestCreateOrg() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO organization").
-		WithArgs(suite.organization.Name, suite.organization.Site, suite.organization.About).
+		WithArgs(suite.organization.Name).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
-		WithArgs("login", sqlmock.AnyArg(), 1, 0, "email", "phone", "tag").
+		WithArgs("login", sqlmock.AnyArg(), 1, 0).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := suite.rep.CreateOrganization(&suite.organization)
+	err := suite.rep.RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name)
 
 	assert.NoError(suite.T(), err)
 }
@@ -150,7 +154,7 @@ func (suite *userSuite) TestCreateOrgFailed() {
 		WithArgs(suite.organization.Name).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.CreateOrganization(&suite.organization)
+	err := suite.rep.RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name)
 
 	assert.Error(suite.T(), err)
 }
@@ -227,7 +231,7 @@ func (suite *userSuite) TestSessionExistsFailed() {
 }
 
 func (suite *userSuite) TestSessionExistsExpired() {
-	rows := sqlmock.NewRows([]string{"id", "expires"}).AddRow(1, time.Now().Add(-1 * time.Hour))
+	rows := sqlmock.NewRows([]string{"id", "expires"}).AddRow(1, time.Now().Add(-1*time.Hour))
 
 	suite.mock.
 		ExpectQuery("SELECT user_id, expires").
@@ -239,6 +243,8 @@ func (suite *userSuite) TestSessionExistsExpired() {
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	_, err := suite.rep.SessionExists("sid")
+	e, ok := status.FromError(err)
 
-	assert.IsType(suite.T(), authInterfaces.NewErrorWrongSID(), err)
+	assert.True(suite.T(), ok)
+	assert.True(suite.T(), e.Code() == authInterfaces.WrongSID)
 }
