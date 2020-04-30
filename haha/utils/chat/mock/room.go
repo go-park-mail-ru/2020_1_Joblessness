@@ -94,9 +94,11 @@ func (mr *MockRoomMockRecorder) Run() *gomock.Call {
 }
 
 // SendGeneratedMessage mocks base method
-func (m *MockRoom) SendGeneratedMessage(arg0 *chat.Message) {
+func (m *MockRoom) SendGeneratedMessage(arg0 *chat.Message) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SendGeneratedMessage", arg0)
+	ret := m.ctrl.Call(m, "SendGeneratedMessage", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // SendGeneratedMessage indicates an expected call of SendGeneratedMessage

@@ -87,7 +87,9 @@ func (u *InterviewUseCase) ResponseSummary(sendSummary *baseModels.SendSummary) 
 		if err != nil {
 			return err
 		}
-		u.room.SendGeneratedMessage(message)
+		if message != nil {
+			u.room.SendGeneratedMessage(message)
+		}
 	}
 
 	return err

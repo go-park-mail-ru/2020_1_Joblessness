@@ -7,8 +7,10 @@ import (
 	"github.com/stretchr/testify/suite"
 	"joblessness/haha/interview/repository/mock"
 	baseModels "joblessness/haha/models/base"
+	"joblessness/haha/utils/chat"
 	mockRoom "joblessness/haha/utils/chat/mock"
 	"testing"
+	"time"
 )
 
 type userSuite struct {
@@ -44,6 +46,44 @@ func (suite *userSuite) TestGenerateMessage() {
 	suite.repo.EXPECT().GetResponseCredentials(sendSummary.SummaryID, sendSummary.VacancyID).Return(credits, nil).Times(1)
 
 	_, err := suite.uc.generateMessage(sendSummary)
+
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *userSuite) TestSaveMessage() {
+	message := chat.Message{
+		Message:   "message",
+		UserOneId: 1,
+		UserOne:   "awd",
+		UserTwoId: 2,
+		UserTwo:   "",
+		Created:   time.Now(),
+		VacancyID: 0,
+	}
+	suite.repo.EXPECT().SaveMessage(&message).Return(nil).Times(1)
+
+	err := suite.uc.SaveMessage(&message)
+
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *userSuite) TestGetHistory() {
+	params := baseModels.ChatParameters{
+		From: 1,
+		To:   2,
+		Page: 3,
+	}
+	suite.repo.EXPECT().GetHistory(&params).Return(baseModels.Messages{}, nil).Times(1)
+
+	_, err := suite.uc.GetHistory(&params)
+
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *userSuite) TestGetConversations() {
+	suite.repo.EXPECT().GetConversations(uint64(2)).Return(baseModels.Conversations{}, nil).Times(1)
+
+	_, err := suite.uc.GetConversations(uint64(2))
 
 	assert.NoError(suite.T(), err)
 }
