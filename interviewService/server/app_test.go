@@ -33,19 +33,16 @@ func (suite *userSuite) SetupTest() {
 		"127.0.0.1:8003",
 		grpc.WithInsecure(),
 	)
-	assert.NoError(suite.T(), err)
+	assert.NoError(suite.T(), err, "Unable to start server")
 
 	suite.grpcRepo = interviewGrpc.NewInterviewGrpcRepository(interviewConn)
 	assert.NoError(suite.T(), err)
 
 	suite.repo = mock.NewMockInterviewRepository(suite.controller)
 	suite.list, err = net.Listen("tcp", "127.0.0.1:8003")
-	assert.NoError(suite.T(), err)
+	assert.NoError(suite.T(), err, "Unable to listen")
 	suite.server = grpc.NewServer()
 	interviewRpc.RegisterInterviewServer(suite.server, NewInterviewServer(suite.repo))
-}
-
-func (suite *userSuite) TearDown() {
 }
 
 func TestSuite(t *testing.T) {
