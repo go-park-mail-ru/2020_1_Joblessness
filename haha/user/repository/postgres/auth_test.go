@@ -361,7 +361,8 @@ func (suite *userSuite) TestLikeExists() {
 }
 
 func (suite *userSuite) TestLikeExistsNo() {
-	rows := sqlmock.NewRows([]string{"count"})
+	rows := sqlmock.NewRows([]string{"count"}).
+		AddRow(0)
 	suite.mock.
 		ExpectQuery("SELECT count").
 		WithArgs(suite.person.ID, suite.person.ID).
