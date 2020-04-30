@@ -63,7 +63,7 @@ func (suite *recommendSuite) TestGetPopularVacancies() {
 	rows := sqlmock.NewRows([]string{"id", "organization_id", "name", "description", "with_tax", "responsibilities", "conditions", "keywords", "salary_from", "salary_to", "count"}).
 		AddRow(suite.vacancy.ID, suite.organization.ID, suite.vacancy.Name, suite.vacancy.Description, suite.vacancy.WithTax, suite.vacancy.Responsibilities, suite.vacancy.Conditions, suite.vacancy.Keywords, suite.vacancy.SalaryFrom, suite.vacancy.SalaryTo, 1)
 	suite.sqlMock.
-		ExpectQuery("SELECT v.id, v.organization_id, v.name, v.description, v.with_tax, v.responsibilities, v.conditions, v.keywords, v.salary_from, v.salary_to, COUNT\\(v.id\\) count").
+		ExpectQuery("SELECT v.id, v.organization_id, v.name, v.description, v.with_tax, v.responsibilities, v.conditions, v.keywords, v.salary_from, v.salary_to, COUNT\\(\\*\\) count").
 		WithArgs(10, 0).
 		WillReturnRows(rows)
 
