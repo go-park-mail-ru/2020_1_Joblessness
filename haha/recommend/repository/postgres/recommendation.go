@@ -27,9 +27,9 @@ func NewRecommendRepository(db *sql.DB, vacancyRepository vacancyInterfaces.Vaca
 
 func (r *repository) GetPopularVacancies(limit, offset uint64) (vacancies []baseModels.Vacancy, err error) {
 	getVacancies := `
-		SELECT v.id, v.organization_id, v.name, v.description, v.with_tax, v.responsibilities, v.conditions, v.keywords, v.salary_from, v.salary_to, COUNT(*) count
+		SELECT v.id, v.organization_id, v.name, v.description, v.with_tax, v.responsibilities, v.conditions, v.keywords, v.salary_from, v.salary_to, COUNT(v.id) count
 		FROM vacancy v
-		JOIN response r ON v.id = r.vacancy_id
+		LEFT JOIN response r ON v.id = r.vacancy_id
 		GROUP BY v.id
 		ORDER BY count
 		LIMIT $1 OFFSET $2`
