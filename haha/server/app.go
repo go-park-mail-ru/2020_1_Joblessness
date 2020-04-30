@@ -126,7 +126,7 @@ func (app *App) StartRouter() {
 	router := mux.NewRouter()
 
 	commonRouter := router.PathPrefix("/api").Subrouter()
-	interviewRouter := router.PathPrefix("api").Subrouter()
+	interviewRouter := router.PathPrefix("/api").Subrouter()
 
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
