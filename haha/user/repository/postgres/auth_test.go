@@ -360,6 +360,19 @@ func (suite *userSuite) TestLikeExists() {
 	assert.True(suite.T(), res)
 }
 
+func (suite *userSuite) TestLikeExistsNo() {
+	rows := sqlmock.NewRows([]string{"count"})
+	suite.mock.
+		ExpectQuery("SELECT count").
+		WithArgs(suite.person.ID, suite.person.ID).
+		WillReturnRows(rows)
+
+	res, err := suite.rep.LikeExists(suite.person.ID, suite.person.ID)
+
+	assert.NoError(suite.T(), err)
+	assert.False(suite.T(), res)
+}
+
 func (suite *userSuite) TestLikeExistsFailed() {
 	suite.mock.
 		ExpectExec("SELECT count").

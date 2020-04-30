@@ -209,17 +209,17 @@ func (r *UserRepository) SetOrDeleteLike(userID, favoriteID uint64) (res bool, e
 }
 
 func (r *UserRepository) LikeExists(userID, favoriteID uint64) (res bool, err error) {
+	var count int
 	setLike := `SELECT count(*)
 				FROM favorite f
 				WHERE f.user_id = $1
 				AND f.favorite_id = $2;`
-	rows, err := r.db.Query(setLike, userID, favoriteID)
+	err = r.db.QueryRow(setLike, userID, favoriteID).Scan(&count)
 	if err != nil {
 		return false, err
 	}
-	defer rows.Close()
 
-	return rows.Next(), nil
+	return count != 0, nil
 }
 
 func (r *UserRepository) GetUserFavorite(userID uint64) (res baseModels.Favorites, err error) {
