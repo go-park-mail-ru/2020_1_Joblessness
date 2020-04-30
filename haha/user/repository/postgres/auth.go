@@ -218,8 +218,9 @@ func (r *UserRepository) LikeExists(userID, favoriteID uint64) (res bool, err er
 		return false, err
 	}
 	defer rows.Close()
+	res = rows.Next()
 
-	return rows.Next(), nil
+	return res, nil
 }
 
 func (r *UserRepository) GetUserFavorite(userID uint64) (res baseModels.Favorites, err error) {
