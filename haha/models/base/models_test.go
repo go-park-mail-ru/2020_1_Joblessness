@@ -233,3 +233,138 @@ func TestFavs(t *testing.T) {
 	err = easyjson.Unmarshal(res, &fav)
 	assert.NoError(t, err)
 }
+
+func TestVacancyResp(t *testing.T) {
+	vacResp := VacancyResponse{
+		UserID:      1,
+		Tag:         "awda",
+		VacancyID:   1,
+		SummaryID:   2,
+		Keywords:    "Awda",
+		VacancyName: "awda",
+		SummaryName: "adwa",
+		Accepted:    false,
+		Denied:      false,
+	}
+	res, err := easyjson.Marshal(vacResp)
+	assert.NoError(t, err)
+	err = easyjson.Unmarshal(res, &vacResp)
+	assert.NoError(t, err)
+}
+
+func TestSummaries(t *testing.T) {
+	sums := Summaries{
+		&Summary{
+			ID:          1,
+			Author:      Author{},
+			Name:        "awdw",
+			SalaryFrom:  1,
+			SalaryTo:    2,
+			Keywords:    "wadwa",
+			Educations:  nil,
+			Experiences: nil,
+		},
+	}
+	res, err := easyjson.Marshal(sums)
+	assert.NoError(t, err)
+	err = easyjson.Unmarshal(res, &sums)
+	assert.NoError(t, err)
+}
+
+func TestSendSummary(t *testing.T) {
+	sendSums := SendSummary{
+		VacancyID:      1,
+		SummaryID:      2,
+		UserID:         3,
+		OrganizationID: 4,
+		InterviewDate:  time.Time{},
+		Accepted:       false,
+		Denied:         false,
+	}
+	res, err := easyjson.Marshal(sendSums)
+	assert.NoError(t, err)
+	err = easyjson.Unmarshal(res, &sendSums)
+	assert.NoError(t, err)
+}
+
+func TestOrgSummaries(t *testing.T) {
+	orgSums := OrgSummaries{
+		&VacancyResponse{
+			UserID:      0,
+			Tag:         "",
+			VacancyID:   0,
+			SummaryID:   0,
+			Keywords:    "",
+			VacancyName: "",
+			SummaryName: "",
+			Accepted:    false,
+			Denied:      false,
+		},
+		&VacancyResponse{
+			UserID:      1,
+			Tag:         "ada",
+			VacancyID:   2,
+			SummaryID:   3,
+			Keywords:    "awda",
+			VacancyName: "dwaa",
+			SummaryName: "adw",
+			Accepted:    false,
+			Denied:      false,
+		},
+	}
+	res, err := easyjson.Marshal(orgSums)
+	assert.NoError(t, err)
+	err = easyjson.Unmarshal(res, &orgSums)
+	assert.NoError(t, err)
+}
+
+func TestExpirience(t *testing.T) {
+	exp := Experience{
+		CompanyName:      "wda",
+		Role:             "awda",
+		Responsibilities: "awda",
+		Start:            time.Time{},
+		Stop:             time.Time{},
+	}
+
+	res, err := easyjson.Marshal(exp)
+	assert.NoError(t, err)
+	err = easyjson.Unmarshal(res, &exp)
+	assert.NoError(t, err)
+}
+
+func TestEducation(t *testing.T) {
+	education := Education{
+		Institution: "awda",
+		Speciality:  "dad",
+		Graduated:   time.Time{},
+		Type:        "AWdaw",
+	}
+
+	res, err := easyjson.Marshal(education)
+	assert.NoError(t, err)
+	err = easyjson.Unmarshal(res, &education)
+	assert.NoError(t, err)
+}
+
+func TestVacancies(t *testing.T) {
+	vacancies := Vacancies{
+		&Vacancy{
+			ID:               1,
+			Organization:     VacancyOrganization{},
+			Name:             "awdaw",
+			Description:      "Adaw",
+			SalaryFrom:       1,
+			SalaryTo:         2,
+			WithTax:          false,
+			Responsibilities: "Awda",
+			Conditions:       "awda",
+			Keywords:         "ada",
+		},
+	}
+
+	res, err := easyjson.Marshal(vacancies)
+	assert.NoError(t, err)
+	err = easyjson.Unmarshal(res, &vacancies)
+	assert.NoError(t, err)
+}
