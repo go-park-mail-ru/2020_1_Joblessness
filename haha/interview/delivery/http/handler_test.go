@@ -112,7 +112,7 @@ func TestSuite(t *testing.T) {
 func (suite *userSuite) TestResponseSummary() {
 	suite.room.EXPECT().
 		SendGeneratedMessage(gomock.Any()).
-		Return().
+		Return(nil).
 		Times(1)
 	suite.uc.EXPECT().
 		ResponseSummary(&suite.sendSum).

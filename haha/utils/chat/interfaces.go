@@ -8,7 +8,7 @@ type Messenger interface {
 
 type Room interface {
 	Run()
-	SendGeneratedMessage(message *Message)
+	SendGeneratedMessage(message *Message) error
 	HandleMessage(rawMessage []byte)
 	Forward([]byte)
 	Join(character *Chatter)

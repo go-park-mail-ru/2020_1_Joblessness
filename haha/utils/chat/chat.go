@@ -68,8 +68,9 @@ func (r *RoomInstance) Run() {
 	}
 }
 
-func (r *RoomInstance) SendGeneratedMessage(message *Message) {
-	if err := r.messenger.SaveMessage(message); err == nil {
+func (r *RoomInstance) SendGeneratedMessage(message *Message) error {
+	err := r.messenger.SaveMessage(message)
+	if err == nil {
 		receiver, existReceiver := r.Chatters[message.UserTwoId]
 		if existReceiver {
 			rawMessage, err := json.Marshal(message)
@@ -82,9 +83,11 @@ func (r *RoomInstance) SendGeneratedMessage(message *Message) {
 				}
 			} else {
 				golog.Errorf("Broken message: %+v", message)
+				return err
 			}
 		}
 	}
+	return err
 }
 
 func (r *RoomInstance) HandleMessage(rawMessage []byte) {

@@ -36,7 +36,7 @@ func (u *VacancyUseCase) announceVacancy(vacancy *baseModels.Vacancy) (err error
 		orgName, vacancy.Name)
 
 	for _, id := range users {
-		u.room.SendGeneratedMessage(&chat.Message{
+		err := u.room.SendGeneratedMessage(&chat.Message{
 			Message:   message,
 			UserOneId: vacancy.Organization.ID,
 			UserOne:   "",
@@ -45,6 +45,9 @@ func (u *VacancyUseCase) announceVacancy(vacancy *baseModels.Vacancy) (err error
 			Created:   time.Now(),
 			VacancyID: vacancy.ID,
 		})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -56,7 +59,7 @@ func (u *VacancyUseCase) CreateVacancy(vacancy *baseModels.Vacancy) (vacancyID u
 		return vacancy.ID, err
 	}
 
-	_ = u.announceVacancy(vacancy)
+	err = u.announceVacancy(vacancy)
 	return vacancy.ID, err
 }
 

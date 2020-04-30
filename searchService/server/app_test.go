@@ -27,17 +27,17 @@ type userSuite struct {
 func (suite *userSuite) SetupTest() {
 	suite.controller = gomock.NewController(suite.T())
 	interviewConn, err := grpc.Dial(
-		"127.0.0.1:8003",
+		"127.0.0.1:8002",
 		grpc.WithInsecure(),
 	)
-	assert.NoError(suite.T(), err)
+	assert.NoError(suite.T(), err, "Unable to start server")
 
 	suite.grpcRepo = searchGrpc.NewSearchGrpcRepository(interviewConn)
 	assert.NoError(suite.T(), err)
 
 	suite.repo = mock.NewMockSearchRepository(suite.controller)
-	suite.list, err = net.Listen("tcp", "127.0.0.1:8003")
-	assert.NoError(suite.T(), err)
+	suite.list, err = net.Listen("tcp", "127.0.0.1:8002")
+	assert.NoError(suite.T(), err, "Unable to listen")
 	suite.server = grpc.NewServer()
 	searchRpc.RegisterSearchServer(suite.server, NewSearchServer(suite.repo))
 }

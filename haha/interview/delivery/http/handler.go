@@ -81,14 +81,14 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
-	rID := r.Context().Value("rID").(string)
+	//rID := r.Context().Value("rID").(string)
 	userID := r.Context().Value("userID").(uint64)
 
-	golog.Infof("#%s: Connection is: %s", rID, r.Header.Get("Connection"))
+	golog.Infof("#%s: Connection is: %s", "ws connection", r.Header.Get("Connection"))
 
 	socket, err := h.upGrader.Upgrade(w, r, nil)
 	if err != nil {
-		golog.Errorf("#%s: Failed to start ws - %w", rID, err)
+		golog.Errorf("#%s: Failed to start ws - %w", "ws connection", err)
 		return
 	}
 

@@ -10,7 +10,7 @@ var (
 	RequestCount = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "request_count",
 		Help: "Requests count",
-	}, []string{"method", "path"})
+	}, []string{"method", "path", "status"})
 
 	RequestCurrent = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "request_current",
@@ -27,5 +27,6 @@ func RegisterPrometheus(router *mux.Router) {
 	router.Handle("/metrics", promhttp.Handler())
 
 	prometheus.MustRegister(RequestCount)
+	prometheus.MustRegister(RequestCurrent)
 	prometheus.MustRegister(RequestDuration)
 }
