@@ -25,6 +25,8 @@ services:
     ports:
       - "8002:8002"
     command: go run main.go
+    depends_on:
+      - app
     stdin_open: true
     tty: true
     network_mode: host
@@ -39,6 +41,8 @@ services:
     ports:
       - "8003:8003"
     command: go run main.go
+    depends_on:
+      - app
     stdin_open: true
     tty: true
     network_mode: host
@@ -53,6 +57,8 @@ services:
     ports:
       - "8004:8004"
     command: go run main.go
+    depends_on:
+      - app
     stdin_open: true
     tty: true
     network_mode: host
