@@ -27,5 +27,8 @@ func main() {
 
 	server := grpc.NewServer()
 	searchRpc.RegisterSearchServer(server, searchServer.NewSearchServer(repo))
-	server.Serve(list)
+	err = server.Serve(list)
+	if err != nil {
+		golog.Error("Server search failed")
+	}
 }

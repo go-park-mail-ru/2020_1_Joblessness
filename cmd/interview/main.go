@@ -27,5 +27,8 @@ func main() {
 
 	server := grpc.NewServer()
 	interviewRpc.RegisterInterviewServer(server, interviewServer.NewInterviewServer(repo))
-	server.Serve(list)
+	err = server.Serve(list)
+	if err != nil {
+		golog.Error("Server interview failed")
+	}
 }
