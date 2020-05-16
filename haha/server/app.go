@@ -152,9 +152,9 @@ func (app *App) StartRouter() {
 	http.Handle("/", router)
 	golog.Infof("Server started at port :%d", *port)
 	err := http.ListenAndServeTLS(fmt.Sprintf(":%d", *port),
-		"/etc/letsencrypt/live/hahao.ru/fullchain.pem",
-		"/etc/letsencrypt/live/hahao.ru/privkey.pem",
-		nil)
+		"/etc/letsencrypt/archive/hahao.ru/fullchain1.pem",
+		"/etc/letsencrypt/archive/hahao.ru/privkey.pem",
+	nil)
 	if err != nil {
 		golog.Error("Server haha failed: ", err)
 	}
