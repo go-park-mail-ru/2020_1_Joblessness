@@ -30,6 +30,6 @@ func main() {
 	authGrpc.RegisterAuthServer(server, authServer.NewAuthServer(repository))
 	err = server.Serve(listen)
 	if err != nil {
-		golog.Error("Server auth failed")
+		golog.Error("Server auth failed: ", err)
 	}
 }

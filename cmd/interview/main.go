@@ -29,6 +29,6 @@ func main() {
 	interviewRpc.RegisterInterviewServer(server, interviewServer.NewInterviewServer(repo))
 	err = server.Serve(list)
 	if err != nil {
-		golog.Error("Server interview failed")
+		golog.Error("Server interview failed: ", err)
 	}
 }

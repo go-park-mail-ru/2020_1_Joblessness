@@ -156,6 +156,6 @@ func (app *App) StartRouter() {
 		"/etc/letsencrypt/live/hahao.ru/privkey.pem",
 		nil)
 	if err != nil {
-		golog.Error("Server haha failed")
+		golog.Error("Server haha failed: ", err)
 	}
 }
