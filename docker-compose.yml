@@ -6,7 +6,7 @@ services:
       - ../env.list
     volumes:
       - .:/go/src/haha
-      - /etc/letsencrypt/live/hahao.ru:/etc/letsencrypt/live/hahao.ru
+      - /etc/letsencrypt:/etc/letsencrypt
     working_dir: /go/src/haha/cmd/haha/
     ports:
       - "8001:8001"
