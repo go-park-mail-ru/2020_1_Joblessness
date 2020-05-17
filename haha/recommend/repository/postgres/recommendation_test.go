@@ -41,7 +41,7 @@ func (suite *recommendSuite) SetupTest() {
 	}
 
 	suite.vacancy = baseModels.Vacancy{
-		ID: 1,
+		ID:               1,
 		Name:             "name",
 		Description:      "description",
 		SalaryFrom:       10000,

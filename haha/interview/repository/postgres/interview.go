@@ -33,14 +33,14 @@ func (r *InterviewRepository) IsOrganizationVacancy(vacancyID, userID uint64) (e
 
 func (r *InterviewRepository) ResponseSummary(sendSummary *baseModels.SendSummary) (err error) {
 	response := `UPDATE response 
-				SET date = CURRENT_TIMESTAMP,
+				SET date = $6,
 				    approved = $1,
 				    rejected = $2,
 				    interview_date = $3
 				WHERE summary_id = $4
 				AND vacancy_id = $5;`
 	rows, err := r.db.Exec(response, sendSummary.Accepted, sendSummary.Denied, sendSummary.InterviewDate,
-		sendSummary.SummaryID, sendSummary.VacancyID)
+		sendSummary.SummaryID, sendSummary.VacancyID, sendSummary.InterviewDate)
 	if err != nil {
 		return err
 	}

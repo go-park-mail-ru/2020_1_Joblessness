@@ -42,8 +42,7 @@ func NewHandler(useCase interviewInterfaces.InterviewUseCase /*, room chat.Room*
 }
 
 func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
-	//rID := r.Context().Value("rID").(string)
-	rID := 0
+	rID := r.Context().Value("rID").(string)
 
 	var sendSummary baseModels.SendSummary
 	err := easyjson.UnmarshalFromReader(r.Body, &sendSummary)
@@ -82,7 +81,6 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
-	//rID := r.Context().Value("rID").(string)
 	userID := r.Context().Value("userID").(uint64)
 
 	golog.Infof("#%s: Connection is: %s", "ws connection", r.Header.Get("Connection"))
@@ -98,8 +96,7 @@ func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) History(w http.ResponseWriter, r *http.Request) {
 	var parameters baseModels.ChatParameters
-	//rID, ok := r.Context().Value("rID").(string)
-	rID := 0
+	rID := r.Context().Value("rID").(string)
 
 	parameters.From = r.Context().Value("userID").(uint64)
 	parameters.To, _ = strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
@@ -120,8 +117,7 @@ func (h *Handler) History(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetConversations(w http.ResponseWriter, r *http.Request) {
-	//rID := r.Context().Value("rID").(string)
-	rID := 0
+	rID := r.Context().Value("rID").(string)
 	userID := r.Context().Value("userID").(uint64)
 
 	result, err := h.useCase.GetConversations(userID)

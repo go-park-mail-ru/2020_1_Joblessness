@@ -53,7 +53,7 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 
 		statusLabels := prometheus.Labels{
 			"method": r.Method,
-			"path": r.URL.Path,
+			"path":   r.URL.Path,
 			"status": fmt.Sprintf("%d", sw.StatusCode),
 		}
 		prom.RequestCount.With(statusLabels).Inc()

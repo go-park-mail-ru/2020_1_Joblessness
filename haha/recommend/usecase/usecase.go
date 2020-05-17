@@ -22,7 +22,7 @@ func (u *UseCase) GetRecommendedVacancies(userID, pageNumber uint64) (recommenda
 	}
 
 	if len(recommendations) < pageSize {
-		offset := (pageNumber-1)*pageSize-recommendCount
+		offset := (pageNumber-1)*pageSize - recommendCount
 		if offset < 0 {
 			offset = 0
 		}

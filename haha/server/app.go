@@ -126,7 +126,7 @@ func (app *App) StartRouter() {
 	router := mux.NewRouter()
 
 	commonRouter := router.PathPrefix("/api").Subrouter()
-	interviewRouter := router.PathPrefix("/api").Subrouter()
+	wsRouter := router.PathPrefix("/api").Subrouter()
 
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
@@ -145,7 +145,7 @@ func (app *App) StartRouter() {
 	summaryHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.summaryUse)
 	searchHttp.RegisterHTTPEndpoints(commonRouter, app.searchUse)
 	recommendHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.recommendationUse)
-	interviewHttp.RegisterHTTPEndpoints(interviewRouter, mAuth, app.interviewUse)
+	interviewHttp.RegisterHTTPEndpoints(commonRouter, wsRouter, mAuth, app.interviewUse)
 
 	prometheus.RegisterPrometheus(commonRouter)
 
@@ -154,7 +154,7 @@ func (app *App) StartRouter() {
 	err := http.ListenAndServeTLS(fmt.Sprintf(":%d", *port),
 		"/etc/letsencrypt/live/hahao.ru/fullchain.pem",
 		"/etc/letsencrypt/live/hahao.ru/privkey.pem",
-	nil)
+		nil)
 	if err != nil {
 		golog.Error("Server haha failed: ", err)
 	}
