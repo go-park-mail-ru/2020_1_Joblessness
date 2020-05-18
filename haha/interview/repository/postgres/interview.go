@@ -151,7 +151,7 @@ func (r *InterviewRepository) GetConversations(userID uint64) (result baseModels
 	if err != nil {
 		return result, err
 	}
-	rows.Close()
+	defer rows.Close()
 
 	for rows.Next() {
 		var title baseModels.ConversationTitle
