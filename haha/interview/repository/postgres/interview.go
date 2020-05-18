@@ -77,7 +77,7 @@ func (r *InterviewRepository) getUserSendMessages(parameters *baseModels.ChatPar
 					WHERE user_one_id = $1
 					AND user_two_id = $2
 					ORDER BY created desc;`
-	rows, err := r.db.Query(saveMessage, parameters.From)
+	rows, err := r.db.Query(saveMessage, parameters.From, parameters.To)
 	if err != nil {
 		return result, err
 	}
