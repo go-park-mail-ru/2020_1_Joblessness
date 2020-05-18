@@ -29,8 +29,8 @@ func (r SearchRepository) SearchPersons(params *baseModels.SearchParams) (result
 	getPersons := `SELECT users.id as userId, p.name, p.surname, tag, avatar
 					FROM users
 					JOIN person p on users.person_id = p.id
-					WHERE to_tsvector('russian', p.name) @@ plainto_tsquery($1)
-						  OR to_tsvector('russian', p.surname) @@ plainto_tsquery($1)
+					WHERE to_tsvector('russian', p.name) @@ plainto_tsquery('russian', $1)
+						  OR to_tsvector('russian', p.surname) @@ plainto_tsquery('russian', $1)
 					      OR lower(tag) LIKE lower('%' || $1 || '%')
 					ORDER BY p.name ` + params.Desc + `, registered 
  					LIMIT $2 OFFSET $3`
@@ -68,7 +68,7 @@ func (r SearchRepository) SearchOrganizations(params *baseModels.SearchParams) (
 	getOrgs := `SELECT users.id as userId, name, tag, avatar
 					FROM users
 					JOIN organization o on users.organization_id = o.id
-					WHERE to_tsvector('russian', o.name) @@ plainto_tsquery($1)
+					WHERE to_tsvector('russian', o.name) @@ plainto_tsquery('russian', $1)
 					      OR lower(tag) LIKE lower('%' || $1 || '%')
 					ORDER BY o.name ` + params.Desc + `, registered
 					LIMIT $2 OFFSET $3`
@@ -108,7 +108,7 @@ func (r SearchRepository) SearchVacancies(params *baseModels.SearchParams) (resu
 					FROM users
 					JOIN organization o on users.organization_id = o.id
 					JOIN vacancy v on users.id = v.organization_id
-					WHERE to_tsvector('russian', v.name) @@ plainto_tsquery($1)
+					WHERE to_tsvector('russian', v.name) @@ plainto_tsquery('russian', $1)
 					ORDER BY o.name ` + params.Desc + `, v.name
 					LIMIT $2 OFFSET $3`
 
