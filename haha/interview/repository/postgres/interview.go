@@ -154,8 +154,9 @@ func (r *InterviewRepository) GetConversations(userID uint64) (result baseModels
 					LEFT JOIN person per on per.id = u_to.person_id
 					WHERE u_from.id = $1
 					AND u_to.id != $1
-					AND rejected = false
-					AND approved = false;`
+					AND ((rejected = false
+					AND approved = false)
+					    OR date >= (CURRENT_TIMESTAMP  - INTERVAL '1 DAY'));`
 	rows, err := r.db.Query(getConversations, userID)
 	if err != nil {
 		return result, err
