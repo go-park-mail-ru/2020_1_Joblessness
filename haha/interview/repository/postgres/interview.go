@@ -156,7 +156,8 @@ func (r *InterviewRepository) GetConversations(userID uint64) (result baseModels
 					AND u_to.id != $1
 					AND ((rejected = false
 					AND approved = false)
-					    OR date >= (CURRENT_TIMESTAMP  - INTERVAL '1 DAY'));`
+					    OR date >= (CURRENT_TIMESTAMP  - INTERVAL '1 DAY'))
+					GROUP BY u_to.id, per.id, org.id, r.interview_date;`
 	rows, err := r.db.Query(getConversations, userID)
 	if err != nil {
 		return result, err
