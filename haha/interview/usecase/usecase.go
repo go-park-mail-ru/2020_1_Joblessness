@@ -71,7 +71,6 @@ func (u *InterviewUseCase) generateMessage(sendSummary *baseModels.SendSummary) 
 		UserOneId: credentials.OrganizationID,
 		UserOne:   credentials.OrganizationName,
 		UserTwoId: credentials.UserID,
-		UserTwo:   credentials.UserName,
 		Created:   time.Now(),
 	}, nil
 }
