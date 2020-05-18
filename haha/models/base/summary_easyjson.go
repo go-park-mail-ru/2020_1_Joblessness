@@ -38,6 +38,8 @@ func easyjsonF381ebcaDecodeJoblessnessHahaModelsBase(in *jlexer.Lexer, out *Vaca
 		switch key {
 		case "user_id":
 			out.UserID = uint64(in.Uint64())
+		case "avatar":
+			out.Avatar = string(in.String())
 		case "tag":
 			out.Tag = string(in.String())
 		case "vacancyId":
@@ -73,6 +75,16 @@ func easyjsonF381ebcaEncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in Vac
 		first = false
 		out.RawString(prefix[1:])
 		out.Uint64(uint64(in.UserID))
+	}
+	if in.Avatar != "" {
+		const prefix string = ",\"avatar\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Avatar))
 	}
 	if in.Tag != "" {
 		const prefix string = ",\"tag\":"

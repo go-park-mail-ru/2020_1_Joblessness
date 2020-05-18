@@ -105,6 +105,7 @@ type SendSummary struct {
 //easyjson:json
 type VacancyResponse struct {
 	UserID      uint64 `json:"user_id,omitempty"`
+	Avatar string `json:"avatar,omitempty"`
 	Tag         string `json:"tag,omitempty"`
 	VacancyID   uint64 `json:"vacancyId,omitempty"`
 	SummaryID   uint64 `json:"summaryId,omitempty"`

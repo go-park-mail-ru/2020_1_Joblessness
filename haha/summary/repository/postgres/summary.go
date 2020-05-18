@@ -324,7 +324,7 @@ func (r *SummaryRepository) RefreshSummary(summaryID, vacancyID uint64) (err err
 }
 
 func (r *SummaryRepository) GetOrgSendSummaries(userID uint64) (summaries baseModels.OrgSummaries, err error) {
-	getSummary := `SELECT u.id, u.tag, v.id, s.id, s.keywords, s.name, v.name, r.approved, r.rejected
+	getSummary := `SELECT u.id, u.tag, v.id, s.id, s.keywords, s.name, v.name, r.approved, r.rejected, u.avatar
 				   FROM vacancy v 
 				   JOIN response r on v.id = r.vacancy_id
 				       AND r.approved = false
@@ -345,8 +345,8 @@ func (r *SummaryRepository) GetOrgSendSummaries(userID uint64) (summaries baseMo
 	for rows.Next() {
 		var vacancyDB baseModels.VacancyResponse
 
-		err = rows.Scan(&vacancyDB.UserID, &vacancyDB.Tag, &vacancyDB.VacancyID, &vacancyDB.SummaryID,
-			&vacancyDB.Keywords, &vacancyDB.SummaryName, &vacancyDB.VacancyName, &vacancyDB.Accepted, &vacancyDB.Denied)
+		err = rows.Scan(&vacancyDB.UserID, &vacancyDB.Tag, &vacancyDB.VacancyID, &vacancyDB.SummaryID, &vacancyDB.Keywords,
+			&vacancyDB.SummaryName, &vacancyDB.VacancyName, &vacancyDB.Accepted, &vacancyDB.Denied, &vacancyDB.Avatar)
 		if err != nil {
 			return nil, err
 		}
