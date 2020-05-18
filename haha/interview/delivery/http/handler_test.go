@@ -72,7 +72,7 @@ func (suite *userSuite) SetupTest() {
 
 	suite.conversation = baseModels.ConversationTitle{
 		ChatterID:     1,
-		ChatterName:   "awda",
+		Tag:           "awda",
 		InterviewDate: time.Now(),
 	}
 

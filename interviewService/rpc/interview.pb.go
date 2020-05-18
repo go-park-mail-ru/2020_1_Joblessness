@@ -525,7 +525,7 @@ type ConversationTitle struct {
 	unknownFields protoimpl.UnknownFields
 
 	ChatterId     uint64               `protobuf:"varint,1,opt,name=ChatterId,proto3" json:"ChatterId,omitempty"`
-	ChatterName   string               `protobuf:"bytes,2,opt,name=ChatterName,proto3" json:"ChatterName,omitempty"`
+	ChatterName   string               `protobuf:"bytes,2,opt,name=Tag,proto3" json:"Tag,omitempty"`
 	InterviewDate *timestamp.Timestamp `protobuf:"bytes,3,opt,name=InterviewDate,proto3" json:"InterviewDate,omitempty"`
 }
 
