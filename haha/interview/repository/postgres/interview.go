@@ -141,7 +141,7 @@ func (r *InterviewRepository) GetConversations(userID uint64) (result baseModels
 					JOIN summary s on r.summary_id = s.id
 					JOIN vacancy v on r.vacancy_id = v.id
 					JOIN users u on (s.author = u.id
-					and v.organization_id = u.id)
+					or v.organization_id = u.id)
 					JOIN organization org on org.id = u.organization_id
 					JOIN person per on per.id = u.person_id
 					WHERE u.id = $1

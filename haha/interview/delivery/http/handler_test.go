@@ -46,6 +46,7 @@ type userSuite struct {
 
 func (suite *userSuite) SetupTest() {
 	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
+	chatRouter := mux.NewRouter().PathPrefix("/api").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
@@ -102,7 +103,7 @@ func (suite *userSuite) SetupTest() {
 
 	suite.summaryCredits = baseModels.SummaryCredentials{}
 
-	RegisterHTTPEndpoints(suite.router, suite.authMiddleware, suite.uc)
+	RegisterHTTPEndpoints(suite.router, chatRouter, suite.authMiddleware, suite.uc)
 }
 
 func TestSuite(t *testing.T) {
