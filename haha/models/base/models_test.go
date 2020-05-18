@@ -46,7 +46,6 @@ func TestFlow(t *testing.T) {
 		WithTax:          false,
 		Responsibilities: "all",
 		Conditions:       "some",
-		Keywords:         "word",
 	}
 
 	sr := SearchResult{
@@ -67,7 +66,6 @@ func TestFlow(t *testing.T) {
 			LastName:  "name",
 			Gender:    "gender",
 		},
-		Keywords: "key",
 		Educations: []Education{
 			Education{
 				Institution: "was",
@@ -89,7 +87,7 @@ func TestFlow(t *testing.T) {
 		Tag:       sum.Author.Tag,
 		VacancyID: uint64(7),
 		SummaryID: sum.ID,
-		Keywords:  sum.Keywords,
+		Avatar:  "awdwa",
 	}
 
 	orgSum := OrgSummaries{sumResp}
@@ -240,9 +238,9 @@ func TestVacancyResp(t *testing.T) {
 		Tag:         "awda",
 		VacancyID:   1,
 		SummaryID:   2,
-		Keywords:    "Awda",
-		VacancyName: "awda",
-		SummaryName: "adwa",
+		Avatar:    "Awda",
+		FirstName: "awda",
+		LastName: "adwa",
 		Accepted:    false,
 		Denied:      false,
 	}
@@ -260,7 +258,6 @@ func TestSummaries(t *testing.T) {
 			Name:        "awdw",
 			SalaryFrom:  1,
 			SalaryTo:    2,
-			Keywords:    "wadwa",
 			Educations:  nil,
 			Experiences: nil,
 		},
@@ -294,9 +291,9 @@ func TestOrgSummaries(t *testing.T) {
 			Tag:         "",
 			VacancyID:   0,
 			SummaryID:   0,
-			Keywords:    "",
-			VacancyName: "",
-			SummaryName: "",
+			Avatar:    "",
+			FirstName: "",
+			LastName: "",
 			Accepted:    false,
 			Denied:      false,
 		},
@@ -305,9 +302,9 @@ func TestOrgSummaries(t *testing.T) {
 			Tag:         "ada",
 			VacancyID:   2,
 			SummaryID:   3,
-			Keywords:    "awda",
-			VacancyName: "dwaa",
-			SummaryName: "adw",
+			Avatar:    "awda",
+			FirstName: "dwaa",
+			LastName: "adw",
 			Accepted:    false,
 			Denied:      false,
 		},
@@ -359,7 +356,6 @@ func TestVacancies(t *testing.T) {
 			WithTax:          false,
 			Responsibilities: "Awda",
 			Conditions:       "awda",
-			Keywords:         "ada",
 		},
 	}
 

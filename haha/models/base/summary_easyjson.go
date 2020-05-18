@@ -38,20 +38,18 @@ func easyjsonF381ebcaDecodeJoblessnessHahaModelsBase(in *jlexer.Lexer, out *Vaca
 		switch key {
 		case "user_id":
 			out.UserID = uint64(in.Uint64())
-		case "avatar":
-			out.Avatar = string(in.String())
 		case "tag":
 			out.Tag = string(in.String())
 		case "vacancyId":
 			out.VacancyID = uint64(in.Uint64())
 		case "summaryId":
 			out.SummaryID = uint64(in.Uint64())
-		case "keywords":
-			out.Keywords = string(in.String())
-		case "vacancyName":
-			out.VacancyName = string(in.String())
-		case "summaryName":
-			out.SummaryName = string(in.String())
+		case "firstName":
+			out.FirstName = string(in.String())
+		case "lastName":
+			out.LastName = string(in.String())
+		case "avatar":
+			out.Avatar = string(in.String())
 		case "accepted":
 			out.Accepted = bool(in.Bool())
 		case "denied":
@@ -75,16 +73,6 @@ func easyjsonF381ebcaEncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in Vac
 		first = false
 		out.RawString(prefix[1:])
 		out.Uint64(uint64(in.UserID))
-	}
-	if in.Avatar != "" {
-		const prefix string = ",\"avatar\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Avatar))
 	}
 	if in.Tag != "" {
 		const prefix string = ",\"tag\":"
@@ -116,35 +104,35 @@ func easyjsonF381ebcaEncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in Vac
 		}
 		out.Uint64(uint64(in.SummaryID))
 	}
-	if in.Keywords != "" {
-		const prefix string = ",\"keywords\":"
+	if in.FirstName != "" {
+		const prefix string = ",\"firstName\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.Keywords))
+		out.String(string(in.FirstName))
 	}
-	if in.VacancyName != "" {
-		const prefix string = ",\"vacancyName\":"
+	if in.LastName != "" {
+		const prefix string = ",\"lastName\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.VacancyName))
+		out.String(string(in.LastName))
 	}
-	if in.SummaryName != "" {
-		const prefix string = ",\"summaryName\":"
+	if in.Avatar != "" {
+		const prefix string = ",\"avatar\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.SummaryName))
+		out.String(string(in.Avatar))
 	}
 	if in.Accepted {
 		const prefix string = ",\"accepted\":"

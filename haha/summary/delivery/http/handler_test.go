@@ -92,7 +92,7 @@ func (suite *userSuite) SetupTest() {
 		Tag:       suite.summary.Author.Tag,
 		VacancyID: uint64(7),
 		SummaryID: suite.summary.ID,
-		Keywords:  suite.summary.Keywords,
+		Avatar:  "adwawd",
 	}
 	responseJSON, err := json.Marshal(suite.response)
 	suite.responseByte = bytes.NewBuffer(responseJSON)

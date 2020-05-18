@@ -324,13 +324,14 @@ func (r *SummaryRepository) RefreshSummary(summaryID, vacancyID uint64) (err err
 }
 
 func (r *SummaryRepository) GetOrgSendSummaries(userID uint64) (summaries baseModels.OrgSummaries, err error) {
-	getSummary := `SELECT u.id, u.tag, v.id, s.id, s.keywords, s.name, v.name, r.approved, r.rejected, u.avatar
+	getSummary := `SELECT u.id, u.tag, v.id, s.id, u.avatar, p.name, p.surname, r.approved, r.rejected
 				   FROM vacancy v 
 				   JOIN response r on v.id = r.vacancy_id
 				       AND r.approved = false
 				       AND r.rejected = false
 				   JOIN summary s on r.summary_id = s.id
 				   JOIN users u on s.author = u.id
+				   JOIN person p on u.person_id = p.id
 				   WHERE v.organization_id = $1
 				   order by r.date desc`
 
@@ -345,8 +346,8 @@ func (r *SummaryRepository) GetOrgSendSummaries(userID uint64) (summaries baseMo
 	for rows.Next() {
 		var vacancyDB baseModels.VacancyResponse
 
-		err = rows.Scan(&vacancyDB.UserID, &vacancyDB.Tag, &vacancyDB.VacancyID, &vacancyDB.SummaryID, &vacancyDB.Keywords,
-			&vacancyDB.SummaryName, &vacancyDB.VacancyName, &vacancyDB.Accepted, &vacancyDB.Denied, &vacancyDB.Avatar)
+		err = rows.Scan(&vacancyDB.UserID, &vacancyDB.Tag, &vacancyDB.VacancyID, &vacancyDB.SummaryID, &vacancyDB.Avatar,
+			&vacancyDB.FirstName, &vacancyDB.LastName, &vacancyDB.Accepted, &vacancyDB.Denied)
 		if err != nil {
 			return nil, err
 		}
@@ -357,7 +358,7 @@ func (r *SummaryRepository) GetOrgSendSummaries(userID uint64) (summaries baseMo
 }
 
 func (r *SummaryRepository) GetUserSendSummaries(userID uint64) (summaries baseModels.OrgSummaries, err error) {
-	getSummary := `SELECT v.id, s.id, s.keywords, s.name, v.name, r.approved, r.rejected
+	getSummary := `SELECT v.id, s.id, r.approved, r.rejected
 				   FROM vacancy v 
 				   JOIN response r on v.id = r.vacancy_id
 				       AND r.approved = false
@@ -377,8 +378,7 @@ func (r *SummaryRepository) GetUserSendSummaries(userID uint64) (summaries baseM
 	for rows.Next() {
 		var vacancyDB baseModels.VacancyResponse
 
-		err = rows.Scan(&vacancyDB.VacancyID, &vacancyDB.SummaryID, &vacancyDB.Keywords, &vacancyDB.SummaryName,
-			&vacancyDB.VacancyName, &vacancyDB.Accepted, &vacancyDB.Denied)
+		err = rows.Scan(&vacancyDB.VacancyID, &vacancyDB.SummaryID, &vacancyDB.Accepted, &vacancyDB.Denied)
 		if err != nil {
 			return nil, err
 		}
