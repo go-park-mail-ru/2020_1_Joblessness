@@ -132,19 +132,22 @@ func (r *InterviewRepository) GetResponseCredentials(summaryID, vacancyID uint64
 
 func (r *InterviewRepository) GetConversations(userID uint64) (result baseModels.Conversations, err error) {
 	result = make(baseModels.Conversations, 0)
-	getConversations := `SELECT u.id, u.avatar, 
-        CASE WHEN u.person_id IS NOT NULL THEN per.name
-            WHEN u.organization_id IS NOT NULL THEN org.name
+	getConversations := `SELECT u_to.id, u_to.avatar, 
+        CASE WHEN u_to.person_id IS NOT NULL THEN per.name
+            WHEN u_to.organization_id IS NOT NULL THEN org.name
         END 
-        , u.tag, r.interview_date
+        , u_to.tag, r.interview_date
 					FROM response r
 					JOIN summary s on r.summary_id = s.id
 					JOIN vacancy v on r.vacancy_id = v.id
-					JOIN users u on (s.author = u.id
-					or v.organization_id = u.id)
-					LEFT JOIN organization org on org.id = u.organization_id
-					LEFT JOIN person per on per.id = u.person_id
-					WHERE u.id = $1
+					JOIN users u_to on (s.author = u_to.id
+					or v.organization_id = u_to.id)
+					JOIN users u_from on (s.author = u_from.id
+					or v.organization_id = u_from.id)
+					LEFT JOIN organization org on org.id = u_to.organization_id
+					LEFT JOIN person per on per.id = u_to.person_id
+					WHERE u_from.id = $1
+					AND u_to.id != $1
 					AND rejected = false
 					AND approved = false;`
 	rows, err := r.db.Query(getConversations, userID)
