@@ -92,8 +92,10 @@ func (r *RoomInstance) SendGeneratedMessage(message *Message) error {
 
 func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 	var message *Message
-	json.Unmarshal(rawMessage, &message)
-
+	err := json.Unmarshal(rawMessage, &message)
+	if err != nil {
+		golog.Infof("broken message received: %v", err)
+	}
 	golog.Infof("chatter '%v' writing message to room, message: %v", message.UserOne, message.Message)
 
 	if err := r.messenger.SaveMessage(message); err == nil {
