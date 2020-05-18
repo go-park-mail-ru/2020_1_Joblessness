@@ -142,7 +142,7 @@ func (r *InterviewRepository) GetConversations(userID uint64) (result baseModels
         CASE WHEN u_to.person_id IS NOT NULL THEN per.name
             WHEN u_to.organization_id IS NOT NULL THEN org.name
         END 
-        , u_to.tag, r.interview_date
+        , u_to.tag
 					FROM response r
 					JOIN summary s on r.summary_id = s.id
 					JOIN vacancy v on r.vacancy_id = v.id
@@ -157,7 +157,7 @@ func (r *InterviewRepository) GetConversations(userID uint64) (result baseModels
 					AND ((rejected = false
 					AND approved = false)
 					    OR date >= (CURRENT_TIMESTAMP  - INTERVAL '1 DAY'))
-					GROUP BY u_to.id, per.id, org.id, r.interview_date;`
+					GROUP BY u_to.id, per.id, org.id;`
 	rows, err := r.db.Query(getConversations, userID)
 	if err != nil {
 		return result, err
