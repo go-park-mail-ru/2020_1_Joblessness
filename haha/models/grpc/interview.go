@@ -186,7 +186,9 @@ func TransformConversationsRPC(c baseModels.Conversations) *interviewRpc.Convers
 
 		res[i] = &interviewRpc.ConversationTitle{
 			ChatterId:     title.ChatterID,
-			ChatterName:   title.Tag,
+			Avatar: title.Avatar,
+			Tag:   title.Tag,
+			ChatterName:   title.ChatterName,
 			InterviewDate: interviewDate,
 		}
 	}
@@ -205,7 +207,9 @@ func TransformConversationsBase(c *interviewRpc.Conversations) baseModels.Conver
 
 		res[i] = &baseModels.ConversationTitle{
 			ChatterID:     title.ChatterId,
-			Tag:           title.ChatterName,
+			Avatar: title.Avatar,
+			Tag:           title.Tag,
+			ChatterName:   title.ChatterName,
 			InterviewDate: interviewDate,
 		}
 	}
