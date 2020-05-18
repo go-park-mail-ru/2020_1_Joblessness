@@ -37,14 +37,14 @@ func (r *InterviewRepository) ResponseSummary(sendSummary *baseModels.SendSummar
 		sendSummary.InterviewDate = time.Now()
 	}
 	response := `UPDATE response 
-				SET date = $6,
+				SET date = CURRENT_TIMESTAMP,
 				    approved = $1,
 				    rejected = $2,
 				    interview_date = $3
 				WHERE summary_id = $4
 				AND vacancy_id = $5;`
 	rows, err := r.db.Exec(response, sendSummary.Accepted, sendSummary.Denied, sendSummary.InterviewDate,
-		sendSummary.SummaryID, sendSummary.VacancyID, sendSummary.InterviewDate)
+		sendSummary.SummaryID, sendSummary.VacancyID)
 	if err != nil {
 		return err
 	}
@@ -142,8 +142,8 @@ func (r *InterviewRepository) GetConversations(userID uint64) (result baseModels
 					JOIN vacancy v on r.vacancy_id = v.id
 					JOIN users u on (s.author = u.id
 					or v.organization_id = u.id)
-					JOIN organization org on org.id = u.organization_id
-					JOIN person per on per.id = u.person_id
+					LEFT JOIN organization org on org.id = u.organization_id
+					LEFT JOIN person per on per.id = u.person_id
 					WHERE u.id = $1
 					AND rejected = false
 					AND approved = false;`
