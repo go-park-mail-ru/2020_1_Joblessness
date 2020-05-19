@@ -56,7 +56,7 @@ func (r *RoomInstance) Run() {
 func (r *RoomInstance) SendGeneratedMessage(message *Message) error {
 	err := r.messenger.SaveMessage(message)
 	if err == nil {
-		receiver, existReceiver := r.Chatters[message.UserTwoId]
+		receiver, existReceiver := r.Chatters[message.UserTwoID]
 		if existReceiver {
 			rawMessage, err := json.Marshal(message)
 			if err == nil {
@@ -84,7 +84,7 @@ func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 	golog.Infof("chatter '%v' writing message to room, message: %v", message.UserOne, message.Message)
 
 	if err := r.messenger.SaveMessage(message); err == nil {
-		receiver, existReceiver := r.Chatters[message.UserTwoId]
+		receiver, existReceiver := r.Chatters[message.UserTwoID]
 		if existReceiver {
 			select {
 			case receiver.Send <- rawMessage:
@@ -93,7 +93,7 @@ func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 				close(receiver.Send)
 			}
 		}
-		author, existAuthor := r.Chatters[message.UserOneId]
+		author, existAuthor := r.Chatters[message.UserOneID]
 		if existAuthor {
 			select {
 			case author.Send <- rawMessage:

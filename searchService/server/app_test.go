@@ -20,7 +20,7 @@ import (
 type userSuite struct {
 	suite.Suite
 	controller *gomock.Controller
-	grpcRepo   *searchGrpc.SearchGrpcRepository
+	grpcRepo   *searchGrpc.Repository
 	repo       *mock.MockSearchRepository
 	server     *grpc.Server
 	list       *bufconn.Listener

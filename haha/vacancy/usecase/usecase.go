@@ -38,9 +38,9 @@ func (u *VacancyUseCase) announceVacancy(vacancy *baseModels.Vacancy) (err error
 	for _, id := range users {
 		err := u.room.SendGeneratedMessage(&chat.Message{
 			Message:   message,
-			UserOneId: vacancy.Organization.ID,
+			UserOneID: vacancy.Organization.ID,
 			UserOne:   "",
-			UserTwoId: id,
+			UserTwoID: id,
 			UserTwo:   "",
 			Created:   time.Now(),
 			VacancyID: vacancy.ID,

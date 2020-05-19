@@ -131,9 +131,9 @@ type Message struct {
 	unknownFields protoimpl.UnknownFields
 
 	Message   string               `protobuf:"bytes,1,opt,name=Message,proto3" json:"Message,omitempty"`
-	UserOneId uint64               `protobuf:"varint,2,opt,name=UserOneId,proto3" json:"UserOneId,omitempty"`
+	UserOneId uint64               `protobuf:"varint,2,opt,name=UserOneID,proto3" json:"UserOneID,omitempty"`
 	UserOne   string               `protobuf:"bytes,3,opt,name=UserOne,proto3" json:"UserOne,omitempty"`
-	UserTwoId uint64               `protobuf:"varint,4,opt,name=UserTwoId,proto3" json:"UserTwoId,omitempty"`
+	UserTwoId uint64               `protobuf:"varint,4,opt,name=UserTwoID,proto3" json:"UserTwoID,omitempty"`
 	UserTwo   string               `protobuf:"bytes,5,opt,name=UserTwo,proto3" json:"UserTwo,omitempty"`
 	Created   *timestamp.Timestamp `protobuf:"bytes,6,opt,name=Created,proto3" json:"Created,omitempty"`
 }

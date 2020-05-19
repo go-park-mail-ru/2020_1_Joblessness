@@ -43,7 +43,8 @@ func (m *SessionHandler) UserRequired(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		r = r.WithContext(context.WithValue(r.Context(), "userID", userID))
+		key := "userID"
+		r = r.WithContext(context.WithValue(r.Context(), key, userID))
 		next.ServeHTTP(w, r)
 	}
 }
@@ -76,7 +77,8 @@ func (m *SessionHandler) PersonRequired(next http.HandlerFunc) http.HandlerFunc 
 			return
 		}
 
-		r = r.WithContext(context.WithValue(r.Context(), "userID", userID))
+		key := "userID"
+		r = r.WithContext(context.WithValue(r.Context(), key, userID))
 		next.ServeHTTP(w, r)
 	}
 }
@@ -109,7 +111,8 @@ func (m *SessionHandler) OrganizationRequired(next http.HandlerFunc) http.Handle
 			return
 		}
 
-		r = r.WithContext(context.WithValue(r.Context(), "userID", userID))
+		key := "userID"
+		r = r.WithContext(context.WithValue(r.Context(), key, userID))
 		next.ServeHTTP(w, r)
 	}
 }

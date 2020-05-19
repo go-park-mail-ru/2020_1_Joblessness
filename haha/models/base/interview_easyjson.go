@@ -187,11 +187,11 @@ func easyjsonF9aeba63DecodeJoblessnessHahaUtilsChat(in *jlexer.Lexer, out *chat.
 		case "message":
 			out.Message = string(in.String())
 		case "userOneId":
-			out.UserOneId = uint64(in.Uint64())
+			out.UserOneID = uint64(in.Uint64())
 		case "userOne":
 			out.UserOne = string(in.String())
 		case "userTwoId":
-			out.UserTwoId = uint64(in.Uint64())
+			out.UserTwoID = uint64(in.Uint64())
 		case "userTwo":
 			out.UserTwo = string(in.String())
 		case "created":
@@ -219,20 +219,20 @@ func easyjsonF9aeba63EncodeJoblessnessHahaUtilsChat(out *jwriter.Writer, in chat
 		out.RawString(prefix[1:])
 		out.String(string(in.Message))
 	}
-	if in.UserOneId != 0 {
+	if in.UserOneID != 0 {
 		const prefix string = ",\"userOneId\":"
 		out.RawString(prefix)
-		out.Uint64(uint64(in.UserOneId))
+		out.Uint64(uint64(in.UserOneID))
 	}
 	if in.UserOne != "" {
 		const prefix string = ",\"userOne\":"
 		out.RawString(prefix)
 		out.String(string(in.UserOne))
 	}
-	if in.UserTwoId != 0 {
+	if in.UserTwoID != 0 {
 		const prefix string = ",\"userTwoId\":"
 		out.RawString(prefix)
-		out.Uint64(uint64(in.UserTwoId))
+		out.Uint64(uint64(in.UserTwoID))
 	}
 	if in.UserTwo != "" {
 		const prefix string = ",\"userTwo\":"

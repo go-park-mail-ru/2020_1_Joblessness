@@ -34,7 +34,9 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 		sw := custom_http.NewStatusResponseWriter(w)
 
 		requestNumber := genRequestNumber(6)
-		r = r.WithContext(context.WithValue(r.Context(), "rID", requestNumber))
+
+		key := "rID"
+		r = r.WithContext(context.WithValue(r.Context(), key, requestNumber))
 
 		labels := prometheus.Labels{
 			"method": r.Method,

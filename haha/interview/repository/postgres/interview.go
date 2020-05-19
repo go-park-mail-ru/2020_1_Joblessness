@@ -58,7 +58,7 @@ func (r *InterviewRepository) ResponseSummary(sendSummary *baseModels.SendSummar
 func (r *InterviewRepository) SaveMessage(message *chat.Message) (err error) {
 	saveMessage := `INSERT INTO message (user_one_id, user_two_id, user_one, user_two, body)
 				VALUES ($1, $2, $3, $4, $5);`
-	_, err = r.db.Exec(saveMessage, message.UserOneId, message.UserTwoId, message.UserOne, message.UserTwo, message.Message)
+	_, err = r.db.Exec(saveMessage, message.UserOneID, message.UserTwoID, message.UserOne, message.UserTwo, message.Message)
 
 	return err
 }
@@ -80,7 +80,7 @@ func (r *InterviewRepository) getUserSendMessages(parameters *baseModels.ChatPar
 	for rows.Next() {
 		var message chat.Message
 
-		err = rows.Scan(&message.UserOneId, &message.UserTwoId, &message.UserOne, &message.UserTwo, &message.Message,
+		err = rows.Scan(&message.UserOneID, &message.UserTwoID, &message.UserOne, &message.UserTwo, &message.Message,
 			&message.Created)
 		if err != nil {
 			return nil, err

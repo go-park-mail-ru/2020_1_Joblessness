@@ -291,13 +291,13 @@ func (suite *userSuite) TestChangeOrganizationFailedTwo() {
 }
 
 func (suite *userSuite) TestGetOrgList() {
-	rows := sqlmock.NewRows([]string{"userId", "name", "site"})
+	rows := sqlmock.NewRows([]string{"userID", "name", "site"})
 	for i := 1; i < 5; i++ {
 		rows = rows.AddRow(uint64(i), suite.organization.Name, suite.organization.Site)
 	}
 
 	suite.mock.
-		ExpectQuery("SELECT users.id as userId, name, site").
+		ExpectQuery("SELECT users.id as userID, name, site").
 		WithArgs(10, 10).
 		WillReturnRows(rows)
 

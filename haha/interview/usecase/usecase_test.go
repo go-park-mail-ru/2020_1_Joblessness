@@ -53,9 +53,9 @@ func (suite *userSuite) TestGenerateMessage() {
 func (suite *userSuite) TestSaveMessage() {
 	message := chat.Message{
 		Message:   "message",
-		UserOneId: 1,
+		UserOneID: 1,
 		UserOne:   "awd",
-		UserTwoId: 2,
+		UserTwoID: 2,
 		UserTwo:   "",
 		Created:   time.Now(),
 		VacancyID: 0,
