@@ -33,13 +33,11 @@ type userSuite struct {
 	authUseCase    *mockAuth.MockAuthUseCase
 	uc             *interviewUseCaseMock.MockInterviewUseCase
 	cookie         *http.Cookie
-	response       baseModels.VacancyResponse
 	sendSum        baseModels.SendSummary
 	params         baseModels.ChatParameters
 	summaryCredits baseModels.SummaryCredentials
 	message        chat.Message
 	conversation   baseModels.ConversationTitle
-	responseByte   *bytes.Buffer
 	sendSumByte    *bytes.Buffer
 	paramsByte     *bytes.Buffer
 }

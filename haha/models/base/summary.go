@@ -104,15 +104,15 @@ type SendSummary struct {
 
 //easyjson:json
 type VacancyResponse struct {
-	UserID      uint64 `json:"user_id,omitempty"`
-	Tag         string `json:"tag,omitempty"`
-	VacancyID   uint64 `json:"vacancyId,omitempty"`
-	SummaryID   uint64 `json:"summaryId,omitempty"`
-	FirstName    string `json:"firstName,omitempty"`
-	LastName string `json:"lastName,omitempty"`
-	Avatar string `json:"avatar,omitempty"`
-	Accepted    bool   `json:"accepted"`
-	Denied      bool   `json:"denied"`
+	UserID    uint64 `json:"user_id,omitempty"`
+	Tag       string `json:"tag,omitempty"`
+	VacancyID uint64 `json:"vacancyId,omitempty"`
+	SummaryID uint64 `json:"summaryId,omitempty"`
+	FirstName string `json:"firstName,omitempty"`
+	LastName  string `json:"lastName,omitempty"`
+	Avatar    string `json:"avatar,omitempty"`
+	Accepted  bool   `json:"accepted"`
+	Denied    bool   `json:"denied"`
 }
 
 func (s *VacancyResponse) Sanitize(policy *bluemonday.Policy) {

@@ -36,7 +36,10 @@ func UploadAvatar(form *multipart.Form, userID uint64) (link string, err error) 
 	defer file.Close()
 
 	var buf bytes.Buffer
-	io.Copy(&buf, file)
+	_, err = io.Copy(&buf, file)
+	if err != nil {
+		return link, err
+	}
 	splitName := strings.Split(fileHeaders[0].Filename, ".")
 	ext := splitName[len(splitName)-1]
 

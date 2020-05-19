@@ -68,9 +68,9 @@ func (m *RecoveryHandler) RecoveryMiddleware(next http.Handler) http.Handler {
 			err := recover()
 			if err != nil {
 				if ok {
-					golog.Errorf("#%s Panic: %w", rID, err)
+					golog.Errorf("#%s Panic: %s", rID, err.(error).Error())
 				} else {
-					golog.Errorf("Panic with no id: %w", err)
+					golog.Errorf("Panic with no id: %s", err.(error).Error())
 				}
 
 				jsonBody, _ := json.Marshal(map[string]string{

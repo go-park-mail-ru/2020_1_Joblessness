@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	socketBufferSize  = 1024
 	messageBufferSize = 256
 )
 
@@ -87,7 +86,10 @@ func (u *InterviewUseCase) ResponseSummary(sendSummary *baseModels.SendSummary) 
 			return err
 		}
 		if message != nil {
-			u.room.SendGeneratedMessage(message)
+			err = u.room.SendGeneratedMessage(message)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
