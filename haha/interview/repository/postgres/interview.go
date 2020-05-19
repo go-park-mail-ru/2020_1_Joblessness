@@ -65,19 +65,13 @@ func (r *InterviewRepository) SaveMessage(message *chat.Message) (err error) {
 
 func (r *InterviewRepository) getUserSendMessages(parameters *baseModels.ChatParameters) (result []*chat.Message, err error) {
 	result = make([]*chat.Message, 0)
-	//saveMessage := `SELECT user_one_id, user_two_id, user_one, user_two, body, created
-    //				FROM message
-	//				WHERE user_one_id = $1
-	//				AND user_two_id = $2
-	//				ORDER BY created desc
-	//				LIMIT $3 OFFSET $4;`
-	//rows, err := r.db.Query(saveMessage, parameters.From, parameters.To, 20, parameters.Page*20)
 	saveMessage := `SELECT user_one_id, user_two_id, user_one, user_two, body, created
     				FROM message
 					WHERE user_one_id = $1
 					AND user_two_id = $2
-					ORDER BY created desc;`
-	rows, err := r.db.Query(saveMessage, parameters.From, parameters.To)
+					ORDER BY created desc
+					LIMIT $3 OFFSET $4;`
+	rows, err := r.db.Query(saveMessage, parameters.From, parameters.To, 20, parameters.Page*20)
 	if err != nil {
 		return result, err
 	}
@@ -167,7 +161,7 @@ func (r *InterviewRepository) GetConversations(userID uint64) (result baseModels
 	for rows.Next() {
 		var title baseModels.ConversationTitle
 
-		err = rows.Scan(&title.ChatterID, &title.Avatar, &title.ChatterName, &title.Tag, &title.InterviewDate)
+		err = rows.Scan(&title.ChatterID, &title.Avatar, &title.ChatterName, &title.Tag)
 		if err != nil {
 			return nil, err
 		}

@@ -6,7 +6,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/test/bufconn"
 	baseModels "joblessness/haha/models/base"
 	searchGrpc "joblessness/haha/search/repository/grpc"
 	"joblessness/haha/search/repository/mock"
@@ -21,28 +23,34 @@ type userSuite struct {
 	grpcRepo   *searchGrpc.SearchGrpcRepository
 	repo       *mock.MockSearchRepository
 	server     *grpc.Server
-	list       net.Listener
+	list       *bufconn.Listener
+	conn *grpc.ClientConn
+}
+
+func (suite *userSuite) bufDialer(context.Context, string) (net.Conn, error) {
+	return suite.list.Dial()
 }
 
 func (suite *userSuite) SetupTest() {
 	suite.controller = gomock.NewController(suite.T())
-	interviewConn, err := grpc.Dial(
-		"127.0.0.1:8002",
-		grpc.WithInsecure(),
-	)
-	assert.NoError(suite.T(), err, "Unable to start server")
 
-	suite.grpcRepo = searchGrpc.NewSearchGrpcRepository(interviewConn)
-	assert.NoError(suite.T(), err)
 
 	suite.repo = mock.NewMockSearchRepository(suite.controller)
-	suite.list, err = net.Listen("tcp", "127.0.0.1:8002")
-	assert.NoError(suite.T(), err, "Unable to listen")
+	buffer := 1024 * 1024
+	suite.list = bufconn.Listen(buffer)
 	suite.server = grpc.NewServer()
 	searchRpc.RegisterSearchServer(suite.server, NewSearchServer(suite.repo))
+
+	ctx := context.Background()
+	var err error
+	suite.conn, err = grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(suite.bufDialer), grpc.WithInsecure())
+
+	suite.grpcRepo = searchGrpc.NewSearchGrpcRepository(suite.conn)
+	assert.NoError(suite.T(), err)
 }
 
 func (suite *userSuite) TearDown() {
+	suite.conn.Close()
 }
 
 func TestSuite(t *testing.T) {

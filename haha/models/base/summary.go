@@ -111,6 +111,7 @@ type VacancyResponse struct {
 	FirstName    string `json:"firstName,omitempty"`
 	LastName string `json:"lastName,omitempty"`
 	Avatar string `json:"avatar,omitempty"`
+	InterviewDate  time.Time `json:"interview_date,omitempty"`
 	Accepted    bool   `json:"accepted"`
 	Denied      bool   `json:"denied"`
 }

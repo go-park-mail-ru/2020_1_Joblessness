@@ -50,6 +50,10 @@ func easyjsonF381ebcaDecodeJoblessnessHahaModelsBase(in *jlexer.Lexer, out *Vaca
 			out.LastName = string(in.String())
 		case "avatar":
 			out.Avatar = string(in.String())
+		case "interview_date":
+			if data := in.Raw(); in.Ok() {
+				in.AddError((out.InterviewDate).UnmarshalJSON(data))
+			}
 		case "accepted":
 			out.Accepted = bool(in.Bool())
 		case "denied":
@@ -133,6 +137,16 @@ func easyjsonF381ebcaEncodeJoblessnessHahaModelsBase(out *jwriter.Writer, in Vac
 			out.RawString(prefix)
 		}
 		out.String(string(in.Avatar))
+	}
+	if true {
+		const prefix string = ",\"interview_date\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Raw((in.InterviewDate).MarshalJSON())
 	}
 	if in.Accepted {
 		const prefix string = ",\"accepted\":"

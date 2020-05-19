@@ -7,7 +7,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/test/bufconn"
 	interviewInterfaces "joblessness/haha/interview/interfaces"
 	interviewGrpc "joblessness/haha/interview/repository/grpc"
 	"joblessness/haha/interview/repository/mock"
@@ -24,25 +26,35 @@ type userSuite struct {
 	grpcRepo   *interviewGrpc.InterviewGrpcRepository
 	repo       *mock.MockInterviewRepository
 	server     *grpc.Server
-	list       net.Listener
+	list       *bufconn.Listener
+	conn       *grpc.ClientConn
 }
+
+func (suite *userSuite) bufDialer(context.Context, string) (net.Conn, error) {
+	return suite.list.Dial()
+}
+
 
 func (suite *userSuite) SetupTest() {
 	suite.controller = gomock.NewController(suite.T())
-	interviewConn, err := grpc.Dial(
-		"127.0.0.1:8003",
-		grpc.WithInsecure(),
-	)
-	assert.NoError(suite.T(), err, "Unable to start server")
 
-	suite.grpcRepo = interviewGrpc.NewInterviewGrpcRepository(interviewConn)
-	assert.NoError(suite.T(), err)
 
 	suite.repo = mock.NewMockInterviewRepository(suite.controller)
-	suite.list, err = net.Listen("tcp", "127.0.0.1:8003")
-	assert.NoError(suite.T(), err, "Unable to listen")
+	buffer := 1024 * 1024
+	suite.list = bufconn.Listen(buffer)
 	suite.server = grpc.NewServer()
 	interviewRpc.RegisterInterviewServer(suite.server, NewInterviewServer(suite.repo))
+
+	ctx := context.Background()
+	var err error
+	suite.conn, err = grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(suite.bufDialer), grpc.WithInsecure())
+
+	suite.grpcRepo = interviewGrpc.NewInterviewGrpcRepository(suite.conn)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *userSuite) TearDown() {
+	suite.conn.Close()
 }
 
 func TestSuite(t *testing.T) {

@@ -20,6 +20,7 @@ type summarySuite struct {
 	mock    sqlmock.Sqlmock
 	sendSum baseModels.SendSummary
 	message chat.Message
+	convTitle baseModels.ConversationTitle
 	params  baseModels.ChatParameters
 }
 
@@ -34,6 +35,7 @@ func (suite *summarySuite) SetupTest() {
 		SummaryID:      uint64(2),
 		UserID:         uint64(1),
 		OrganizationID: uint64(13),
+		InterviewDate: time.Now(),
 		Accepted:       true,
 		Denied:         false,
 	}
@@ -45,6 +47,14 @@ func (suite *summarySuite) SetupTest() {
 		UserTwoId: 2,
 		UserTwo:   "awd",
 		Created:   time.Now(),
+	}
+
+	suite.convTitle = baseModels.ConversationTitle{
+		ChatterID:     uint64(1),
+		Avatar:        "awd",
+		ChatterName:   "awd",
+		Tag:           "ad",
+		InterviewDate: time.Now(),
 	}
 
 	suite.params = baseModels.ChatParameters{
@@ -237,10 +247,11 @@ func (suite *summarySuite) TestGetResponseCredentialsFailedTwo() {
 }
 
 func (suite *summarySuite) TestGetConversations() {
-	rows := sqlmock.NewRows([]string{"id", "tag", "interview_date"}).
-		AddRow(suite.message.UserTwoId, suite.message.UserTwo, suite.sendSum.InterviewDate)
+	rows := sqlmock.NewRows([]string{"id", "avatar", "name", "tag"}).
+		AddRow(suite.convTitle.ChatterID, suite.convTitle.Avatar, suite.convTitle.ChatterName,
+			suite.convTitle.InterviewDate)
 	suite.mock.
-		ExpectQuery("SELECT u.id, u.tag, r.interview_date").
+		ExpectQuery("SELECT u_to.id, u_to.avatar").
 		WithArgs(suite.message.UserOneId).
 		WillReturnRows(rows)
 
