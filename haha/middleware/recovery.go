@@ -29,14 +29,15 @@ func genRequestNumber(n int) string {
 	return string(s)
 }
 
+const rID = key("userID")
+
 func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sw := custom_http.NewStatusResponseWriter(w)
 
 		requestNumber := genRequestNumber(6)
 
-		key := "rID"
-		r = r.WithContext(context.WithValue(r.Context(), key, requestNumber))
+		r = r.WithContext(context.WithValue(r.Context(), rID, requestNumber))
 
 		labels := prometheus.Labels{
 			"method": r.Method,

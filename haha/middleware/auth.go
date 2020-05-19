@@ -15,6 +15,9 @@ func NewAuthMiddleware(authUseCase authInterfaces.AuthUseCase) *SessionHandler {
 	return &SessionHandler{auth: authUseCase}
 }
 
+type key string
+const userID = key("userID")
+
 func (m *SessionHandler) UserRequired(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rID, ok := r.Context().Value("rID").(string)
@@ -43,8 +46,7 @@ func (m *SessionHandler) UserRequired(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		key := "userID"
-		r = r.WithContext(context.WithValue(r.Context(), key, userID))
+		r = r.WithContext(context.WithValue(r.Context(), userID, userID))
 		next.ServeHTTP(w, r)
 	}
 }
@@ -77,8 +79,7 @@ func (m *SessionHandler) PersonRequired(next http.HandlerFunc) http.HandlerFunc 
 			return
 		}
 
-		key := "userID"
-		r = r.WithContext(context.WithValue(r.Context(), key, userID))
+		r = r.WithContext(context.WithValue(r.Context(), userID, userID))
 		next.ServeHTTP(w, r)
 	}
 }
@@ -111,8 +112,7 @@ func (m *SessionHandler) OrganizationRequired(next http.HandlerFunc) http.Handle
 			return
 		}
 
-		key := "userID"
-		r = r.WithContext(context.WithValue(r.Context(), key, userID))
+		r = r.WithContext(context.WithValue(r.Context(), userID, userID))
 		next.ServeHTTP(w, r)
 	}
 }
