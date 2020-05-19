@@ -15,13 +15,13 @@ import (
 
 type summarySuite struct {
 	suite.Suite
-	rep     *InterviewRepository
-	db      *sql.DB
-	mock    sqlmock.Sqlmock
-	sendSum baseModels.SendSummary
-	message chat.Message
+	rep       *InterviewRepository
+	db        *sql.DB
+	mock      sqlmock.Sqlmock
+	sendSum   baseModels.SendSummary
+	message   chat.Message
 	convTitle baseModels.ConversationTitle
-	params  baseModels.ChatParameters
+	params    baseModels.ChatParameters
 }
 
 func (suite *summarySuite) SetupTest() {
@@ -35,7 +35,7 @@ func (suite *summarySuite) SetupTest() {
 		SummaryID:      uint64(2),
 		UserID:         uint64(1),
 		OrganizationID: uint64(13),
-		InterviewDate: time.Now(),
+		InterviewDate:  time.Now(),
 		Accepted:       true,
 		Denied:         false,
 	}

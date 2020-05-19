@@ -87,7 +87,7 @@ func TestFlow(t *testing.T) {
 		Tag:       sum.Author.Tag,
 		VacancyID: uint64(7),
 		SummaryID: sum.ID,
-		Avatar:  "awdwa",
+		Avatar:    "awdwa",
 	}
 
 	orgSum := OrgSummaries{sumResp}
@@ -234,15 +234,15 @@ func TestFavs(t *testing.T) {
 
 func TestVacancyResp(t *testing.T) {
 	vacResp := VacancyResponse{
-		UserID:      1,
-		Tag:         "awda",
-		VacancyID:   1,
-		SummaryID:   2,
+		UserID:    1,
+		Tag:       "awda",
+		VacancyID: 1,
+		SummaryID: 2,
 		Avatar:    "Awda",
 		FirstName: "awda",
-		LastName: "adwa",
-		Accepted:    false,
-		Denied:      false,
+		LastName:  "adwa",
+		Accepted:  false,
+		Denied:    false,
 	}
 	res, err := easyjson.Marshal(vacResp)
 	assert.NoError(t, err)
@@ -287,26 +287,26 @@ func TestSendSummary(t *testing.T) {
 func TestOrgSummaries(t *testing.T) {
 	orgSums := OrgSummaries{
 		&VacancyResponse{
-			UserID:      0,
-			Tag:         "",
-			VacancyID:   0,
-			SummaryID:   0,
+			UserID:    0,
+			Tag:       "",
+			VacancyID: 0,
+			SummaryID: 0,
 			Avatar:    "",
 			FirstName: "",
-			LastName: "",
-			Accepted:    false,
-			Denied:      false,
+			LastName:  "",
+			Accepted:  false,
+			Denied:    false,
 		},
 		&VacancyResponse{
-			UserID:      1,
-			Tag:         "ada",
-			VacancyID:   2,
-			SummaryID:   3,
+			UserID:    1,
+			Tag:       "ada",
+			VacancyID: 2,
+			SummaryID: 3,
 			Avatar:    "awda",
 			FirstName: "dwaa",
-			LastName: "adw",
-			Accepted:    false,
-			Denied:      false,
+			LastName:  "adw",
+			Accepted:  false,
+			Denied:    false,
 		},
 	}
 	res, err := easyjson.Marshal(orgSums)

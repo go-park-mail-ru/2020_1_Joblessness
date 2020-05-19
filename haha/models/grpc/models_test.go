@@ -87,7 +87,7 @@ func TestFlow(t *testing.T) {
 		Tag:       sum.Author.Tag,
 		VacancyID: uint64(7),
 		SummaryID: sum.ID,
-		Avatar:  "avatar",
+		Avatar:    "avatar",
 	}
 
 	orgSum := baseModels.OrgSummaries{sumResp}

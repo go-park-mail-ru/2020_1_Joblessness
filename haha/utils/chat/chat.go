@@ -4,21 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"github.com/kataras/golog"
-	"time"
-)
-
-const (
-	// Time allowed to write a message to the peer.
-	writeWait = 10 * time.Second
-
-	// Time allowed to read the next pong message from the peer.
-	pongWait = 60 * time.Second
-
-	// Send pings to peer with this period. Must be less than pongWait.
-	pingPeriod = (pongWait * 9) / 10
-
-	// Maximum message size allowed from peer.
-	maxMessageSize = 512
 )
 
 type RoomInstance struct {
@@ -140,7 +125,11 @@ func (c *Chatter) Read() {
 			break
 		}
 	}
-	c.Socket.Close()
+
+	err := c.Socket.Close()
+	if err != nil {
+		golog.Error("Socket closed with error: ", err)
+	}
 }
 
 func (c *Chatter) Write() {
@@ -150,5 +139,9 @@ func (c *Chatter) Write() {
 			break
 		}
 	}
-	c.Socket.Close()
+
+	err := c.Socket.Close()
+	if err != nil {
+		golog.Error("Socket closed with error: ", err)
+	}
 }

@@ -24,7 +24,7 @@ type userSuite struct {
 	repo       *mock.MockSearchRepository
 	server     *grpc.Server
 	list       *bufconn.Listener
-	conn *grpc.ClientConn
+	conn       *grpc.ClientConn
 }
 
 func (suite *userSuite) bufDialer(context.Context, string) (net.Conn, error) {
@@ -33,7 +33,6 @@ func (suite *userSuite) bufDialer(context.Context, string) (net.Conn, error) {
 
 func (suite *userSuite) SetupTest() {
 	suite.controller = gomock.NewController(suite.T())
-
 
 	suite.repo = mock.NewMockSearchRepository(suite.controller)
 	buffer := 1024 * 1024
@@ -47,9 +46,16 @@ func (suite *userSuite) SetupTest() {
 
 	suite.grpcRepo = searchGrpc.NewSearchGrpcRepository(suite.conn)
 	assert.NoError(suite.T(), err)
+
+	go func() {
+		err = suite.server.Serve(suite.list)
+	}()
+	assert.NoError(suite.T(), err)
 }
 
 func (suite *userSuite) TearDown() {
+	err := suite.conn.Close()
+	assert.NoError(suite.T(), err)
 	suite.conn.Close()
 }
 
@@ -58,9 +64,6 @@ func TestSuite(t *testing.T) {
 }
 
 func (suite *userSuite) TestSearchPersons() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().SearchPersons(gomock.Any()).Times(1).Return([]*baseModels.Person{&baseModels.Person{}}, nil)
 
 	_, err := suite.grpcRepo.SearchPersons(&baseModels.SearchParams{})
@@ -69,9 +72,6 @@ func (suite *userSuite) TestSearchPersons() {
 }
 
 func (suite *userSuite) TestSearchOrganizations() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().SearchOrganizations(gomock.Any()).Times(1).Return([]*baseModels.Organization{&baseModels.Organization{}}, nil)
 
 	_, err := suite.grpcRepo.SearchOrganizations(&baseModels.SearchParams{})
@@ -80,9 +80,6 @@ func (suite *userSuite) TestSearchOrganizations() {
 }
 
 func (suite *userSuite) TestSearchVacancies() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().SearchVacancies(gomock.Any()).Times(1).Return([]*baseModels.Vacancy{&baseModels.Vacancy{}}, nil)
 
 	_, err := suite.grpcRepo.SearchVacancies(&baseModels.SearchParams{})

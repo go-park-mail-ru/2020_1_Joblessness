@@ -88,7 +88,7 @@ func (suite *summarySuite) SetupTest() {
 		Tag:       suite.user.Tag,
 		VacancyID: uint64(7),
 		SummaryID: suite.summary.ID,
-		Avatar:  suite.summary.Keywords,
+		Avatar:    suite.summary.Keywords,
 	}
 
 	suite.sendSum = baseModels.SendSummary{
