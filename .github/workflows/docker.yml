@@ -64,7 +64,4 @@ jobs:
             docker stop $(docker ps -aq)
             docker rm $(docker ps -aq)
             docker rmi $(docker images -q)
-            docker run -d -p 8002:8002 ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8}
-            docker run -d -p 8003:8003 ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8}
-            docker run -d -p 8004:8004 ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8}
-            docker run -d -p 8001:8001 -p 5432:5432 --env-file=/home/env.list -v /etc/letsencrypt:/etc/letsencrypt ${{ secrets.DOCKERHUB_USERNAME }}/app:${GITHUB_SHA::8}
+            docker-compose up -d --build

@@ -1,7 +1,7 @@
 version: '3'
 services:
   app:
-    image: golang
+    image: app
     depends_on:
       - search
       - interview
@@ -9,54 +9,43 @@ services:
     env_file:
       - ../env.list
     volumes:
-      - .:/go/src/haha
       - /etc/letsencrypt:/etc/letsencrypt
     working_dir: /go/src/haha/cmd/haha/
     ports:
       - "8001:8001"
-    command: go run main.go
     stdin_open: true
     tty: true
     network_mode: host
 
   search:
-    image: golang
+    image: search
     env_file:
       - ../env.list
-    volumes:
-      - .:/go/src/haha
     working_dir: /go/src/haha/cmd/search/
     ports:
       - "8002:8002"
-    command: go run main.go
     stdin_open: true
     tty: true
     network_mode: host
 
   interview:
-    image: golang
+    image: interview
     env_file:
       - ../env.list
-    volumes:
-      - .:/go/src/haha
     working_dir: /go/src/haha/cmd/interview/
     ports:
       - "8003:8003"
-    command: go run main.go
     stdin_open: true
     tty: true
     network_mode: host
 
   auth:
-    image: golang
+    image: auth
     env_file:
       - ../env.list
-    volumes:
-      - .:/go/src/haha
     working_dir: /go/src/haha/cmd/auth/
     ports:
       - "8004:8004"
-    command: go run main.go
     stdin_open: true
     tty: true
     network_mode: host
