@@ -12,13 +12,10 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	controller   *gomock.Controller
-	uc           *SearchUseCase
-	person       baseModels.Person
-	organization baseModels.Organization
-	repo         *mock.MockSearchRepository
-	sidEx        string
-	params       baseModels.SearchParams
+	controller *gomock.Controller
+	uc         *SearchUseCase
+	repo       *mock.MockSearchRepository
+	params     baseModels.SearchParams
 }
 
 func (suite *userSuite) SetupTest() {

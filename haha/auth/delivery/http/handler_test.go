@@ -16,7 +16,6 @@ import (
 	"joblessness/haha/models/base"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 )
@@ -76,23 +75,6 @@ func (suite *userSuite) SetupTest() {
 
 func TestSuite(t *testing.T) {
 	suite.Run(t, new(userSuite))
-}
-
-const message = `
---MyBoundary
-Content-Disposition: form-data; name="file"; filename="file.png"
-Content-Type: text/plain
-`
-
-func newTestMultipartRequest(t *testing.T) *http.Request {
-	b := strings.NewReader(strings.ReplaceAll(message, "\n", "\r\n"))
-	req, err := http.NewRequest("POST", "/api/users/12/avatar", b)
-	if err != nil {
-		t.Fatal("NewRequest:", err)
-	}
-	ctype := `multipart/form-data; boundary="MyBoundary"`
-	req.Header.Set("Content-type", ctype)
-	return req
 }
 
 func (suite *userSuite) TestRegistrationPerson() {

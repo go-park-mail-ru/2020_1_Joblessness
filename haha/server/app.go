@@ -43,7 +43,6 @@ import (
 )
 
 type App struct {
-	httpServer        *http.Server
 	userUse           userInterfaces.UserUseCase
 	authUse           authInterfaces.AuthUseCase
 	vacancyUse        vacancyInterfaces.VacancyUseCase

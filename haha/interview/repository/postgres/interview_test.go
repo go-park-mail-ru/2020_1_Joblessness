@@ -9,6 +9,7 @@ import (
 	interviewInterfaces "joblessness/haha/interview/interfaces"
 	"joblessness/haha/models/base"
 	"joblessness/haha/utils/chat"
+	"log"
 	"testing"
 	"time"
 )
@@ -125,6 +126,7 @@ func (suite *summarySuite) TestResponseSummaryNo() {
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
 	err := suite.rep.ResponseSummary(&suite.sendSum)
+	log.Println("ERROR: ", err)
 	assert.True(suite.T(), errors.Is(err, interviewInterfaces.ErrNoSummaryToRefresh))
 }
 

@@ -5,7 +5,6 @@ import (
 	interviewInterfaces "joblessness/haha/interview/interfaces"
 	"joblessness/haha/models/base"
 	"joblessness/haha/utils/chat"
-	"time"
 )
 
 type InterviewRepository struct {
@@ -33,9 +32,9 @@ func (r *InterviewRepository) IsOrganizationVacancy(vacancyID, userID uint64) (e
 }
 
 func (r *InterviewRepository) ResponseSummary(sendSummary *baseModels.SendSummary) (err error) {
-	if sendSummary.InterviewDate.IsZero() {
-		sendSummary.InterviewDate = time.Now()
-	}
+	//if sendSummary.InterviewDate.IsZero() {
+	//	sendSummary.InterviewDate = time.Now()
+	//}
 	response := `UPDATE response 
 				SET date = CURRENT_TIMESTAMP,
 				    approved = $1,

@@ -21,6 +21,9 @@ func NewSearchGrpcRepository(conn *grpc.ClientConn) *Repository {
 
 func (r *Repository) SearchPersons(params *baseModels.SearchParams) (result []*baseModels.Person, err error) {
 	res, err := r.handler.SearchPersons(context.Background(), grpcModels.TransformParamsRPC(params))
+	if err != nil {
+		return result, err
+	}
 
 	result = make([]*baseModels.Person, 0)
 	for {
@@ -41,6 +44,9 @@ func (r *Repository) SearchPersons(params *baseModels.SearchParams) (result []*b
 
 func (r *Repository) SearchOrganizations(params *baseModels.SearchParams) (result []*baseModels.Organization, err error) {
 	res, err := r.handler.SearchOrganizations(context.Background(), grpcModels.TransformParamsRPC(params))
+	if err != nil {
+		return result, err
+	}
 
 	result = make([]*baseModels.Organization, 0)
 	for {
@@ -61,6 +67,9 @@ func (r *Repository) SearchOrganizations(params *baseModels.SearchParams) (resul
 
 func (r *Repository) SearchVacancies(params *baseModels.SearchParams) (result []*baseModels.Vacancy, err error) {
 	res, err := r.handler.SearchVacancies(context.Background(), grpcModels.TransformParamsRPC(params))
+	if err != nil {
+		return result, err
+	}
 
 	result = make([]*baseModels.Vacancy, 0)
 	for {

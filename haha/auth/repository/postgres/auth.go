@@ -20,6 +20,9 @@ func NewAuthRepository(db *sql.DB) *AuthRepository {
 
 func (r AuthRepository) CreateUser(login, password string, personID, organizationID uint64) (err error) {
 	hashedPassword, err := salt.HashAndSalt(password)
+	if err != nil {
+		return err
+	}
 
 	insertUser := `INSERT INTO users (login, password, organization_id, person_id) 
 					VALUES(NULLIF($1, ''), NULLIF($2, ''), NULLIF($3, 0), NULLIF($4, 0))`

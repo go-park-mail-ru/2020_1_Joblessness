@@ -21,16 +21,12 @@ import (
 
 type userSuite struct {
 	suite.Suite
-	router           *mux.Router
-	mainMiddleware   *middleware.RecoveryHandler
-	authMiddleware   *middleware.SessionHandler
-	controller       *gomock.Controller
-	authUseCase      *mock.MockAuthUseCase
-	uc               *searchUseCaseMock.MockSearchUseCase
-	person           baseModels.Person
-	personByte       *bytes.Buffer
-	organization     baseModels.Organization
-	organizationByte *bytes.Buffer
+	router         *mux.Router
+	mainMiddleware *middleware.RecoveryHandler
+	authMiddleware *middleware.SessionHandler
+	controller     *gomock.Controller
+	authUseCase    *mock.MockAuthUseCase
+	uc             *searchUseCaseMock.MockSearchUseCase
 }
 
 func (suite *userSuite) SetupTest() {
