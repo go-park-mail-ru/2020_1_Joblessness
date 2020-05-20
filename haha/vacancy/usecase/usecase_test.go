@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	baseModels "joblessness/haha/models/base"
-	pgModels "joblessness/haha/models/postgres"
 	mockRoom "joblessness/haha/utils/chat/mock"
 	"joblessness/haha/vacancy/repository/mock"
 	"testing"
@@ -19,11 +18,6 @@ type userSuite struct {
 	controller *gomock.Controller
 	uc         *VacancyUseCase
 	repo       *mock.MockVacancyRepository
-	summary    baseModels.Summary
-	education  pgModels.Education
-	experience pgModels.Experience
-	user       pgModels.User
-	person     pgModels.Person
 	vacancy    baseModels.Vacancy
 	room       *mockRoom.MockRoom
 }

@@ -3,7 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // needs only init() in it
 	"log"
 	"os"
 )

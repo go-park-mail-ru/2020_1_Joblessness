@@ -15,16 +15,14 @@ import (
 
 type summarySuite struct {
 	suite.Suite
-	rep        *SummaryRepository
-	db         *sql.DB
-	mock       sqlmock.Sqlmock
-	summary    baseModels.Summary
-	education  pgModels.Education
-	experience pgModels.Experience
-	user       pgModels.User
-	person     pgModels.Person
-	response   baseModels.VacancyResponse
-	sendSum    baseModels.SendSummary
+	rep      *SummaryRepository
+	db       *sql.DB
+	mock     sqlmock.Sqlmock
+	summary  baseModels.Summary
+	user     pgModels.User
+	person   pgModels.Person
+	response baseModels.VacancyResponse
+	sendSum  baseModels.SendSummary
 }
 
 func (suite *summarySuite) SetupTest() {
@@ -88,7 +86,7 @@ func (suite *summarySuite) SetupTest() {
 		Tag:       suite.user.Tag,
 		VacancyID: uint64(7),
 		SummaryID: suite.summary.ID,
-		Keywords:  suite.summary.Keywords,
+		Avatar:    suite.summary.Keywords,
 	}
 
 	suite.sendSum = baseModels.SendSummary{
@@ -185,7 +183,7 @@ func (suite *summarySuite) TestCreateSummaryFailedThree() {
 func (suite *summarySuite) TestGetSummary() {
 	rows := sqlmock.NewRows([]string{"author", "keywords", "name", "salary_from", "salary_to"}).
 		AddRow(suite.summary.Author.ID, suite.summary.Keywords, suite.summary.Name, suite.summary.SalaryFrom,
-			suite.summary.SalaryFrom)
+			suite.summary.SalaryTo)
 	suite.mock.
 		ExpectQuery("SELECT author, keywords").
 		WithArgs(suite.summary.ID).
@@ -224,7 +222,7 @@ func (suite *summarySuite) TestGetSummary() {
 
 func (suite *summarySuite) TestGetSummaryFailedOne() {
 	suite.mock.
-		ExpectQuery("SELECT author, keywords").
+		ExpectQuery("SELECT author, Avatar").
 		WithArgs(suite.summary.ID).
 		WillReturnError(errors.New(""))
 
@@ -233,10 +231,10 @@ func (suite *summarySuite) TestGetSummaryFailedOne() {
 }
 
 func (suite *summarySuite) TestGetSummaryFailedTwo() {
-	rows := sqlmock.NewRows([]string{"author", "keywords"}).
+	rows := sqlmock.NewRows([]string{"author", "Avatar"}).
 		AddRow(suite.summary.Author.ID, suite.summary.Keywords)
 	suite.mock.
-		ExpectQuery("SELECT author, keywords").
+		ExpectQuery("SELECT author, Avatar").
 		WithArgs(suite.summary.ID).
 		WillReturnRows(rows)
 
@@ -250,10 +248,10 @@ func (suite *summarySuite) TestGetSummaryFailedTwo() {
 }
 
 func (suite *summarySuite) TestGetSummaryFailedThree() {
-	rows := sqlmock.NewRows([]string{"author", "keywords"}).
+	rows := sqlmock.NewRows([]string{"author", "Avatar"}).
 		AddRow(suite.summary.Author.ID, suite.summary.Keywords)
 	suite.mock.
-		ExpectQuery("SELECT author, keywords").
+		ExpectQuery("SELECT author, Avatar").
 		WithArgs(suite.summary.ID).
 		WillReturnRows(rows)
 
@@ -275,10 +273,10 @@ func (suite *summarySuite) TestGetSummaryFailedThree() {
 }
 
 func (suite *summarySuite) TestGetSummaryFailedFor() {
-	rows := sqlmock.NewRows([]string{"author", "keywords"}).
+	rows := sqlmock.NewRows([]string{"author", "Avatar"}).
 		AddRow(suite.summary.Author.ID, suite.summary.Keywords)
 	suite.mock.
-		ExpectQuery("SELECT author, keywords").
+		ExpectQuery("SELECT author, Avatar").
 		WithArgs(suite.summary.ID).
 		WillReturnRows(rows)
 
@@ -577,13 +575,14 @@ func (suite *summarySuite) TestResponseSummaryFailed() {
 }
 
 func (suite *summarySuite) TestGetOrgSummaries() {
-	rows := sqlmock.NewRows([]string{"id", "tag", "id", "id", "keywords", "name", "name", "approved", "rejected"}).
+	rows := sqlmock.NewRows([]string{"id", "tag", "id", "id", "Avatar", "name", "name", "approved", "rejected",
+		"interview_date"}).
 		AddRow(suite.response.UserID, suite.response.Tag, suite.response.VacancyID, suite.response.SummaryID,
-			suite.response.Keywords, suite.response.SummaryName, suite.response.VacancyName, suite.response.Accepted,
-			suite.response.Denied)
+			suite.response.Avatar, suite.response.FirstName, suite.response.LastName, suite.response.Accepted,
+			suite.response.Denied, suite.response.InterviewDate)
 
 	suite.mock.
-		ExpectQuery("SELECT u.id, u.tag, v.id, s.id, s.keywords").
+		ExpectQuery("SELECT u.id, u.tag, v.id, s.id, u.avatar").
 		WithArgs(suite.sendSum.OrganizationID).
 		WillReturnRows(rows)
 
@@ -594,7 +593,7 @@ func (suite *summarySuite) TestGetOrgSummaries() {
 
 func (suite *summarySuite) TestGetOrgSummariesFailed() {
 	suite.mock.
-		ExpectQuery("SELECT u.id, u.tag, v.id, s.id, s.keywords").
+		ExpectQuery("SELECT u.id, u.tag, v.id, s.id, u.avatar, p.name, p.surname, r.approved, r.rejected").
 		WithArgs(suite.sendSum.OrganizationID).
 		WillReturnError(errors.New(""))
 
@@ -603,13 +602,12 @@ func (suite *summarySuite) TestGetOrgSummariesFailed() {
 }
 
 func (suite *summarySuite) TestGetUserSendSummaries() {
-	rows := sqlmock.NewRows([]string{"id", "id", "keywords", "name", "name", "approved", "rejected"}).
-		AddRow(suite.response.VacancyID, suite.response.SummaryID,
-			suite.response.Keywords, suite.response.SummaryName, suite.response.VacancyName, suite.response.Accepted,
-			suite.response.Denied)
+	rows := sqlmock.NewRows([]string{"id", "id", "approved", "rejected", "interview_date"}).
+		AddRow(suite.response.VacancyID, suite.response.SummaryID, suite.response.Accepted, suite.response.Denied,
+			suite.response.InterviewDate)
 
 	suite.mock.
-		ExpectQuery("SELECT v.id, s.id, s.keywords, s.name, v.name").
+		ExpectQuery("SELECT v.id, s.id, r.approved, r.rejected, r.interview_date").
 		WithArgs(suite.sendSum.OrganizationID).
 		WillReturnRows(rows)
 
@@ -619,7 +617,7 @@ func (suite *summarySuite) TestGetUserSendSummaries() {
 
 func (suite *summarySuite) TestGetUserSendSummariesFailed() {
 	suite.mock.
-		ExpectQuery("SELECT v.id, s.id, s.keywords, s.name, v.name").
+		ExpectQuery("SELECT v.id, s.id, r.approved, r.rejected, r.interview_date").
 		WithArgs(suite.sendSum.OrganizationID).
 		WillReturnError(errors.New(""))
 

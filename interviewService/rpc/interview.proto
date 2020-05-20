@@ -64,8 +64,10 @@ message CredentialsParams {
 
 message ConversationTitle {
 	uint64 ChatterId = 1;
-	string ChatterName = 2;
-	google.protobuf.Timestamp InterviewDate = 3;
+	string Avatar = 2;
+	string Tag = 3;
+	string ChatterName = 4;
+	google.protobuf.Timestamp InterviewDate = 5;
 }
 
 message Conversations {

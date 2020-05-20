@@ -4,21 +4,6 @@ import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"github.com/kataras/golog"
-	"time"
-)
-
-const (
-	// Time allowed to write a message to the peer.
-	writeWait = 10 * time.Second
-
-	// Time allowed to read the next pong message from the peer.
-	pongWait = 60 * time.Second
-
-	// Send pings to peer with this period. Must be less than pongWait.
-	pingPeriod = (pongWait * 9) / 10
-
-	// Maximum message size allowed from peer.
-	maxMessageSize = 512
 )
 
 type RoomInstance struct {
@@ -71,7 +56,7 @@ func (r *RoomInstance) Run() {
 func (r *RoomInstance) SendGeneratedMessage(message *Message) error {
 	err := r.messenger.SaveMessage(message)
 	if err == nil {
-		receiver, existReceiver := r.Chatters[message.UserTwoId]
+		receiver, existReceiver := r.Chatters[message.UserTwoID]
 		if existReceiver {
 			rawMessage, err := json.Marshal(message)
 			if err == nil {
@@ -92,12 +77,14 @@ func (r *RoomInstance) SendGeneratedMessage(message *Message) error {
 
 func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 	var message *Message
-	json.Unmarshal(rawMessage, &message)
-
+	err := json.Unmarshal(rawMessage, &message)
+	if err != nil {
+		golog.Infof("broken message received: %v", err)
+	}
 	golog.Infof("chatter '%v' writing message to room, message: %v", message.UserOne, message.Message)
 
 	if err := r.messenger.SaveMessage(message); err == nil {
-		receiver, existReceiver := r.Chatters[message.UserTwoId]
+		receiver, existReceiver := r.Chatters[message.UserTwoID]
 		if existReceiver {
 			select {
 			case receiver.Send <- rawMessage:
@@ -106,7 +93,7 @@ func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 				close(receiver.Send)
 			}
 		}
-		author, existAuthor := r.Chatters[message.UserOneId]
+		author, existAuthor := r.Chatters[message.UserOneID]
 		if existAuthor {
 			select {
 			case author.Send <- rawMessage:
@@ -138,7 +125,11 @@ func (c *Chatter) Read() {
 			break
 		}
 	}
-	c.Socket.Close()
+
+	err := c.Socket.Close()
+	if err != nil {
+		golog.Error("Socket closed with error: ", err)
+	}
 }
 
 func (c *Chatter) Write() {
@@ -148,5 +139,9 @@ func (c *Chatter) Write() {
 			break
 		}
 	}
-	c.Socket.Close()
+
+	err := c.Socket.Close()
+	if err != nil {
+		golog.Error("Socket closed with error: ", err)
+	}
 }

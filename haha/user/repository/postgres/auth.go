@@ -148,7 +148,7 @@ func (r *UserRepository) ChangeOrganization(o *baseModels.Organization) error {
 }
 
 func (r *UserRepository) GetListOfOrgs(page int) (result baseModels.Organizations, err error) {
-	getOrgs := `SELECT users.id as userId, name, site
+	getOrgs := `SELECT users.id as userID, name, site
 				FROM users, organization
 				WHERE users.organization_id = organization.id
 				ORDER BY registered desc
@@ -162,19 +162,19 @@ func (r *UserRepository) GetListOfOrgs(page int) (result baseModels.Organization
 	defer rows.Close()
 
 	var (
-		userId     uint64
+		userID     uint64
 		name, site string
 	)
 	result = make(baseModels.Organizations, 0)
 
 	for rows.Next() {
-		err := rows.Scan(&userId, &name, &site)
+		err := rows.Scan(&userID, &name, &site)
 		if err != nil {
 			return result, err
 		}
 
 		result = append(result, &baseModels.Organization{
-			ID:         userId,
+			ID:         userID,
 			Login:      "",
 			Password:   "",
 			Name:       name,

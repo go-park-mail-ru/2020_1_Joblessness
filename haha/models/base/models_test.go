@@ -46,7 +46,6 @@ func TestFlow(t *testing.T) {
 		WithTax:          false,
 		Responsibilities: "all",
 		Conditions:       "some",
-		Keywords:         "word",
 	}
 
 	sr := SearchResult{
@@ -67,7 +66,6 @@ func TestFlow(t *testing.T) {
 			LastName:  "name",
 			Gender:    "gender",
 		},
-		Keywords: "key",
 		Educations: []Education{
 			Education{
 				Institution: "was",
@@ -89,7 +87,7 @@ func TestFlow(t *testing.T) {
 		Tag:       sum.Author.Tag,
 		VacancyID: uint64(7),
 		SummaryID: sum.ID,
-		Keywords:  sum.Keywords,
+		Avatar:    "awdwa",
 	}
 
 	orgSum := OrgSummaries{sumResp}
@@ -236,15 +234,15 @@ func TestFavs(t *testing.T) {
 
 func TestVacancyResp(t *testing.T) {
 	vacResp := VacancyResponse{
-		UserID:      1,
-		Tag:         "awda",
-		VacancyID:   1,
-		SummaryID:   2,
-		Keywords:    "Awda",
-		VacancyName: "awda",
-		SummaryName: "adwa",
-		Accepted:    false,
-		Denied:      false,
+		UserID:    1,
+		Tag:       "awda",
+		VacancyID: 1,
+		SummaryID: 2,
+		Avatar:    "Awda",
+		FirstName: "awda",
+		LastName:  "adwa",
+		Accepted:  false,
+		Denied:    false,
 	}
 	res, err := easyjson.Marshal(vacResp)
 	assert.NoError(t, err)
@@ -260,7 +258,6 @@ func TestSummaries(t *testing.T) {
 			Name:        "awdw",
 			SalaryFrom:  1,
 			SalaryTo:    2,
-			Keywords:    "wadwa",
 			Educations:  nil,
 			Experiences: nil,
 		},
@@ -290,26 +287,26 @@ func TestSendSummary(t *testing.T) {
 func TestOrgSummaries(t *testing.T) {
 	orgSums := OrgSummaries{
 		&VacancyResponse{
-			UserID:      0,
-			Tag:         "",
-			VacancyID:   0,
-			SummaryID:   0,
-			Keywords:    "",
-			VacancyName: "",
-			SummaryName: "",
-			Accepted:    false,
-			Denied:      false,
+			UserID:    0,
+			Tag:       "",
+			VacancyID: 0,
+			SummaryID: 0,
+			Avatar:    "",
+			FirstName: "",
+			LastName:  "",
+			Accepted:  false,
+			Denied:    false,
 		},
 		&VacancyResponse{
-			UserID:      1,
-			Tag:         "ada",
-			VacancyID:   2,
-			SummaryID:   3,
-			Keywords:    "awda",
-			VacancyName: "dwaa",
-			SummaryName: "adw",
-			Accepted:    false,
-			Denied:      false,
+			UserID:    1,
+			Tag:       "ada",
+			VacancyID: 2,
+			SummaryID: 3,
+			Avatar:    "awda",
+			FirstName: "dwaa",
+			LastName:  "adw",
+			Accepted:  false,
+			Denied:    false,
 		},
 	}
 	res, err := easyjson.Marshal(orgSums)
@@ -359,7 +356,6 @@ func TestVacancies(t *testing.T) {
 			WithTax:          false,
 			Responsibilities: "Awda",
 			Conditions:       "awda",
-			Keywords:         "ada",
 		},
 	}
 

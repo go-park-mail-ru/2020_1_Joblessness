@@ -43,7 +43,6 @@ import (
 )
 
 type App struct {
-	httpServer        *http.Server
 	userUse           userInterfaces.UserUseCase
 	authUse           authInterfaces.AuthUseCase
 	vacancyUse        vacancyInterfaces.VacancyUseCase
@@ -126,7 +125,7 @@ func (app *App) StartRouter() {
 	router := mux.NewRouter()
 
 	commonRouter := router.PathPrefix("/api").Subrouter()
-	interviewRouter := router.PathPrefix("/api").Subrouter()
+	wsRouter := router.PathPrefix("/api").Subrouter()
 
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
@@ -145,14 +144,17 @@ func (app *App) StartRouter() {
 	summaryHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.summaryUse)
 	searchHttp.RegisterHTTPEndpoints(commonRouter, app.searchUse)
 	recommendHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.recommendationUse)
-	interviewHttp.RegisterHTTPEndpoints(interviewRouter, mAuth, app.interviewUse)
-
+	interviewHttp.RegisterHTTPEndpoints(commonRouter, wsRouter, mAuth, app.interviewUse)
 	prometheus.RegisterPrometheus(commonRouter)
 
 	http.Handle("/", router)
 	golog.Infof("Server started at port :%d", *port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), nil)
+	err := http.ListenAndServeTLS(fmt.Sprintf(":%d", *port),
+		"/etc/letsencrypt/live/hahao.ru/fullchain.pem",
+		"/etc/letsencrypt/live/hahao.ru/privkey.pem",
+		nil)
+	//err := http.ListenAndServe(":8001", nil)
 	if err != nil {
-		golog.Error("Server failed")
+		golog.Error("Server haha failed: ", err)
 	}
 }

@@ -14,8 +14,7 @@ import (
 )
 
 const (
-	socketBufferSize  = 1024
-	messageBufferSize = 256
+	socketBufferSize = 1024
 )
 
 type Handler struct {
@@ -47,7 +46,7 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 	var sendSummary baseModels.SendSummary
 	err := easyjson.UnmarshalFromReader(r.Body, &sendSummary)
 	if err != nil {
-		golog.Errorf("#%s: %w", rID, err)
+		golog.Errorf("#%s: %s", rID, err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -58,22 +57,19 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 	err = h.useCase.ResponseSummary(&sendSummary)
 	switch true {
 	case errors.Is(err, summaryInterfaces.ErrOrganizationIsNotOwner):
-		golog.Errorf("#%s: %w", rID, err)
+		golog.Errorf("#%s: %s", rID, err.Error())
 		w.WriteHeader(http.StatusForbidden)
 		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case errors.Is(err, summaryInterfaces.ErrNoSummaryToRefresh):
-		golog.Errorf("#%s: %w", rID, err)
+		golog.Errorf("#%s: %s", rID, err.Error())
 		w.WriteHeader(http.StatusNotFound)
 		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
 	case err == nil:
-		//if message, err := h.generateMessage(&sendSummary); err == nil {
-		//	h.room.SendGeneratedMessage(message)
-		//}
 		w.WriteHeader(http.StatusOK)
 	default:
-		golog.Errorf("#%s: %w", rID, err)
+		golog.Errorf("#%s: %s", rID, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
@@ -81,14 +77,13 @@ func (h *Handler) ResponseSummary(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
-	//rID := r.Context().Value("rID").(string)
 	userID := r.Context().Value("userID").(uint64)
 
 	golog.Infof("#%s: Connection is: %s", "ws connection", r.Header.Get("Connection"))
 
 	socket, err := h.upGrader.Upgrade(w, r, nil)
 	if err != nil {
-		golog.Errorf("#%s: Failed to start ws - %w", "ws connection", err)
+		golog.Errorf("#%s: Failed to start ws - %s", "ws connection", err.Error())
 		return
 	}
 
@@ -98,6 +93,7 @@ func (h *Handler) EnterChat(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) History(w http.ResponseWriter, r *http.Request) {
 	var parameters baseModels.ChatParameters
 	rID := r.Context().Value("rID").(string)
+
 	parameters.From = r.Context().Value("userID").(uint64)
 	parameters.To, _ = strconv.ParseUint(mux.Vars(r)["user_id"], 10, 64)
 	parameters.Page, _ = strconv.ParseUint(r.FormValue("page"), 10, 64)
@@ -109,7 +105,7 @@ func (h *Handler) History(w http.ResponseWriter, r *http.Request) {
 		json, _ := easyjson.Marshal(result)
 		w.Write(json)
 	default:
-		golog.Errorf("#%s: %w", rID, err)
+		golog.Errorf("#%s: %s", rID, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)
@@ -127,7 +123,7 @@ func (h *Handler) GetConversations(w http.ResponseWriter, r *http.Request) {
 		json, _ := easyjson.Marshal(result)
 		w.Write(json)
 	default:
-		golog.Errorf("#%s: %w", rID, err)
+		golog.Errorf("#%s: %s", rID, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		json, _ := easyjson.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(json)

@@ -29,12 +29,15 @@ func genRequestNumber(n int) string {
 	return string(s)
 }
 
+var rIDKey = string("rID")
+
 func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sw := custom_http.NewStatusResponseWriter(w)
 
 		requestNumber := genRequestNumber(6)
-		r = r.WithContext(context.WithValue(r.Context(), "rID", requestNumber))
+
+		r = r.WithContext(context.WithValue(r.Context(), rIDKey, requestNumber))
 
 		labels := prometheus.Labels{
 			"method": r.Method,
@@ -53,7 +56,7 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 
 		statusLabels := prometheus.Labels{
 			"method": r.Method,
-			"path": r.URL.Path,
+			"path":   r.URL.Path,
 			"status": fmt.Sprintf("%d", sw.StatusCode),
 		}
 		prom.RequestCount.With(statusLabels).Inc()
@@ -68,9 +71,9 @@ func (m *RecoveryHandler) RecoveryMiddleware(next http.Handler) http.Handler {
 			err := recover()
 			if err != nil {
 				if ok {
-					golog.Errorf("#%s Panic: %w", rID, err)
+					golog.Errorf("#%s Panic: %s", rID, err.(error).Error())
 				} else {
-					golog.Errorf("Panic with no id: %w", err)
+					golog.Errorf("Panic with no id: %s", err.(error).Error())
 				}
 
 				jsonBody, _ := json.Marshal(map[string]string{

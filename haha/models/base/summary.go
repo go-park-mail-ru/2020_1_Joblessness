@@ -104,22 +104,23 @@ type SendSummary struct {
 
 //easyjson:json
 type VacancyResponse struct {
-	UserID      uint64 `json:"user_id,omitempty"`
-	Tag         string `json:"tag,omitempty"`
-	VacancyID   uint64 `json:"vacancyId,omitempty"`
-	SummaryID   uint64 `json:"summaryId,omitempty"`
-	Keywords    string `json:"keywords,omitempty"`
-	VacancyName string `json:"vacancyName,omitempty"`
-	SummaryName string `json:"summaryName,omitempty"`
-	Accepted    bool   `json:"accepted"`
-	Denied      bool   `json:"denied"`
+	UserID        uint64    `json:"user_id,omitempty"`
+	Tag           string    `json:"tag,omitempty"`
+	VacancyID     uint64    `json:"vacancyId,omitempty"`
+	SummaryID     uint64    `json:"summaryId,omitempty"`
+	FirstName     string    `json:"firstName,omitempty"`
+	LastName      string    `json:"lastName,omitempty"`
+	Avatar        string    `json:"avatar,omitempty"`
+	InterviewDate time.Time `json:"interview_date,omitempty"`
+	Accepted      bool      `json:"accepted"`
+	Denied        bool      `json:"denied"`
 }
 
 func (s *VacancyResponse) Sanitize(policy *bluemonday.Policy) {
 	s.Tag = policy.Sanitize(s.Tag)
-	s.Keywords = policy.Sanitize(s.Keywords)
-	s.VacancyName = policy.Sanitize(s.VacancyName)
-	s.SummaryName = policy.Sanitize(s.SummaryName)
+	s.FirstName = policy.Sanitize(s.FirstName)
+	s.LastName = policy.Sanitize(s.LastName)
+	s.Avatar = policy.Sanitize(s.Avatar)
 }
 
 //easyjson:json

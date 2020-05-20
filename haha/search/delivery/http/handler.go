@@ -3,7 +3,6 @@ package searchHttp
 import (
 	"encoding/json"
 	"errors"
-	"github.com/juju/loggo"
 	"github.com/kataras/golog"
 	searchInterfaces "joblessness/haha/search/interfaces"
 	"net/http"
@@ -11,7 +10,6 @@ import (
 
 type Handler struct {
 	useCase searchInterfaces.SearchUseCase
-	logger  *loggo.Logger
 }
 
 func NewHandler(useCase searchInterfaces.SearchUseCase) *Handler {
@@ -32,14 +30,14 @@ func (h *Handler) Search(w http.ResponseWriter, r *http.Request) {
 
 	switch true {
 	case errors.Is(err, searchInterfaces.ErrUnknownRequest):
-		golog.Errorf("#%s: %w", rID, err)
+		golog.Errorf("#%s: %s", rID, err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 	case err == nil:
 		resultJSON, _ := json.Marshal(resultForum)
 		w.WriteHeader(http.StatusOK)
 		w.Write(resultJSON)
 	default:
-		golog.Errorf("#%s: %w", rID, err)
+		golog.Errorf("#%s: %s", rID, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

@@ -15,6 +15,9 @@ func NewAuthMiddleware(authUseCase authInterfaces.AuthUseCase) *SessionHandler {
 	return &SessionHandler{auth: authUseCase}
 }
 
+var userIDKey = string("userID")
+
+
 func (m *SessionHandler) UserRequired(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		rID, ok := r.Context().Value("rID").(string)
@@ -32,18 +35,18 @@ func (m *SessionHandler) UserRequired(next http.HandlerFunc) http.HandlerFunc {
 		userID, err := m.auth.SessionExists(session.Value)
 		switch err {
 		case authInterfaces.ErrWrongSID:
-			golog.Errorf("#%s: %w", rID, err)
+			golog.Errorf("#%s: %s", rID, err.Error())
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		case nil:
 			golog.Infof("#%s: %s", rID, "success")
 		default:
-			golog.Errorf("#%s: %w", rID, err)
+			golog.Errorf("#%s: %s", rID, err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		r = r.WithContext(context.WithValue(r.Context(), "userID", userID))
+		r = r.WithContext(context.WithValue(r.Context(), userIDKey, userID))
 		next.ServeHTTP(w, r)
 	}
 }
@@ -65,18 +68,18 @@ func (m *SessionHandler) PersonRequired(next http.HandlerFunc) http.HandlerFunc 
 		userID, err := m.auth.PersonSession(session.Value)
 		switch err {
 		case authInterfaces.ErrUserNotPerson, authInterfaces.ErrWrongSID:
-			golog.Errorf("#%s: %w", rID, err)
+			golog.Errorf("#%s: %s", rID, err.Error())
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		case nil:
 			golog.Infof("#%s: %s", rID, "success")
 		default:
-			golog.Errorf("#%s: %w", rID, err)
+			golog.Errorf("#%s: %s", rID, err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		r = r.WithContext(context.WithValue(r.Context(), "userID", userID))
+		r = r.WithContext(context.WithValue(r.Context(), userIDKey, userID))
 		next.ServeHTTP(w, r)
 	}
 }
@@ -98,18 +101,18 @@ func (m *SessionHandler) OrganizationRequired(next http.HandlerFunc) http.Handle
 		userID, err := m.auth.OrganizationSession(session.Value)
 		switch err {
 		case authInterfaces.ErrUserNotOrganization, authInterfaces.ErrWrongSID:
-			golog.Errorf("#%s: %w", rID, err)
+			golog.Errorf("#%s: %s", rID, err.Error())
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		case nil:
 			golog.Infof("#%s: %s", rID, "success")
 		default:
-			golog.Errorf("#%s: %w", rID, err)
+			golog.Errorf("#%s: %s", rID, err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		r = r.WithContext(context.WithValue(r.Context(), "userID", userID))
+		r = r.WithContext(context.WithValue(r.Context(), userIDKey, userID))
 		next.ServeHTTP(w, r)
 	}
 }
