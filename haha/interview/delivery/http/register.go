@@ -9,8 +9,7 @@ import (
 func RegisterHTTPEndpoints(commonRouter *mux.Router,
 	wsRouter *mux.Router,
 	m *middleware.SessionHandler,
-	uc interviewInterfaces.InterviewUseCase, /*
-		room chat.Room*/) *Handler {
+	uc interviewInterfaces.InterviewUseCase) *Handler {
 	h := NewHandler(uc)
 	chatRouter := commonRouter.PathPrefix("/chat").Subrouter()
 
