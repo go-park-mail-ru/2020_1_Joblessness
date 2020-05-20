@@ -54,4 +54,5 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           script: |
             sudo docker rm -f $(sudo docker ps -aq)
+            cd /home/2020_1_Joblessness
             docker-compose up -d --build
