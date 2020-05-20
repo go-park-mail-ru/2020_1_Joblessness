@@ -64,7 +64,7 @@ jobs:
             docker stop $(docker ps -aq)
             docker rm $(docker ps -aq)
             docker rmi $(docker images -q)
-            docker run -d -net=host ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8}
-            docker run -d -net=host ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8}
-            docker run -d -net=host ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8}
-            docker run -d -net=host --env-file=/home/env.list -v /etc/letsencrypt:/etc/letsencrypt ${{ secrets.DOCKERHUB_USERNAME }}/app:${GITHUB_SHA::8}
+            docker run -d --net=host ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8}
+            docker run -d --net=host ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8}
+            docker run -d --net=host ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8}
+            docker run -d --net=host --env-file=/home/env.list -v /etc/letsencrypt:/etc/letsencrypt ${{ secrets.DOCKERHUB_USERNAME }}/app:${GITHUB_SHA::8}
