@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v1
+        uses: actions-contrib/golangci-lint@v1
 
   build:
     runs-on: ubuntu-latest
@@ -62,7 +62,7 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           script: |
             sudo docker rm -f $(sudo docker ps -aq)
-            docker run -d -p --network="host" 8002:8002 ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8}
-            docker run -d -p --network="host" 8002:8003 ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8}
-            docker run -d -p --network="host" 8002:8004 ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8}
-            docker run -d -p --network="host" 8002:8001 ${{ secrets.DOCKERHUB_USERNAME }}/app:${GITHUB_SHA::8}
+            docker run -d --network="host" -p 8002:8002 ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8}
+            docker run -d --network="host" -p 8002:8003 ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8}
+            docker run -d --network="host" -p 8002:8004 ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8}
+            docker run -d --network="host" -p 8002:8001 ${{ secrets.DOCKERHUB_USERNAME }}/app:${GITHUB_SHA::8}
