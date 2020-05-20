@@ -4,6 +4,6 @@ COPY . /app
 
 WORKDIR /app
 
-RUN go build -o search cmd/search/main.go
+RUN apk add make && make build-search
 
 CMD ["/app/search"]

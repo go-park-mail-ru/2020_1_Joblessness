@@ -4,6 +4,6 @@ COPY . /app
 
 WORKDIR /app
 
-RUN go build -o auth cmd/auth/main.go
+RUN apk add make && make build-auth
 
 CMD ["/app/auth"]

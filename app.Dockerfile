@@ -4,6 +4,6 @@ COPY . /app
 
 WORKDIR /app
 
-RUN go build -o app cmd/haha/main.go
+RUN apk add make && make build-app
 
 CMD ["/app/app"]
