@@ -1,7 +1,7 @@
 version: '3'
 services:
   app:
-    image: app
+    image: app:latest
     depends_on:
       - search
       - interview
@@ -19,7 +19,7 @@ services:
     network_mode: host
 
   search:
-    image: search
+    image: search:latest
     env_file:
       - ../env.list
     working_dir: /go/src/haha/cmd/search/
@@ -31,7 +31,7 @@ services:
     network_mode: host
 
   interview:
-    image: interview
+    image: interview:latest
     env_file:
       - ../env.list
     working_dir: /go/src/haha/cmd/interview/
@@ -43,7 +43,7 @@ services:
     network_mode: host
 
   auth:
-    image: auth
+    image: auth:latest
     env_file:
       - ../env.list
     working_dir: /go/src/haha/cmd/auth/
