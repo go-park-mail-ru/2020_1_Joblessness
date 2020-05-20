@@ -61,8 +61,9 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           script: |
-            docker container stop $(docker container ls -aq)
-            docker container rm $(docker container ls -aq)
+            docker stop $(docker ps ls -aq)
+            docker rm $(docker ps -aq)
+            docker rmi $(docker images -q)
             docker run -d --network="host" -p 8002:8002 ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8}
             docker run -d --network="host" -p 8003:8003 ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8}
             docker run -d --network="host" -p 8004:8004 ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8}
