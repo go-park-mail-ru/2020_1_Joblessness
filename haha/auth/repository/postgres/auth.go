@@ -57,8 +57,6 @@ func (r *AuthRepository) RegisterOrganization(login, password, name string) (err
 }
 
 func (r *AuthRepository) Login(login, password, SID string) (userID uint64, err error) {
-	//TODO user_id, session_id уникальные
-
 	checkUser := "SELECT id, password FROM users WHERE login = $1"
 	var hashedPwd string
 	rows := r.db.QueryRow(checkUser, login)
@@ -75,8 +73,6 @@ func (r *AuthRepository) Login(login, password, SID string) (userID uint64, err 
 }
 
 func (r *AuthRepository) Logout(sessionID string) (err error) {
-	//TODO user_id, session_id уникальные
-
 	deleteRow := "DELETE FROM session WHERE session_id = $1;"
 	_, err = r.db.Exec(deleteRow, sessionID)
 
@@ -84,8 +80,6 @@ func (r *AuthRepository) Logout(sessionID string) (err error) {
 }
 
 func (r *AuthRepository) SessionExists(sessionID string) (userID uint64, err error) {
-	//TODO session_id - pk, возвращать тип сессии
-
 	checkUser := "SELECT user_id, expires FROM session WHERE session_id = $1;"
 	var expires time.Time
 	err = r.db.QueryRow(checkUser, sessionID).Scan(&userID, &expires)
