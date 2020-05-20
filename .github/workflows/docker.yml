@@ -40,12 +40,13 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           script: |
+            echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8}
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8}
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8}
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/app:${GITHUB_SHA::8}
 
-      - name: Deploy Docker images
+      - name: Run project
         uses: appleboy/ssh-action@master
         with:
           envs: GITHUB_SHA
@@ -55,5 +56,4 @@ jobs:
           script: |
             sudo docker rm -f $(sudo docker ps -aq)
             cd /home/2020_1_Joblessness
-            echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
             docker-compose up -d --build
