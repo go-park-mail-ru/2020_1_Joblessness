@@ -10,23 +10,23 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: ubuntu-latest
-        - name: Login to DockerHub
-          run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+      - uses: action/checkut@v1
+      - name: Login to DockerHub
+        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-        - name: Build Docker images
-          run: |
-            docker build -t search:${GITHUB_SHA::8} -f search.Dockerfile .
-            docker build -t interview:${GITHUB_SHA::8} -f interview.Dockerfile .
-            docker build -t auth:${GITHUB_SHA::8} -f auth.Dockerfile .
-            docker build -t app:${GITHUB_SHA::8} -f app.Dockerfile .
+      - name: Build Docker images
+        run: |
+          docker build -t search:${GITHUB_SHA::8} -f search.Dockerfile .
+          docker build -t interview:${GITHUB_SHA::8} -f interview.Dockerfile .
+          docker build -t auth:${GITHUB_SHA::8} -f auth.Dockerfile .
+          docker build -t app:${GITHUB_SHA::8} -f app.Dockerfile .
 
-        - name: Push the images
-          run: |
-            docker push search:${GITHUB_SHA::8}
-            docker push interview:${GITHUB_SHA::8}
-            docker push auth:${GITHUB_SHA::8}
-            docker push app:${GITHUB_SHA::8}
+      - name: Push the images
+        run: |
+          docker push search:${GITHUB_SHA::8}
+          docker push interview:${GITHUB_SHA::8}
+          docker push auth:${GITHUB_SHA::8}
+          docker push app:${GITHUB_SHA::8}
 
   deploy:
     runs-on: ubuntu-latest
@@ -44,6 +44,7 @@ jobs:
             sudo docker pull interview:${GITHUB_SHA::8}
             sudo docker pull auth:${GITHUB_SHA::8}
             sudo docker pull app:${GITHUB_SHA::8}
+
       - name: Deploy Docker images
           uses: appleboy/ssh-action@master
           with:
