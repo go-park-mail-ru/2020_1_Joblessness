@@ -1,7 +1,7 @@
 version: '3'
 services:
   app:
-    image: app
+    image: golang
     depends_on:
       - search
       - interview
@@ -20,7 +20,7 @@ services:
     network_mode: host
 
   search:
-    image: search
+    image: golang
     env_file:
       - ../env.list
     volumes:
@@ -34,7 +34,7 @@ services:
     network_mode: host
 
   interview:
-    image: interview
+    image: golang
     env_file:
       - ../env.list
     volumes:
@@ -48,7 +48,7 @@ services:
     network_mode: host
 
   auth:
-    image: auth
+    image: golang
     env_file:
       - ../env.list
     volumes:
