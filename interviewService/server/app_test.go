@@ -7,7 +7,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/test/bufconn"
 	interviewInterfaces "joblessness/haha/interview/interfaces"
 	interviewGrpc "joblessness/haha/interview/repository/grpc"
 	"joblessness/haha/interview/repository/mock"
@@ -21,28 +23,43 @@ import (
 type userSuite struct {
 	suite.Suite
 	controller *gomock.Controller
-	grpcRepo   *interviewGrpc.InterviewGrpcRepository
+	grpcRepo   *interviewGrpc.Repository
 	repo       *mock.MockInterviewRepository
 	server     *grpc.Server
-	list       net.Listener
+	list       *bufconn.Listener
+	conn       *grpc.ClientConn
+}
+
+func (suite *userSuite) bufDialer(context.Context, string) (net.Conn, error) {
+	return suite.list.Dial()
 }
 
 func (suite *userSuite) SetupTest() {
 	suite.controller = gomock.NewController(suite.T())
-	interviewConn, err := grpc.Dial(
-		"127.0.0.1:8003",
-		grpc.WithInsecure(),
-	)
-	assert.NoError(suite.T(), err, "Unable to start server")
-
-	suite.grpcRepo = interviewGrpc.NewInterviewGrpcRepository(interviewConn)
-	assert.NoError(suite.T(), err)
 
 	suite.repo = mock.NewMockInterviewRepository(suite.controller)
-	suite.list, err = net.Listen("tcp", "127.0.0.1:8003")
-	assert.NoError(suite.T(), err, "Unable to listen")
+	buffer := 1024 * 1024
+	suite.list = bufconn.Listen(buffer)
 	suite.server = grpc.NewServer()
 	interviewRpc.RegisterInterviewServer(suite.server, NewInterviewServer(suite.repo))
+
+	ctx := context.Background()
+	var err error
+	suite.conn, err = grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(suite.bufDialer), grpc.WithInsecure())
+
+	suite.grpcRepo = interviewGrpc.NewInterviewGrpcRepository(suite.conn)
+	assert.NoError(suite.T(), err)
+
+	go func() {
+		err = suite.server.Serve(suite.list)
+	}()
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *userSuite) TearDown() {
+	err := suite.conn.Close()
+	assert.NoError(suite.T(), err)
+	suite.server.Stop()
 }
 
 func TestSuite(t *testing.T) {
@@ -50,9 +67,6 @@ func TestSuite(t *testing.T) {
 }
 
 func (suite *userSuite) TestIsOrganizationVacancy() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().IsOrganizationVacancy(uint64(1), uint64(2)).Times(1).Return(nil)
 
 	err := suite.grpcRepo.IsOrganizationVacancy(uint64(1), uint64(2))
@@ -61,9 +75,6 @@ func (suite *userSuite) TestIsOrganizationVacancy() {
 }
 
 func (suite *userSuite) TestIsOrganizationVacancyNotOwner() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().IsOrganizationVacancy(uint64(1), uint64(2)).Times(1).Return(interviewInterfaces.ErrOrganizationIsNotOwner)
 
 	err := suite.grpcRepo.IsOrganizationVacancy(uint64(1), uint64(2))
@@ -72,9 +83,6 @@ func (suite *userSuite) TestIsOrganizationVacancyNotOwner() {
 }
 
 func (suite *userSuite) TestIsOrganizationVacancyDefaultErr() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().IsOrganizationVacancy(uint64(1), uint64(2)).Times(1).Return(errors.New(""))
 
 	err := suite.grpcRepo.IsOrganizationVacancy(uint64(1), uint64(2))
@@ -83,9 +91,6 @@ func (suite *userSuite) TestIsOrganizationVacancyDefaultErr() {
 }
 
 func (suite *userSuite) TestResponseSummary() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().ResponseSummary(gomock.Any()).Times(1).Return(nil)
 
 	err := suite.grpcRepo.ResponseSummary(&baseModels.SendSummary{})
@@ -94,9 +99,6 @@ func (suite *userSuite) TestResponseSummary() {
 }
 
 func (suite *userSuite) TestSaveMessage() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().SaveMessage(gomock.Any()).Times(1).Return(nil)
 
 	err := suite.grpcRepo.SaveMessage(&chat.Message{})
@@ -104,23 +106,16 @@ func (suite *userSuite) TestSaveMessage() {
 	assert.NoError(suite.T(), err)
 }
 
-// TODO: Fix it
-//func (suite *userSuite) TestGetHistory() {
-//	go suite.server.Serve(suite.list)
-//	defer suite.server.Stop()
-//
-//	suite.repo.EXPECT().GetHistory(gomock.Any()).Times(1).Return(baseModels.Messages{
-//		From: []*chat.Message{&chat.Message{}}, To: []*chat.Message{&chat.Message{}}}, nil)
-//
-//	_, err := suite.grpcRepo.GetHistory(&baseModels.ChatParameters{})
-//
-//	assert.NoError(suite.T(), err)
-//}
+func (suite *userSuite) TestGetHistory() {
+	suite.repo.EXPECT().GetHistory(gomock.Any()).Times(1).Return(baseModels.Messages{
+		From: []*chat.Message{&chat.Message{}}, To: []*chat.Message{&chat.Message{}}}, nil)
+
+	_, err := suite.grpcRepo.GetHistory(&baseModels.ChatParameters{})
+
+	assert.NoError(suite.T(), err)
+}
 
 func (suite *userSuite) TestGetResponseCredentials() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().GetResponseCredentials(uint64(1), uint64(2)).Times(1).Return(&baseModels.SummaryCredentials{}, nil)
 
 	_, err := suite.grpcRepo.GetResponseCredentials(uint64(1), uint64(2))
@@ -129,9 +124,6 @@ func (suite *userSuite) TestGetResponseCredentials() {
 }
 
 func (suite *userSuite) TestGetConversations() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().GetConversations(uint64(1)).Times(1).Return(baseModels.Conversations{&baseModels.ConversationTitle{}}, nil)
 
 	_, err := suite.grpcRepo.GetConversations(uint64(1))

@@ -145,7 +145,6 @@ func (app *App) StartRouter() {
 	searchHttp.RegisterHTTPEndpoints(commonRouter, app.searchUse)
 	recommendHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.recommendationUse)
 	interviewHttp.RegisterHTTPEndpoints(commonRouter, wsRouter, mAuth, app.interviewUse)
-
 	prometheus.RegisterPrometheus(commonRouter)
 
 	http.Handle("/", router)

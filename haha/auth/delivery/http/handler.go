@@ -111,7 +111,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, role, sessionId, err := h.useCase.Login(user.Login, user.Password)
+	userID, role, sessionID, err := h.useCase.Login(user.Login, user.Password)
 	switch true {
 	case errors.Is(err, authInterfaces.ErrWrongLoginOrPassword):
 		golog.Errorf("#%s: %s", rID, err.Error())
@@ -121,7 +121,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	case err == nil:
 		cookie := &http.Cookie{
 			Name:     "session_id",
-			Value:    sessionId,
+			Value:    sessionID,
 			Expires:  time.Now().Add(time.Hour),
 			MaxAge:   100000,
 			Path:     "/",
@@ -130,7 +130,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, cookie)
 
-		jsonData, _ := json.Marshal(baseModels.ResponseRole{ID: userId, Role: role})
+		jsonData, _ := json.Marshal(baseModels.ResponseRole{ID: userID, Role: role})
 		w.WriteHeader(http.StatusCreated)
 		w.Write(jsonData)
 	default:

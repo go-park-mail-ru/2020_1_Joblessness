@@ -61,9 +61,9 @@ func (suite *userSuite) SetupTest() {
 
 	suite.message = chat.Message{
 		Message:   "awda",
-		UserOneId: 1,
+		UserOneID: 1,
 		UserOne:   "awd",
-		UserTwoId: 2,
+		UserTwoID: 2,
 		UserTwo:   "awda",
 		Created:   time.Now(),
 		VacancyID: 0,

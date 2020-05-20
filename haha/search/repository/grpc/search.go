@@ -9,17 +9,17 @@ import (
 	"joblessness/searchService/rpc"
 )
 
-type SearchGrpcRepository struct {
+type Repository struct {
 	handler searchRpc.SearchClient
 }
 
-func NewSearchGrpcRepository(conn *grpc.ClientConn) *SearchGrpcRepository {
-	return &SearchGrpcRepository{
+func NewSearchGrpcRepository(conn *grpc.ClientConn) *Repository {
+	return &Repository{
 		handler: searchRpc.NewSearchClient(conn),
 	}
 }
 
-func (r *SearchGrpcRepository) SearchPersons(params *baseModels.SearchParams) (result []*baseModels.Person, err error) {
+func (r *Repository) SearchPersons(params *baseModels.SearchParams) (result []*baseModels.Person, err error) {
 	res, err := r.handler.SearchPersons(context.Background(), grpcModels.TransformParamsRPC(params))
 	if err != nil {
 		return result, err
@@ -42,7 +42,7 @@ func (r *SearchGrpcRepository) SearchPersons(params *baseModels.SearchParams) (r
 	return result, err
 }
 
-func (r *SearchGrpcRepository) SearchOrganizations(params *baseModels.SearchParams) (result []*baseModels.Organization, err error) {
+func (r *Repository) SearchOrganizations(params *baseModels.SearchParams) (result []*baseModels.Organization, err error) {
 	res, err := r.handler.SearchOrganizations(context.Background(), grpcModels.TransformParamsRPC(params))
 	if err != nil {
 		return result, err
@@ -65,7 +65,7 @@ func (r *SearchGrpcRepository) SearchOrganizations(params *baseModels.SearchPara
 	return result, err
 }
 
-func (r *SearchGrpcRepository) SearchVacancies(params *baseModels.SearchParams) (result []*baseModels.Vacancy, err error) {
+func (r *Repository) SearchVacancies(params *baseModels.SearchParams) (result []*baseModels.Vacancy, err error) {
 	res, err := r.handler.SearchVacancies(context.Background(), grpcModels.TransformParamsRPC(params))
 	if err != nil {
 		return result, err

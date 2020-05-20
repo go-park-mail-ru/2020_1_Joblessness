@@ -16,13 +16,13 @@ import (
 
 type summarySuite struct {
 	suite.Suite
-	rep     *InterviewRepository
-	db      *sql.DB
-	mock    sqlmock.Sqlmock
-	sendSum baseModels.SendSummary
-	message chat.Message
-	params  baseModels.ChatParameters
-	conversation baseModels.Conversations
+	rep       *InterviewRepository
+	db        *sql.DB
+	mock      sqlmock.Sqlmock
+	sendSum   baseModels.SendSummary
+	message   chat.Message
+	convTitle baseModels.ConversationTitle
+	params    baseModels.ChatParameters
 }
 
 func (suite *summarySuite) SetupTest() {
@@ -36,17 +36,26 @@ func (suite *summarySuite) SetupTest() {
 		SummaryID:      uint64(2),
 		UserID:         uint64(1),
 		OrganizationID: uint64(13),
+		InterviewDate:  time.Now(),
 		Accepted:       true,
 		Denied:         false,
 	}
 
 	suite.message = chat.Message{
 		Message:   "message",
-		UserOneId: 1,
+		UserOneID: 1,
 		UserOne:   "awd",
-		UserTwoId: 2,
+		UserTwoID: 2,
 		UserTwo:   "awd",
 		Created:   time.Now(),
+	}
+
+	suite.convTitle = baseModels.ConversationTitle{
+		ChatterID:     uint64(1),
+		Avatar:        "awd",
+		ChatterName:   "awd",
+		Tag:           "ad",
+		InterviewDate: time.Now(),
 	}
 
 	suite.params = baseModels.ChatParameters{
@@ -124,7 +133,7 @@ func (suite *summarySuite) TestResponseSummaryNo() {
 func (suite *summarySuite) TestSaveMessage() {
 	suite.mock.
 		ExpectExec("INSERT INTO message").
-		WithArgs(suite.message.UserOneId, suite.message.UserTwoId, suite.message.UserOne, suite.message.UserTwo,
+		WithArgs(suite.message.UserOneID, suite.message.UserTwoID, suite.message.UserOne, suite.message.UserTwo,
 			suite.message.Message).
 		WillReturnResult(sqlmock.NewResult(1, 0))
 
@@ -135,7 +144,7 @@ func (suite *summarySuite) TestSaveMessage() {
 func (suite *summarySuite) TestSaveMessageFailed() {
 	suite.mock.
 		ExpectExec("INSERT INTO message").
-		WithArgs(suite.message.UserOneId, suite.message.UserTwoId, suite.message.UserOne, suite.message.UserTwo,
+		WithArgs(suite.message.UserOneID, suite.message.UserTwoID, suite.message.UserOne, suite.message.UserTwo,
 			suite.message.Message).
 		WillReturnError(errors.New(""))
 
@@ -143,27 +152,27 @@ func (suite *summarySuite) TestSaveMessageFailed() {
 	assert.Error(suite.T(), err)
 }
 
-// TODO: Fix it
-//func (suite *summarySuite) TestGetHistory() {
-//	rows := sqlmock.NewRows([]string{"user_one_id", "user_two_id", "user_one", "user_two", "body", "created"}).
-//		AddRow(suite.message.UserOneId, suite.message.UserTwoId)
-//	suite.mock.
-//		ExpectQuery("SELECT user_one_id, user_two_id, user_one, user_two, body, created").
-//		WithArgs(suite.message.UserOneId, suite.message.UserTwoId).
-//		WillReturnRows(rows)
-//	suite.mock.
-//		ExpectQuery("SELECT user_one_id, user_two_id, user_one, user_two, body, created").
-//		WithArgs(suite.message.UserTwoId, suite.message.UserOneId).
-//		WillReturnRows(rows)
-//
-//	_, err := suite.rep.GetHistory(&suite.params)
-//	assert.NoError(suite.T(), err)
-//}
+func (suite *summarySuite) TestGetHistory() {
+	rows := sqlmock.NewRows([]string{"user_one_id", "user_two_id", "user_one", "user_two", "body", "created"}).
+		AddRow(suite.message.UserOneID, suite.message.UserTwoID, suite.message.UserOne, suite.message.UserTwo,
+			suite.message.Message, suite.message.Created)
+	suite.mock.
+		ExpectQuery("SELECT user_one_id, user_two_id").
+		WithArgs(suite.message.UserOneID, suite.message.UserTwoID, uint64(20), uint64(0)).
+		WillReturnRows(rows)
+	suite.mock.
+		ExpectQuery("SELECT user_one_id, user_two_id").
+		WithArgs(suite.message.UserTwoID, suite.message.UserOneID, uint64(20), uint64(0)).
+		WillReturnRows(rows)
+
+	_, err := suite.rep.GetHistory(&suite.params)
+	assert.NoError(suite.T(), err)
+}
 
 func (suite *summarySuite) TestGetHistoryFailed() {
 	suite.mock.
 		ExpectQuery("SELECT user_one_id, user_two_id").
-		WithArgs(suite.message.UserOneId, suite.message.UserTwoId, uint64(20), uint64(0)).
+		WithArgs(suite.message.UserOneID, suite.message.UserTwoID, uint64(20), uint64(0)).
 		WillReturnError(errors.New(""))
 
 	_, err := suite.rep.GetHistory(&suite.params)
@@ -172,11 +181,11 @@ func (suite *summarySuite) TestGetHistoryFailed() {
 
 func (suite *summarySuite) TestGetUserSendMessages() {
 	rows := sqlmock.NewRows([]string{"user_one_id", "user_two_id", "user_one", "user_two", "body", "created"}).
-		AddRow(suite.message.UserOneId, suite.message.UserTwoId, suite.message.UserOne, suite.message.UserTwo,
+		AddRow(suite.message.UserOneID, suite.message.UserTwoID, suite.message.UserOne, suite.message.UserTwo,
 			suite.message.Message, suite.message.Created)
 	suite.mock.
 		ExpectQuery("SELECT user_one_id, user_two_id").
-		WithArgs(suite.message.UserOneId, suite.message.UserTwoId).
+		WithArgs(suite.message.UserOneID, suite.message.UserTwoID, uint64(20), uint64(0)).
 		WillReturnRows(rows)
 
 	_, err := suite.rep.getUserSendMessages(&suite.params)
@@ -186,7 +195,7 @@ func (suite *summarySuite) TestGetUserSendMessages() {
 func (suite *summarySuite) TestGetUserSendMessagesFailed() {
 	suite.mock.
 		ExpectQuery("SELECT user_one_id, user_two_id").
-		WithArgs(suite.message.UserOneId, suite.message.UserTwoId).
+		WithArgs(suite.message.UserOneID, suite.message.UserTwoID, uint64(20), uint64(0)).
 		WillReturnError(errors.New(""))
 
 	_, err := suite.rep.getUserSendMessages(&suite.params)
@@ -195,14 +204,14 @@ func (suite *summarySuite) TestGetUserSendMessagesFailed() {
 
 func (suite *summarySuite) TestGetResponseCredentials() {
 	rows := sqlmock.NewRows([]string{"id", "name"}).
-		AddRow(suite.message.UserTwoId, suite.message.UserTwo)
+		AddRow(suite.message.UserTwoID, suite.message.UserTwo)
 	suite.mock.
 		ExpectQuery("SELECT u.id, p.name").
 		WithArgs(suite.sendSum.SummaryID).
 		WillReturnRows(rows)
 
 	rows = sqlmock.NewRows([]string{"id", "name"}).
-		AddRow(suite.message.UserOneId, suite.message.UserOne)
+		AddRow(suite.message.UserOneID, suite.message.UserOne)
 	suite.mock.
 		ExpectQuery("SELECT u.id, o.name").
 		WithArgs(suite.sendSum.VacancyID).
@@ -224,7 +233,7 @@ func (suite *summarySuite) TestGetResponseCredentialsFailedOne() {
 
 func (suite *summarySuite) TestGetResponseCredentialsFailedTwo() {
 	rows := sqlmock.NewRows([]string{"id", "name"}).
-		AddRow(suite.message.UserTwoId, suite.message.UserTwo)
+		AddRow(suite.message.UserTwoID, suite.message.UserTwo)
 	suite.mock.
 		ExpectQuery("SELECT u.id, p.name").
 		WithArgs(suite.sendSum.SummaryID).
@@ -239,25 +248,25 @@ func (suite *summarySuite) TestGetResponseCredentialsFailedTwo() {
 	assert.Error(suite.T(), err)
 }
 
-// TODO: Fix it
-//func (suite *summarySuite) TestGetConversations() {
-//	rows := sqlmock.NewRows([]string{"id", "tag", "interview_date"}).
-//		AddRow(suite.message.UserTwoId, suite.message.UserTwo, suite.sendSum.InterviewDate)
-//	suite.mock.
-//		ExpectQuery("SELECT u_to.id, u_to.avatar").
-//		WithArgs(suite.message.UserOneId).
-//		WillReturnRows(rows)
-//
-//	_, err := suite.rep.GetConversations(suite.message.UserOneId)
-//	assert.NoError(suite.T(), err)
-//}
+func (suite *summarySuite) TestGetConversations() {
+	rows := sqlmock.NewRows([]string{"id", "avatar", "name", "tag"}).
+		AddRow(suite.convTitle.ChatterID, suite.convTitle.Avatar, suite.convTitle.ChatterName,
+			suite.convTitle.InterviewDate)
+	suite.mock.
+		ExpectQuery("SELECT u_to.id, u_to.avatar").
+		WithArgs(suite.message.UserOneID).
+		WillReturnRows(rows)
+
+	_, err := suite.rep.GetConversations(suite.message.UserOneID)
+	assert.NoError(suite.T(), err)
+}
 
 func (suite *summarySuite) TestGetConversationsFailed() {
 	suite.mock.
 		ExpectQuery("SELECT u.id, u.tag, r.interview_date").
-		WithArgs(suite.message.UserOneId).
+		WithArgs(suite.message.UserOneID).
 		WillReturnError(errors.New(""))
 
-	_, err := suite.rep.GetConversations(suite.message.UserOneId)
+	_, err := suite.rep.GetConversations(suite.message.UserOneID)
 	assert.Error(suite.T(), err)
 }

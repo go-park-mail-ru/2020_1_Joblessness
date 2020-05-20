@@ -16,9 +16,9 @@ func TransformMessageRPC(m *chat.Message) *interviewRpc.Message {
 
 	res := &interviewRpc.Message{
 		Message:   m.Message,
-		UserOneId: m.UserOneId,
+		UserOneId: m.UserOneID,
 		UserOne:   m.UserOne,
-		UserTwoId: m.UserTwoId,
+		UserTwoId: m.UserTwoID,
 		UserTwo:   m.UserTwo,
 		Created:   created,
 	}
@@ -34,9 +34,9 @@ func TransformMessageBase(m *interviewRpc.Message) *chat.Message {
 
 	res := &chat.Message{
 		Message:   m.Message,
-		UserOneId: m.UserOneId,
+		UserOneID: m.UserOneId,
 		UserOne:   m.UserOne,
-		UserTwoId: m.UserTwoId,
+		UserTwoID: m.UserTwoId,
 		UserTwo:   m.UserTwo,
 		Created:   created,
 	}
@@ -80,9 +80,9 @@ func TransformMessagesRPC(m *baseModels.Messages) *interviewRpc.Messages {
 
 		from[i] = &interviewRpc.Message{
 			Message:   mes.Message,
-			UserOneId: mes.UserOneId,
+			UserOneId: mes.UserOneID,
 			UserOne:   mes.UserOne,
-			UserTwoId: mes.UserTwoId,
+			UserTwoId: mes.UserTwoID,
 			UserTwo:   mes.UserTwo,
 			Created:   created,
 		}
@@ -94,9 +94,9 @@ func TransformMessagesRPC(m *baseModels.Messages) *interviewRpc.Messages {
 
 		to[i] = &interviewRpc.Message{
 			Message:   mes.Message,
-			UserOneId: mes.UserOneId,
+			UserOneId: mes.UserOneID,
 			UserOne:   mes.UserOne,
-			UserTwoId: mes.UserTwoId,
+			UserTwoId: mes.UserTwoID,
 			UserTwo:   mes.UserTwo,
 			Created:   created,
 		}
@@ -119,9 +119,9 @@ func TransformMessagesBase(m *interviewRpc.Messages) *baseModels.Messages {
 
 		from[i] = &chat.Message{
 			Message:   mes.Message,
-			UserOneId: mes.UserOneId,
+			UserOneID: mes.UserOneId,
 			UserOne:   mes.UserOne,
-			UserTwoId: mes.UserTwoId,
+			UserTwoID: mes.UserTwoId,
 			UserTwo:   mes.UserTwo,
 			Created:   created,
 		}
@@ -133,9 +133,9 @@ func TransformMessagesBase(m *interviewRpc.Messages) *baseModels.Messages {
 
 		to[i] = &chat.Message{
 			Message:   mes.Message,
-			UserOneId: mes.UserOneId,
+			UserOneID: mes.UserOneId,
 			UserOne:   mes.UserOne,
-			UserTwoId: mes.UserTwoId,
+			UserTwoID: mes.UserTwoId,
 			UserTwo:   mes.UserTwo,
 			Created:   created,
 		}

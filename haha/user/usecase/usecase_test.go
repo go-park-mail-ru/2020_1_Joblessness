@@ -24,7 +24,7 @@ func TestAuthPersonFlow(t *testing.T) {
 	password := "password"
 	phone := "phone"
 	firstName := "name"
-	userIdEx := uint64(1)
+	userIDEx := uint64(1)
 	person := &baseModels.Person{
 		Login:     login,
 		Password:  password,
@@ -33,8 +33,8 @@ func TestAuthPersonFlow(t *testing.T) {
 	}
 
 	//GetPerson
-	repo.EXPECT().GetPerson(userIdEx).Return(person, nil).Times(1)
-	resultPerson, err := uc.GetPerson(userIdEx)
+	repo.EXPECT().GetPerson(userIDEx).Return(person, nil).Times(1)
+	resultPerson, err := uc.GetPerson(userIDEx)
 	assert.NoError(t, err)
 	assert.ObjectsAreEqual(person, resultPerson)
 
@@ -58,7 +58,7 @@ func TestAuthOrganizationFlow(t *testing.T) {
 	password := "password"
 	phone := "phone"
 	name := "name"
-	userIdEx := uint64(1)
+	userIDEx := uint64(1)
 	organization := &baseModels.Organization{
 		Login:    login,
 		Password: password,
@@ -67,8 +67,8 @@ func TestAuthOrganizationFlow(t *testing.T) {
 	}
 
 	//GetOrganization
-	repo.EXPECT().GetOrganization(userIdEx).Return(organization, nil).Times(1)
-	resultPerson, err := uc.GetOrganization(userIdEx)
+	repo.EXPECT().GetOrganization(userIDEx).Return(organization, nil).Times(1)
+	resultPerson, err := uc.GetOrganization(userIDEx)
 	assert.NoError(t, err)
 	assert.ObjectsAreEqual(organization, resultPerson)
 

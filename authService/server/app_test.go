@@ -6,7 +6,9 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/test/bufconn"
 	authGrpc "joblessness/authService/grpc"
 	"joblessness/haha/auth/repository/grpc"
 	"joblessness/haha/auth/repository/mock"
@@ -20,28 +22,40 @@ type userSuite struct {
 	grpcRepo   *authGrpcRepository.AuthRepository
 	repo       *mock.MockAuthRepository
 	server     *grpc.Server
-	list       net.Listener
+	list       *bufconn.Listener
+	conn       *grpc.ClientConn
+}
+
+func (suite *userSuite) bufDialer(context.Context, string) (net.Conn, error) {
+	return suite.list.Dial()
 }
 
 func (suite *userSuite) SetupTest() {
 	suite.controller = gomock.NewController(suite.T())
-	interviewConn, err := grpc.Dial(
-		"127.0.0.1:8004",
-		grpc.WithInsecure(),
-	)
-	assert.NoError(suite.T(), err, "Unable to start server")
-
-	suite.grpcRepo = authGrpcRepository.NewRepository(interviewConn)
-	assert.NoError(suite.T(), err)
 
 	suite.repo = mock.NewMockAuthRepository(suite.controller)
-	suite.list, err = net.Listen("tcp", "127.0.0.1:8004")
-	assert.NoError(suite.T(), err, "Unable to listen")
+	buffer := 1024 * 1024
+	suite.list = bufconn.Listen(buffer)
 	suite.server = grpc.NewServer()
 	authGrpc.RegisterAuthServer(suite.server, NewAuthServer(suite.repo))
+
+	ctx := context.Background()
+	var err error
+	suite.conn, err = grpc.DialContext(ctx, "bufnet", grpc.WithContextDialer(suite.bufDialer), grpc.WithInsecure())
+
+	suite.grpcRepo = authGrpcRepository.NewRepository(suite.conn)
+	assert.NoError(suite.T(), err)
+
+	go func() {
+		err = suite.server.Serve(suite.list)
+	}()
+	assert.NoError(suite.T(), err)
 }
 
 func (suite *userSuite) TearDown() {
+	err := suite.conn.Close()
+	assert.NoError(suite.T(), err)
+	suite.server.Stop()
 }
 
 func TestSuite(t *testing.T) {
@@ -49,9 +63,6 @@ func TestSuite(t *testing.T) {
 }
 
 func (suite *userSuite) TestRegisterPerson() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().RegisterPerson("awd", "awda", "awda").Times(1).Return(nil)
 
 	err := suite.grpcRepo.RegisterPerson("awd", "awda", "awda")
@@ -60,9 +71,6 @@ func (suite *userSuite) TestRegisterPerson() {
 }
 
 func (suite *userSuite) TestRegisterOrganization() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().RegisterOrganization("awd", "awda", "awda").Times(1).Return(nil)
 
 	err := suite.grpcRepo.RegisterOrganization("awd", "awda", "awda")
@@ -71,9 +79,6 @@ func (suite *userSuite) TestRegisterOrganization() {
 }
 
 func (suite *userSuite) TestLogin() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().Login("awd", "awda", "awda").Times(1).Return(uint64(2), nil)
 
 	userID, err := suite.grpcRepo.Login("awd", "awda", "awda")
@@ -83,9 +88,6 @@ func (suite *userSuite) TestLogin() {
 }
 
 func (suite *userSuite) TestLogout() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().Logout("awdaw").Times(1).Return(nil)
 
 	err := suite.grpcRepo.Logout("awdaw")
@@ -94,9 +96,6 @@ func (suite *userSuite) TestLogout() {
 }
 
 func (suite *userSuite) TestSessionExists() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().Logout("awdaw").Times(1).Return(nil)
 
 	err := suite.grpcRepo.Logout("awdaw")
@@ -105,9 +104,6 @@ func (suite *userSuite) TestSessionExists() {
 }
 
 func (suite *userSuite) TestDoesUserExists() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().DoesUserExists("awdaw").Times(1).Return(nil)
 
 	err := suite.grpcRepo.DoesUserExists("awdaw")
@@ -116,9 +112,6 @@ func (suite *userSuite) TestDoesUserExists() {
 }
 
 func (suite *userSuite) TestGetRole() {
-	go suite.server.Serve(suite.list)
-	defer suite.server.Stop()
-
 	suite.repo.EXPECT().GetRole(uint64(2)).Times(1).Return("role", nil)
 
 	res, err := suite.grpcRepo.GetRole(uint64(2))

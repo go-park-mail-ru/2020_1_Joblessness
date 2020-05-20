@@ -30,7 +30,7 @@ type userSuite struct {
 }
 
 func (suite *userSuite) SetupTest() {
-	suite.router = mux.NewRouter().PathPrefix("/haha").Subrouter()
+	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
@@ -52,7 +52,7 @@ func (suite *userSuite) TestSearch() {
 		Return(baseModels.SearchResult{}, nil).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/haha/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -65,7 +65,7 @@ func (suite *userSuite) TestSearchWrongReq() {
 		Return(baseModels.SearchResult{}, searchInterfaces.ErrUnknownRequest).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/haha/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 
@@ -78,7 +78,7 @@ func (suite *userSuite) TestSearchFailed() {
 		Return(baseModels.SearchResult{}, errors.New("")).
 		Times(1)
 
-	r, _ := http.NewRequest("GET", "/haha/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
+	r, _ := http.NewRequest("GET", "/api/search?type=type&request=request&since=1&desc=true", bytes.NewBuffer([]byte{}))
 	w := httptest.NewRecorder()
 	suite.router.ServeHTTP(w, r)
 

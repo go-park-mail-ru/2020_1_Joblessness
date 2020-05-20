@@ -10,17 +10,17 @@ import (
 	interviewRpc "joblessness/interviewService/rpc"
 )
 
-type InterviewGrpcRepository struct {
+type Repository struct {
 	handler interviewRpc.InterviewClient
 }
 
-func NewInterviewGrpcRepository(conn *grpc.ClientConn) *InterviewGrpcRepository {
-	return &InterviewGrpcRepository{
+func NewInterviewGrpcRepository(conn *grpc.ClientConn) *Repository {
+	return &Repository{
 		handler: interviewRpc.NewInterviewClient(conn),
 	}
 }
 
-func (r *InterviewGrpcRepository) IsOrganizationVacancy(vacancyID, userID uint64) (err error) {
+func (r *Repository) IsOrganizationVacancy(vacancyID, userID uint64) (err error) {
 	status, err := r.handler.IsOrganizationVacancy(context.Background(), &interviewRpc.IsParameters{UserID: userID, VacancyID: vacancyID})
 	if err != nil {
 		return err
@@ -36,7 +36,7 @@ func (r *InterviewGrpcRepository) IsOrganizationVacancy(vacancyID, userID uint64
 	}
 }
 
-func (r *InterviewGrpcRepository) ResponseSummary(sendSummary *baseModels.SendSummary) (err error) {
+func (r *Repository) ResponseSummary(sendSummary *baseModels.SendSummary) (err error) {
 	status, err := r.handler.ResponseSummary(context.Background(), grpcModels.TransformSendSummaryRPC(sendSummary))
 	if err != nil {
 		return err
@@ -52,19 +52,19 @@ func (r *InterviewGrpcRepository) ResponseSummary(sendSummary *baseModels.SendSu
 	}
 }
 
-func (r *InterviewGrpcRepository) SaveMessage(message *chat.Message) (err error) {
+func (r *Repository) SaveMessage(message *chat.Message) (err error) {
 	_, err = r.handler.SaveMessage(context.Background(), grpcModels.TransformMessageRPC(message))
 
 	return err
 }
 
-func (r *InterviewGrpcRepository) GetHistory(parameters *baseModels.ChatParameters) (result baseModels.Messages, err error) {
+func (r *Repository) GetHistory(parameters *baseModels.ChatParameters) (result baseModels.Messages, err error) {
 	res, err := r.handler.GetHistory(context.Background(), grpcModels.TransformChatParamsRPC(parameters))
 
 	return *grpcModels.TransformMessagesBase(res), err
 }
 
-func (r *InterviewGrpcRepository) GetResponseCredentials(summaryID, vacancyID uint64) (result *baseModels.SummaryCredentials, err error) {
+func (r *Repository) GetResponseCredentials(summaryID, vacancyID uint64) (result *baseModels.SummaryCredentials, err error) {
 	res, err := r.handler.GetResponseCredentials(context.Background(), &interviewRpc.CredentialsParams{
 		SummaryID: summaryID,
 		VacancyID: vacancyID,
@@ -73,7 +73,7 @@ func (r *InterviewGrpcRepository) GetResponseCredentials(summaryID, vacancyID ui
 	return grpcModels.TransformSummaryCredentialsBase(res), err
 }
 
-func (r *InterviewGrpcRepository) GetConversations(userID uint64) (result baseModels.Conversations, err error) {
+func (r *Repository) GetConversations(userID uint64) (result baseModels.Conversations, err error) {
 	res, err := r.handler.GetConversations(context.Background(), &interviewRpc.CredentialsParams{
 		UserID: userID,
 	})

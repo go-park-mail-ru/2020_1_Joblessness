@@ -52,9 +52,9 @@ func (h *Handler) CreateVacancy(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) GetVacancy(w http.ResponseWriter, r *http.Request) {
 	rID := r.Context().Value("rID").(string)
-	vacancyId, _ := strconv.ParseUint(mux.Vars(r)["vacancy_id"], 10, 64)
+	vacancyID, _ := strconv.ParseUint(mux.Vars(r)["vacancy_id"], 10, 64)
 
-	getVacancy, err := h.useCase.GetVacancy(vacancyId)
+	getVacancy, err := h.useCase.GetVacancy(vacancyID)
 	switch err {
 	case sql.ErrNoRows:
 		golog.Errorf("#%s: %s", rID, err)

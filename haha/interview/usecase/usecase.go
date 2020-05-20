@@ -67,9 +67,9 @@ func (u *InterviewUseCase) generateMessage(sendSummary *baseModels.SendSummary) 
 
 	return &chat.Message{
 		Message:   fmt.Sprintf("Ваше резюме было %s", status),
-		UserOneId: credentials.OrganizationID,
+		UserOneID: credentials.OrganizationID,
 		UserOne:   credentials.OrganizationName,
-		UserTwoId: credentials.UserID,
+		UserTwoID: credentials.UserID,
 		Created:   time.Now(),
 	}, nil
 }
