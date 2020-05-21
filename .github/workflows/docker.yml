@@ -18,11 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Run test
-        run: make test
-
-      - name: Run cover
-        run: make cover
+      - name: Run test with cover
+        run: make test-cover
 
   build:
     runs-on: ubuntu-latest
