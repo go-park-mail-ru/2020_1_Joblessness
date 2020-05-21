@@ -66,4 +66,5 @@ jobs:
             docker rmi $(docker images -q)
             cd /home/2020_1_Joblessness
             sed s/{version}/${GITHUB_SHA::8}/g docker-compose-template.yml > docker-compose.yml
+            sed s/{repo}/${{ secrets.DOCKERHUB_USERNAME }}/g docker-compose.yml
             docker-compose up -d --build
