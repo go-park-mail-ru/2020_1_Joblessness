@@ -1,7 +1,7 @@
 version: '3'
 services:
   app:
-    image: maratishimbaev/app
+    image: maratishimbaev/app:{version}
     depends_on:
       - search
       - interview
@@ -18,7 +18,7 @@ services:
     network_mode: host
 
   search:
-    image: maratishimbaev/search
+    image: maratishimbaev/search:{version}
     env_file:
       - ../env.list
     working_dir: /go/src/haha/cmd/search/
@@ -29,7 +29,7 @@ services:
     network_mode: host
 
   interview:
-    image: maratishimbaev/interview
+    image: maratishimbaev/interview:{version}
     env_file:
       - ../env.list
     working_dir: /go/src/haha/cmd/interview/
@@ -40,7 +40,7 @@ services:
     network_mode: host
 
   auth:
-    image: maratishimbaev/auth
+    image: maratishimbaev/auth:{version}
     env_file:
       - ../env.list
     working_dir: /go/src/haha/cmd/auth/
