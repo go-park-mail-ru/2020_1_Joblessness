@@ -30,10 +30,10 @@ jobs:
 
       - name: Push the images
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/search:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/interview:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/auth:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/app:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/app:${GITHUB_SHA::8}
 
   deploy:
     runs-on: ubuntu-latest
@@ -48,10 +48,10 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           script: |
             echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/search:latest
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/interview:latest
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/auth:latest
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/app:latest
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8}
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8}
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8}
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/app:${GITHUB_SHA::8}
 
       - name: Run project
         uses: appleboy/ssh-action@master
