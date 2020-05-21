@@ -2,9 +2,17 @@ name: Docker build
 
 on:
   push:
-    branches: [ microservice ]
+    branches:
+      - master
+      - dev
+      - dev-dev
+      - microservice
   pull_request:
-    branches: [ microservice ]
+    branches:
+      - master
+      - dev
+      - dev-dev
+      - microservice
 
 jobs:
   lint:
