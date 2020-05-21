@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
-	authGrpc "joblessness/authService/grpc"
+	authGrpc "joblessness/authService/rpc"
 	"joblessness/haha/auth/repository/grpc"
 	"joblessness/haha/auth/repository/mock"
 	"net"

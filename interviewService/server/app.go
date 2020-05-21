@@ -1,6 +1,6 @@
 package interviewServer
 
-//go:generate cd ./interviewService/rpc && protoc -I=. interview.proto --go_out=plugins=grpc:.
+//go:generate cd ./interviewService/rpc && protoc -I=. interview.proto --go_out=plugins=rpc:.
 
 import (
 	"golang.org/x/net/context"
