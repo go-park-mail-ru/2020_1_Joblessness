@@ -61,9 +61,9 @@ func (suite *userSuite) TestAuthPersonFlow() {
 	//Login
 	suite.repo.EXPECT().Login(suite.person.Login, suite.person.Password, gomock.Any()).Return(suite.person.ID, nil).Times(1)
 	suite.repo.EXPECT().GetRole(suite.person.ID).Return("user", nil).Times(1)
-	userId, _, sid, err := suite.uc.Login(suite.person.Login, suite.person.Password)
+	userID, _, sid, err := suite.uc.Login(suite.person.Login, suite.person.Password)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), suite.person.ID, userId, "Id corrupted")
+	assert.Equal(suite.T(), suite.person.ID, userID, "Id corrupted")
 	assert.NotEmpty(suite.T(), sid, "No sid")
 
 	//Logout
@@ -73,9 +73,9 @@ func (suite *userSuite) TestAuthPersonFlow() {
 
 	//Check
 	suite.repo.EXPECT().SessionExists(suite.sidEx).Return(suite.person.ID, nil).Times(1)
-	userId, err = suite.uc.SessionExists(suite.sidEx)
+	userID, err = suite.uc.SessionExists(suite.sidEx)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), suite.person.ID, userId, "Id corrupted")
+	assert.Equal(suite.T(), suite.person.ID, userID, "Id corrupted")
 }
 
 func (suite *userSuite) TestAuthOrganizationFlow() {

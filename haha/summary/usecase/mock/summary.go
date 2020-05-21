@@ -6,7 +6,7 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	"joblessness/haha/models/base"
+	baseModels "joblessness/haha/models/base"
 	reflect "reflect"
 )
 
@@ -14,10 +14,6 @@ import (
 type MockSummaryUseCase struct {
 	ctrl     *gomock.Controller
 	recorder *MockSummaryUseCaseMockRecorder
-}
-
-func (m *MockSummaryUseCase) SendSummaryByMail(summaryID, authorID uint64, to string) (err error) {
-	panic("implement me")
 }
 
 // MockSummaryUseCaseMockRecorder is the mock recorder for MockSummaryUseCase
@@ -155,20 +151,6 @@ func (mr *MockSummaryUseCaseMockRecorder) GetUserSummaries(arg0, arg1 interface{
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserSummaries", reflect.TypeOf((*MockSummaryUseCase)(nil).GetUserSummaries), arg0, arg1)
 }
 
-// ResponseSummary mocks base method
-func (m *MockSummaryUseCase) ResponseSummary(arg0 *baseModels.SendSummary) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ResponseSummary", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// ResponseSummary indicates an expected call of ResponseSummary
-func (mr *MockSummaryUseCaseMockRecorder) ResponseSummary(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResponseSummary", reflect.TypeOf((*MockSummaryUseCase)(nil).ResponseSummary), arg0)
-}
-
 // SendSummary mocks base method
 func (m *MockSummaryUseCase) SendSummary(arg0 *baseModels.SendSummary) error {
 	m.ctrl.T.Helper()
@@ -181,4 +163,18 @@ func (m *MockSummaryUseCase) SendSummary(arg0 *baseModels.SendSummary) error {
 func (mr *MockSummaryUseCaseMockRecorder) SendSummary(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendSummary", reflect.TypeOf((*MockSummaryUseCase)(nil).SendSummary), arg0)
+}
+
+// SendSummaryByMail mocks base method
+func (m *MockSummaryUseCase) SendSummaryByMail(arg0, arg1 uint64, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SendSummaryByMail", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SendSummaryByMail indicates an expected call of SendSummaryByMail
+func (mr *MockSummaryUseCaseMockRecorder) SendSummaryByMail(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendSummaryByMail", reflect.TypeOf((*MockSummaryUseCase)(nil).SendSummaryByMail), arg0, arg1, arg2)
 }

@@ -3,7 +3,7 @@ package authGrpcRepository
 import (
 	"context"
 	"google.golang.org/grpc"
-	"joblessness/authService/grpc"
+	"joblessness/authService/rpc"
 )
 
 type AuthRepository struct {
@@ -47,14 +47,14 @@ func (r *AuthRepository) Login(login, password, SID string) (userID uint64, err 
 	return protoUserID.Id, err
 }
 
-func (r *AuthRepository) Logout(sessionId string) (err error) {
-	_, err = r.authClient.Logout(context.Background(), &authGrpc.SessionID{Id: sessionId})
+func (r *AuthRepository) Logout(sessionID string) (err error) {
+	_, err = r.authClient.Logout(context.Background(), &authGrpc.SessionID{Id: sessionID})
 
 	return err
 }
 
-func (r *AuthRepository) SessionExists(sessionId string) (userID uint64, err error) {
-	protoUserID, err := r.authClient.SessionExists(context.Background(), &authGrpc.SessionID{Id: sessionId})
+func (r *AuthRepository) SessionExists(sessionID string) (userID uint64, err error) {
+	protoUserID, err := r.authClient.SessionExists(context.Background(), &authGrpc.SessionID{Id: sessionID})
 	if err != nil {
 		return userID, err
 	}

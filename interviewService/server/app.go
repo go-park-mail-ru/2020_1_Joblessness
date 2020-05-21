@@ -1,6 +1,6 @@
 package interviewServer
 
-//go:generate cd ./interviewService/rpc && protoc -I=. interview.proto --go_out=plugins=grpc:.
+//go:generate cd ./interviewService/rpc && protoc -I=. interview.proto --go_out=plugins=rpc:.
 
 import (
 	"golang.org/x/net/context"
@@ -13,7 +13,7 @@ type server struct {
 	interviewRepo interviewInterfaces.InterviewRepository
 }
 
-func (s *server) IsOrganizationVacancy(cc context.Context, in *interviewRpc.IsParameters) (*interviewRpc.Status, error) {
+func (s *server) IsOrganizationVacancy(_ context.Context, in *interviewRpc.IsParameters) (*interviewRpc.Status, error) {
 	err := s.interviewRepo.IsOrganizationVacancy(in.VacancyID, in.UserID)
 
 	switch err {
@@ -26,7 +26,7 @@ func (s *server) IsOrganizationVacancy(cc context.Context, in *interviewRpc.IsPa
 	}
 }
 
-func (s *server) ResponseSummary(cc context.Context, in *interviewRpc.SendSummary) (*interviewRpc.Status, error) {
+func (s *server) ResponseSummary(_ context.Context, in *interviewRpc.SendSummary) (*interviewRpc.Status, error) {
 	sendSummary := grpcModels.TransformSendSummaryBase(in)
 
 	err := s.interviewRepo.ResponseSummary(sendSummary)
@@ -40,7 +40,7 @@ func (s *server) ResponseSummary(cc context.Context, in *interviewRpc.SendSummar
 	}
 }
 
-func (s *server) SaveMessage(cc context.Context, in *interviewRpc.Message) (*interviewRpc.Status, error) {
+func (s *server) SaveMessage(_ context.Context, in *interviewRpc.Message) (*interviewRpc.Status, error) {
 	message := grpcModels.TransformMessageBase(in)
 
 	err := s.interviewRepo.SaveMessage(message)
@@ -51,7 +51,7 @@ func (s *server) SaveMessage(cc context.Context, in *interviewRpc.Message) (*int
 	return &interviewRpc.Status{Code: 200}, nil
 }
 
-func (s *server) GetHistory(cc context.Context, in *interviewRpc.ChatParameters) (*interviewRpc.Messages, error) {
+func (s *server) GetHistory(_ context.Context, in *interviewRpc.ChatParameters) (*interviewRpc.Messages, error) {
 	chatParams := grpcModels.TransformChatParamsBase(in)
 
 	res, err := s.interviewRepo.GetHistory(chatParams)
@@ -62,7 +62,7 @@ func (s *server) GetHistory(cc context.Context, in *interviewRpc.ChatParameters)
 	return grpcModels.TransformMessagesRPC(&res), nil
 }
 
-func (s *server) GetResponseCredentials(cc context.Context, in *interviewRpc.CredentialsParams) (*interviewRpc.SummaryCredentials, error) {
+func (s *server) GetResponseCredentials(_ context.Context, in *interviewRpc.CredentialsParams) (*interviewRpc.SummaryCredentials, error) {
 	res, err := s.interviewRepo.GetResponseCredentials(in.SummaryID, in.VacancyID)
 	if err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func (s *server) GetResponseCredentials(cc context.Context, in *interviewRpc.Cre
 	return grpcModels.TransformSummaryCredentialsRPC(res), nil
 }
 
-func (s *server) GetConversations(cc context.Context, in *interviewRpc.CredentialsParams) (*interviewRpc.Conversations, error) {
+func (s *server) GetConversations(_ context.Context, in *interviewRpc.CredentialsParams) (*interviewRpc.Conversations, error) {
 	res, err := s.interviewRepo.GetConversations(in.UserID)
 	if err != nil {
 		return nil, err

@@ -21,11 +21,7 @@ type userSuite struct {
 	uc         *SummaryUseCase
 	repo       *mock.MockSummaryRepository
 	summary    baseModels.Summary
-	education  pgModels.Education
-	experience pgModels.Experience
-	user       pgModels.User
 	person     pgModels.Person
-	response   baseModels.VacancyResponse
 	sendSum    baseModels.SendSummary
 }
 

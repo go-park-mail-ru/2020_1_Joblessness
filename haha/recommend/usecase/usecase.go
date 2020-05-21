@@ -22,10 +22,7 @@ func (u *UseCase) GetRecommendedVacancies(userID, pageNumber uint64) (recommenda
 	}
 
 	if len(recommendations) < pageSize {
-		offset := (pageNumber-1)*pageSize-recommendCount
-		if offset < 0 {
-			offset = 0
-		}
+		offset := (pageNumber-1)*pageSize - recommendCount
 		vacancies, err := u.repository.GetPopularVacancies(uint64(pageSize-len(recommendations)), offset)
 		if err != nil {
 			return recommendations, err

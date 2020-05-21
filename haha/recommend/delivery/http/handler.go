@@ -22,7 +22,7 @@ func (h *Handler) GetRecommendedVacancies(w http.ResponseWriter, r *http.Request
 	rID := r.Context().Value("rID").(string)
 
 	page, err := strconv.ParseUint(r.FormValue("page"), 10, 64)
-	if page == 0 {
+	if page == 0 || err != nil {
 		page = 1
 	}
 
@@ -35,12 +35,12 @@ func (h *Handler) GetRecommendedVacancies(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusNotFound)
 		jsonData, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(jsonData)
-		golog.Errorf("#%s: %w", rID, err)
+		golog.Errorf("#%s: %s", rID, err.Error())
 	case errors.Is(err, recommendInterfaces.ErrNoRecommendation):
 		w.WriteHeader(http.StatusOK)
 		jsonData, _ := json.Marshal([]baseModels.Vacancy{})
 		w.Write(jsonData)
-		golog.Errorf("#%s: %w", rID, err)
+		golog.Errorf("#%s: %s", rID, err.Error())
 	case err == nil:
 		w.WriteHeader(http.StatusOK)
 		jsonData, _ := json.Marshal(vacancies)
@@ -49,6 +49,6 @@ func (h *Handler) GetRecommendedVacancies(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusInternalServerError)
 		jsonData, _ := json.Marshal(baseModels.Error{Message: err.Error()})
 		w.Write(jsonData)
-		golog.Errorf("#%s: %w", rID, err)
+		golog.Errorf("#%s: %s", rID, err.Error())
 	}
 }

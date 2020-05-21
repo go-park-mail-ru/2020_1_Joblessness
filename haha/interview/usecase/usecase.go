@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	socketBufferSize  = 1024
 	messageBufferSize = 256
 )
 
@@ -68,10 +67,9 @@ func (u *InterviewUseCase) generateMessage(sendSummary *baseModels.SendSummary) 
 
 	return &chat.Message{
 		Message:   fmt.Sprintf("Ваше резюме было %s", status),
-		UserOneId: credentials.OrganizationID,
+		UserOneID: credentials.OrganizationID,
 		UserOne:   credentials.OrganizationName,
-		UserTwoId: credentials.UserID,
-		UserTwo:   credentials.UserName,
+		UserTwoID: credentials.UserID,
 		Created:   time.Now(),
 	}, nil
 }
@@ -88,7 +86,10 @@ func (u *InterviewUseCase) ResponseSummary(sendSummary *baseModels.SendSummary) 
 			return err
 		}
 		if message != nil {
-			u.room.SendGeneratedMessage(message)
+			err = u.room.SendGeneratedMessage(message)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

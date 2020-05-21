@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/kataras/golog"
 	"google.golang.org/grpc"
-	"joblessness/authService/grpc"
+	"joblessness/authService/rpc"
 	"joblessness/authService/server"
 	"joblessness/haha/auth/repository/postgres"
 	"joblessness/haha/utils/database"
@@ -28,5 +28,8 @@ func main() {
 
 	server := grpc.NewServer()
 	authGrpc.RegisterAuthServer(server, authServer.NewAuthServer(repository))
-	server.Serve(listen)
+	err = server.Serve(listen)
+	if err != nil {
+		golog.Error("Server auth failed: ", err)
+	}
 }

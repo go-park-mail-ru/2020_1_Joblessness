@@ -33,19 +33,18 @@ type userSuite struct {
 	authUseCase    *mockAuth.MockAuthUseCase
 	uc             *interviewUseCaseMock.MockInterviewUseCase
 	cookie         *http.Cookie
-	response       baseModels.VacancyResponse
 	sendSum        baseModels.SendSummary
 	params         baseModels.ChatParameters
 	summaryCredits baseModels.SummaryCredentials
 	message        chat.Message
 	conversation   baseModels.ConversationTitle
-	responseByte   *bytes.Buffer
 	sendSumByte    *bytes.Buffer
 	paramsByte     *bytes.Buffer
 }
 
 func (suite *userSuite) SetupTest() {
 	suite.router = mux.NewRouter().PathPrefix("/api").Subrouter()
+	chatRouter := mux.NewRouter().PathPrefix("/api").Subrouter()
 	suite.mainMiddleware = middleware.NewMiddleware()
 	suite.router.Use(suite.mainMiddleware.LogMiddleware)
 
@@ -62,9 +61,9 @@ func (suite *userSuite) SetupTest() {
 
 	suite.message = chat.Message{
 		Message:   "awda",
-		UserOneId: 1,
+		UserOneID: 1,
 		UserOne:   "awd",
-		UserTwoId: 2,
+		UserTwoID: 2,
 		UserTwo:   "awda",
 		Created:   time.Now(),
 		VacancyID: 0,
@@ -72,7 +71,7 @@ func (suite *userSuite) SetupTest() {
 
 	suite.conversation = baseModels.ConversationTitle{
 		ChatterID:     1,
-		ChatterName:   "awda",
+		Tag:           "awda",
 		InterviewDate: time.Now(),
 	}
 
@@ -102,7 +101,7 @@ func (suite *userSuite) SetupTest() {
 
 	suite.summaryCredits = baseModels.SummaryCredentials{}
 
-	RegisterHTTPEndpoints(suite.router, suite.authMiddleware, suite.uc)
+	RegisterHTTPEndpoints(suite.router, chatRouter, suite.authMiddleware, suite.uc)
 }
 
 func TestSuite(t *testing.T) {

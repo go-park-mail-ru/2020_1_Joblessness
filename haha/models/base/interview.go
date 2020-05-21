@@ -27,7 +27,9 @@ type SummaryCredentials struct {
 //easyjson:json
 type ConversationTitle struct {
 	ChatterID     uint64    `json:"chatter_id"`
+	Avatar        string    `json:"avatar"`
 	ChatterName   string    `json:"chatter_name"`
+	Tag           string    `json:"tag"`
 	InterviewDate time.Time `json:"interview_date"`
 }
 
