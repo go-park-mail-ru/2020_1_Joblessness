@@ -29,7 +29,7 @@ func genRequestNumber(n int) string {
 	return string(s)
 }
 
-var rIDKey = string("rID")
+var rIDKey = "rID"
 
 func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -7,4 +7,4 @@ scrape_configs:
     scrape_interval: 5s
     metrics_path: '/api/metrics'
     static_configs:
-      - targets: ['5.23.54.85']
+      - targets: ['https://hahao.ru']

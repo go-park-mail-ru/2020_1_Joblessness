@@ -3,7 +3,7 @@ package authGrpcRepository
 import (
 	"context"
 	"google.golang.org/grpc"
-	"joblessness/authService/grpc"
+	"joblessness/authService/rpc"
 )
 
 type AuthRepository struct {

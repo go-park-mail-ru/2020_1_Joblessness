@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/kataras/golog"
 	"google.golang.org/grpc"
-	"joblessness/authService/grpc"
+	"joblessness/authService/rpc"
 	"joblessness/authService/server"
 	"joblessness/haha/auth/repository/postgres"
 	"joblessness/haha/utils/database"

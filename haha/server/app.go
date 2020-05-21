@@ -70,7 +70,7 @@ func NewApp(c *middleware.CorsHandler) *App {
 		grpc.WithInsecure(),
 	)
 	if err != nil {
-		golog.Fatal("cant connect to grpc")
+		golog.Fatal("cant connect to rpc")
 	}
 
 	interviewConn, err := grpc.Dial(
@@ -78,7 +78,7 @@ func NewApp(c *middleware.CorsHandler) *App {
 		grpc.WithInsecure(),
 	)
 	if err != nil {
-		golog.Fatal("cant connect to grpc")
+		golog.Fatal("cant connect to rpc")
 	}
 
 	authConn, err := grpc.Dial(

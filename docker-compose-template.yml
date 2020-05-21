@@ -1,7 +1,7 @@
 version: '3'
 services:
   app:
-    image: app
+    image: {repo}/app:{version}
     depends_on:
       - search
       - interview
@@ -9,7 +9,6 @@ services:
     env_file:
       - ../env.list
     volumes:
-      - .:/go/src/haha
       - /etc/letsencrypt:/etc/letsencrypt
     working_dir: /go/src/haha/cmd/haha/
     ports:
@@ -19,11 +18,9 @@ services:
     network_mode: host
 
   search:
-    image: search
+    image: {repo}/search:{version}
     env_file:
       - ../env.list
-    volumes:
-      - .:/go/src/haha
     working_dir: /go/src/haha/cmd/search/
     ports:
       - "8002:8002"
@@ -32,11 +29,9 @@ services:
     network_mode: host
 
   interview:
-    image: interview
+    image: {repo}/interview:{version}
     env_file:
       - ../env.list
-    volumes:
-      - .:/go/src/haha
     working_dir: /go/src/haha/cmd/interview/
     ports:
       - "8003:8003"
@@ -45,11 +40,9 @@ services:
     network_mode: host
 
   auth:
-    image: auth
+    image: {repo}/auth:{version}
     env_file:
       - ../env.list
-    volumes:
-      - .:/go/src/haha
     working_dir: /go/src/haha/cmd/auth/
     ports:
       - "8004:8004"
@@ -66,3 +59,8 @@ services:
     ports:
       - "9090:9090"
     restart: always
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"

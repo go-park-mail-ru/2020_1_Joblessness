@@ -2,7 +2,7 @@ package authServer
 
 import (
 	"context"
-	"joblessness/authService/grpc"
+	"joblessness/authService/rpc"
 	"joblessness/haha/auth/interfaces"
 )
 

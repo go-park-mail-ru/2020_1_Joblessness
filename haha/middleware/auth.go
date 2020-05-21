@@ -15,8 +15,7 @@ func NewAuthMiddleware(authUseCase authInterfaces.AuthUseCase) *SessionHandler {
 	return &SessionHandler{auth: authUseCase}
 }
 
-var userIDKey = string("userID")
-
+var userIDKey = "userID"
 
 func (m *SessionHandler) UserRequired(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
