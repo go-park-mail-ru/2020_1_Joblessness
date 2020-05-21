@@ -27,7 +27,7 @@ type userSuite struct {
 func (suite *userSuite) SetupTest() {
 	var err error
 	suite.db, suite.mock, err = sqlmock.New()
-	assert.Error(suite.T(), err)
+	assert.NoError(suite.T(), err)
 	suite.rep = NewAuthRepository(suite.db)
 
 	suite.person = baseModels.Person{
