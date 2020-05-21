@@ -59,3 +59,8 @@ services:
     ports:
       - "9090:9090"
     restart: always
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
