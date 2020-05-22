@@ -35,7 +35,7 @@ var rIDKey = "rID"
 
 func formatPath(path string) string {
 	pathArray := strings.Split(path[1:], "/")
-	for i, _ := range pathArray {
+	for i := range pathArray {
 		if _, err := strconv.Atoi(pathArray[i]); err == nil {
 			pathArray[i] = "*"
 		}
@@ -70,7 +70,7 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 
 		statusLabels := prometheus.Labels{
 			"method": r.Method,
-			"path":   r.URL.Path,
+			"path":   formatPath(r.URL.Path),
 			"status": fmt.Sprintf("%d", sw.StatusCode),
 		}
 		prom.RequestCount.With(statusLabels).Inc()
