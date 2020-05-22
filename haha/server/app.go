@@ -169,7 +169,7 @@ func (app *App) StartRouter() {
 			golog.Infof("get memory percent error: %s", err.Error())
 		}
 		percent := v.UsedPercent
-		golog.Infof("memory percent: %d", percent)
+		golog.Infof("memory percent: %f", percent)
 		prometheus.MemoryPercent.WithLabelValues("memory").Set(percent)
 		time.Sleep(time.Second * 5)
 	}
