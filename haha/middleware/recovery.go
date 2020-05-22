@@ -57,15 +57,17 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 		}
 
 		golog.Infof("#%s: %s %s", requestNumber, r.Method, r.URL)
-		prom.RequestCurrent.With(labels).Inc()
+		if r.URL.Path != "/api/metrics" {
+			prom.RequestCurrent.With(labels).Inc()
+		}
 		start := time.Now()
 
 		next.ServeHTTP(sw, r)
 
 		if r.URL.Path != "/api/metrics" {
 			prom.RequestDuration.With(labels).Observe(float64(int(time.Since(start).Milliseconds())))
+			prom.RequestCurrent.With(labels).Dec()
 		}
-		prom.RequestCurrent.With(labels).Dec()
 		golog.Infof("#%s: code %d", requestNumber, sw.StatusCode)
 
 		statusLabels := prometheus.Labels{
@@ -73,7 +75,12 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 			"path":   formatPath(r.URL.Path),
 			"status": fmt.Sprintf("%d", sw.StatusCode),
 		}
-		prom.RequestCount.With(statusLabels).Inc()
+		if r.URL.Path != "/api/metrics" {
+			prom.RequestCount.With(statusLabels).Inc()
+			if sw.StatusCode >= 500 {
+				prom.ErrorRequestCount.With(statusLabels).Inc()
+			}
+		}
 	})
 }
 

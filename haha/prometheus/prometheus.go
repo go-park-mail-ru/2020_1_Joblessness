@@ -12,6 +12,11 @@ var (
 		Help: "Requests count",
 	}, []string{"method", "path", "status"})
 
+	ErrorRequestCount = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "error_request_count",
+		Help: "Error request count",
+	}, []string{"method", "path", "status"})
+
 	RequestCurrent = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "request_current",
 		Help: "Number of current requests",
