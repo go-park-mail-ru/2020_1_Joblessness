@@ -50,7 +50,9 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(sw, r)
 
-		prom.RequestDuration.With(labels).Observe(time.Since(start).Seconds())
+		if r.URL.Path != "/api/metrics" {
+			prom.RequestDuration.With(labels).Observe(float64(int(time.Since(start).Milliseconds())))
+		}
 		prom.RequestCurrent.With(labels).Dec()
 		golog.Infof("#%s: code %d", requestNumber, sw.StatusCode)
 
