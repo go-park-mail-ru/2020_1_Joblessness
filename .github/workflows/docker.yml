@@ -39,10 +39,10 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/search:latest -f search.Dockerfile .
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/interview:latest -f interview.Dockerfile .
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/auth:latest -f auth.Dockerfile .
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/app:latest -f app.Dockerfile .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/search:latest -f docker/search.Dockerfile .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/interview:latest -f docker/interview.Dockerfile .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/auth:latest -f docker/auth.Dockerfile .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/app:latest -f docker/app.Dockerfile .
 
       - name: Push the images
         run: |
