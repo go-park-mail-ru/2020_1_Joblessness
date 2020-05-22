@@ -77,9 +77,6 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 		}
 		if r.URL.Path != "/api/metrics" {
 			prom.RequestCount.With(statusLabels).Inc()
-			if sw.StatusCode >= 500 {
-				prom.ErrorRequestCount.With(statusLabels).Inc()
-			}
 		}
 	})
 }
