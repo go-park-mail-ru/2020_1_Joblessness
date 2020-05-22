@@ -32,6 +32,7 @@ func RegisterPrometheus(router *mux.Router) {
 	router.Handle("/metrics", promhttp.Handler())
 
 	prometheus.MustRegister(RequestCount)
+	prometheus.MustRegister(ErrorRequestCount)
 	prometheus.MustRegister(RequestCurrent)
 	prometheus.MustRegister(RequestDuration)
 }
