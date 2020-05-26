@@ -7,7 +7,7 @@ services:
       - interview
       - auth
     env_file:
-      - ../../../env.list
+      - ../../env.list
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
     working_dir: /go/src/haha/cmd/haha/
@@ -20,7 +20,7 @@ services:
   search:
     image: {repo}/search:{version}
     env_file:
-      - ../env.list
+      - ../../env.list
     working_dir: /go/src/haha/cmd/search/
     ports:
       - "8002:8002"
@@ -31,7 +31,7 @@ services:
   interview:
     image: {repo}/interview:{version}
     env_file:
-      - ../env.list
+      - ../../env.list
     working_dir: /go/src/haha/cmd/interview/
     ports:
       - "8003:8003"
@@ -42,7 +42,7 @@ services:
   auth:
     image: {repo}/auth:{version}
     env_file:
-      - ../env.list
+      - ../../env.list
     working_dir: /go/src/haha/cmd/auth/
     ports:
       - "8004:8004"
