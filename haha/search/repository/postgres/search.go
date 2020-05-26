@@ -29,10 +29,8 @@ func (r SearchRepository) SearchPersons(params *baseModels.SearchParams) (result
 	getPersons := `SELECT users.id as userId, p.name, p.surname, tag, avatar
 					FROM users
 					JOIN person p on users.person_id = p.id
-					WHERE to_tsvector('russian', p.name) @@ plainto_tsquery('russian', $1)
-						  OR to_tsvector('russian', p.surname) @@ plainto_tsquery('russian', $1)
-					      OR lower(p.name) LIKE lower('%' || $1 || '%')
-					      OR lower(p.surname) LIKE lower('%' || $1 || '%')
+					WHERE to_tsvector('russian', p.name || ' ' || p.surname) @@ plainto_tsquery('russian', $1)
+   						  OR lower(p.name || p.surname) LIKE lower('%' || $1 || '%')
 					      OR lower(tag) LIKE lower('%' || $1 || '%')
 						  OR $1 = ''
 					ORDER BY p.name ` + params.Desc + `, registered 
