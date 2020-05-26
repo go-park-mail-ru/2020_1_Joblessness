@@ -6,6 +6,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"google.golang.org/grpc/status"
 	authInterfaces "joblessness/haha/auth/interfaces"
 	"joblessness/haha/models/base"
 	pgModels "joblessness/haha/models/postgres"
@@ -79,8 +80,10 @@ func (suite *userSuite) TestDoesExists() {
 		WillReturnRows(rows)
 
 	err := suite.rep.DoesUserExists("name")
+	e, ok := status.FromError(err)
 
-	assert.True(suite.T(), errors.Is(err, authInterfaces.ErrUserAlreadyExists))
+	assert.True(suite.T(), ok)
+	assert.True(suite.T(), e.Code() == authInterfaces.AlreadyExists)
 }
 
 func (suite *userSuite) TestDoesExistsErr() {
@@ -95,7 +98,7 @@ func (suite *userSuite) TestDoesExistsErr() {
 
 func (suite *userSuite) TestCreateUserNoId() {
 	user, _ := pgModels.ToPgPerson(&suite.person)
-	err := suite.rep.CreateUser(user)
+	err := suite.rep.CreateUser(user.Login, user.Password, user.PersonID, 0)
 
 	assert.Error(suite.T(), err)
 }
@@ -105,14 +108,14 @@ func (suite *userSuite) TestCreatePerson() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO person ").
-		WithArgs(suite.person.FirstName, suite.person.LastName, suite.person.Gender, suite.person.Birthday).
+		WithArgs(suite.person.FirstName).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
-		WithArgs("login", sqlmock.AnyArg(), 0, 1, "email", "phone", "tag").
+		WithArgs("login", sqlmock.AnyArg(), 0, 1).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := suite.rep.CreatePerson(&suite.person)
+	err := suite.rep.RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName)
 
 	assert.NoError(suite.T(), err)
 }
@@ -123,7 +126,7 @@ func (suite *userSuite) TestCreatePersonFailed() {
 		WithArgs(suite.person.FirstName + " " + suite.person.LastName).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.CreatePerson(&suite.person)
+	err := suite.rep.RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName)
 
 	assert.Error(suite.T(), err)
 }
@@ -133,14 +136,14 @@ func (suite *userSuite) TestCreateOrg() {
 
 	suite.mock.
 		ExpectQuery("INSERT INTO organization").
-		WithArgs(suite.organization.Name, suite.organization.Site, suite.organization.About).
+		WithArgs(suite.organization.Name).
 		WillReturnRows(rows)
 	suite.mock.
 		ExpectExec("INSERT INTO users").
-		WithArgs("login", sqlmock.AnyArg(), 1, 0, "email", "phone", "tag").
+		WithArgs("login", sqlmock.AnyArg(), 1, 0).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := suite.rep.CreateOrganization(&suite.organization)
+	err := suite.rep.RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name)
 
 	assert.NoError(suite.T(), err)
 }
@@ -151,7 +154,7 @@ func (suite *userSuite) TestCreateOrgFailed() {
 		WithArgs(suite.organization.Name).
 		WillReturnError(errors.New(""))
 
-	err := suite.rep.CreateOrganization(&suite.organization)
+	err := suite.rep.RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name)
 
 	assert.Error(suite.T(), err)
 }
@@ -240,6 +243,8 @@ func (suite *userSuite) TestSessionExistsExpired() {
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	_, err := suite.rep.SessionExists("sid")
+	e, ok := status.FromError(err)
 
-	assert.True(suite.T(), errors.Is(err, authInterfaces.ErrWrongSID))
+	assert.True(suite.T(), ok)
+	assert.True(suite.T(), e.Code() == authInterfaces.WrongSID)
 }

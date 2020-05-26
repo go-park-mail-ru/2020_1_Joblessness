@@ -6,22 +6,25 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 	"github.com/microcosm-cc/bluemonday"
+	"github.com/shirou/gopsutil/mem"
+	"google.golang.org/grpc"
 	"joblessness/haha/auth/delivery/http"
 	"joblessness/haha/auth/interfaces"
-	"joblessness/haha/auth/repository/postgres"
+	"joblessness/haha/auth/repository/grpc"
 	"joblessness/haha/auth/usecase"
-	"joblessness/haha/interview/delivery/http"
+	interviewHttp "joblessness/haha/interview/delivery/http"
 	"joblessness/haha/interview/interfaces"
-	"joblessness/haha/interview/repository/postgres"
+	"joblessness/haha/interview/repository/grpc"
 	"joblessness/haha/interview/usecase"
 	"joblessness/haha/middleware"
-	"joblessness/haha/recommendation/delivery/http"
-	"joblessness/haha/recommendation/interfaces"
-	"joblessness/haha/recommendation/repository/postgres"
-	"joblessness/haha/recommendation/usecase"
+	"joblessness/haha/prometheus"
+	"joblessness/haha/recommend/delivery/http"
+	"joblessness/haha/recommend/interfaces"
+	"joblessness/haha/recommend/repository/postgres"
+	"joblessness/haha/recommend/usecase"
 	"joblessness/haha/search/delivery/http"
 	"joblessness/haha/search/interfaces"
-	"joblessness/haha/search/repository/postgres"
+	"joblessness/haha/search/repository/grpc"
 	"joblessness/haha/search/usecase"
 	"joblessness/haha/summary/delivery/http"
 	"joblessness/haha/summary/interfaces"
@@ -38,16 +41,16 @@ import (
 	"joblessness/haha/vacancy/repository/postgres"
 	"joblessness/haha/vacancy/usecase"
 	"net/http"
+	"time"
 )
 
 type App struct {
-	httpServer        *http.Server
 	userUse           userInterfaces.UserUseCase
 	authUse           authInterfaces.AuthUseCase
 	vacancyUse        vacancyInterfaces.VacancyUseCase
 	summaryUse        summaryInterfaces.SummaryUseCase
 	searchUse         searchInterfaces.SearchUseCase
-	recommendationUse recommendationInterfaces.UseCase
+	recommendationUse recommendInterfaces.RecommendUseCase
 	interviewUse      interviewInterfaces.InterviewUseCase
 	corsHandler       *middleware.CorsHandler
 }
@@ -58,24 +61,57 @@ func NewApp(c *middleware.CorsHandler) *App {
 		golog.Error(err.Error())
 		return nil
 	}
+	err = db.Ping()
+	if err != nil {
+		golog.Error("DB: ", err.Error())
+		return nil
+	}
+
+	searchConn, err := grpc.Dial(
+		"127.0.0.1:8002",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		golog.Fatal("cant connect to rpc")
+	}
+
+	interviewConn, err := grpc.Dial(
+		"127.0.0.1:8003",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		golog.Fatal("cant connect to rpc")
+	}
+
+	authConn, err := grpc.Dial(
+		"127.0.0.1:8004",
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		golog.Fatal("can't connect to auth")
+	}
 
 	userRepo := userPostgres.NewUserRepository(db)
-	authRepo := authPostgres.NewAuthRepository(db)
+	authRepo := authGrpcRepository.NewRepository(authConn)
 	vacancyRepo := vacancyPostgres.NewVacancyRepository(db)
 	summaryRepo := summaryPostgres.NewSummaryRepository(db)
-	searchRepo := searchPostgres.NewSearchRepository(db)
-	recommendationRepo := recommendationPostgres.NewRepository(db, vacancyRepo)
-	interviewRepo := interviewPostgres.NewInterviewRepository(db)
+	searchRepo := searchGrpc.NewSearchGrpcRepository(searchConn)
+	recommendationRepo := recommendPostgres.NewRecommendRepository(db, vacancyRepo)
+	interviewRepo := interviewGrpc.NewInterviewGrpcRepository(interviewConn)
 	policy := bluemonday.UGCPolicy()
+
+	interviewUse := interviewUseCase.NewInterviewUseCase(interviewRepo, policy)
+	room := chat.NewRoom(interviewUse)
+	interviewUse.EnableRoom(room)
 
 	return &App{
 		userUse:           userUseCase.NewUserUseCase(userRepo, policy),
 		authUse:           authUseCase.NewAuthUseCase(authRepo),
-		vacancyUse:        vacancyUseCase.NewVacancyUseCase(vacancyRepo, policy),
+		vacancyUse:        vacancyUseCase.NewVacancyUseCase(vacancyRepo, room, policy),
 		summaryUse:        summaryUseCase.NewSummaryUseCase(summaryRepo, policy),
 		searchUse:         searchUseCase.NewSearchUseCase(searchRepo, policy),
-		recommendationUse: recommendationUseCase.NewUseCase(recommendationRepo),
-		interviewUse:      interviewUseCase.NewInterviewUseCase(interviewRepo, policy),
+		recommendationUse: recommendUseCase.NewUseCase(recommendationRepo),
+		interviewUse:      interviewUse,
 		corsHandler:       c,
 	}
 }
@@ -88,32 +124,53 @@ var (
 func (app *App) StartRouter() {
 	flag.Parse()
 
-	router := mux.NewRouter().PathPrefix("/api").Subrouter()
+	router := mux.NewRouter()
+
+	commonRouter := router.PathPrefix("/api").Subrouter()
+	wsRouter := router.PathPrefix("/api").Subrouter()
 
 	m := middleware.NewMiddleware()
 	mAuth := middleware.NewAuthMiddleware(app.authUse)
 
-	room := chat.NewRoom(app.interviewUse)
-
 	router.Use(m.RecoveryMiddleware)
 	if !*noCors {
 		router.Use(app.corsHandler.CorsMiddleware)
+		golog.Info("Cors enabled")
 	}
-	router.Use(m.LogMiddleware)
+	commonRouter.Use(m.LogMiddleware)
 	router.Methods("OPTIONS").HandlerFunc(app.corsHandler.Preflight)
 
-	authHttp.RegisterHTTPEndpoints(router, mAuth, app.authUse)
-	userHttp.RegisterHTTPEndpoints(router, mAuth, app.userUse)
-	vacancyHttp.RegisterHTTPEndpoints(router, mAuth, app.vacancyUse)
-	summaryHttp.RegisterHTTPEndpoints(router, mAuth, app.summaryUse)
-	searchHttp.RegisterHTTPEndpoints(router, app.searchUse)
-	recommendationHttp.RegisterHTTPEndpoints(router, mAuth, app.recommendationUse)
-	interviewHttp.RegisterHTTPEndpoints(router, mAuth, app.interviewUse, room)
+	authHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.authUse)
+	userHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.userUse)
+	vacancyHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.vacancyUse)
+	summaryHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.summaryUse)
+	searchHttp.RegisterHTTPEndpoints(commonRouter, app.searchUse)
+	recommendHttp.RegisterHTTPEndpoints(commonRouter, mAuth, app.recommendationUse)
+	interviewHttp.RegisterHTTPEndpoints(commonRouter, wsRouter, mAuth, app.interviewUse)
+	prometheus.RegisterPrometheus(commonRouter)
 
 	http.Handle("/", router)
 	golog.Infof("Server started at port :%d", *port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", *port), router)
-	if err != nil {
-		golog.Error("Server failed")
+
+	go func() {
+		err := http.ListenAndServeTLS(fmt.Sprintf(":%d", *port),
+			"/etc/letsencrypt/live/hahao.ru/fullchain.pem",
+			"/etc/letsencrypt/live/hahao.ru/privkey.pem",
+			nil)
+		//err := http.ListenAndServe(":8001", nil)
+		if err != nil {
+			golog.Error("Server haha failed: ", err)
+		}
+	}()
+
+	for {
+		v, err := mem.VirtualMemory()
+		if err != nil {
+			golog.Infof("get memory percent error: %s", err.Error())
+		}
+		percent := v.UsedPercent
+		golog.Infof("memory percent: %f", percent)
+		prometheus.MemoryPercent.WithLabelValues("memory").Set(percent)
+		time.Sleep(time.Second * 5)
 	}
 }

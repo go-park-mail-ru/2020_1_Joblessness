@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"joblessness/haha/models/base"
 	pgModels "joblessness/haha/models/postgres"
+	vacancyInterfaces "joblessness/haha/vacancy/interfaces"
 	"testing"
 	"time"
 )
@@ -73,6 +74,50 @@ func (suite *vacancySuite) TearDown() {
 
 func TestSuite(t *testing.T) {
 	suite.Run(t, new(vacancySuite))
+}
+
+func (suite *vacancySuite) TestGetRelatedUsers() {
+	rows := sqlmock.NewRows([]string{"name"}).AddRow(suite.organization.Name)
+	suite.mock.
+		ExpectQuery("SELECT o.name").
+		WithArgs(suite.vacancy.Organization.ID).
+		WillReturnRows(rows)
+
+	rows = sqlmock.NewRows([]string{"user_id"}).AddRow(uint64(1)).AddRow(uint64(2))
+	suite.mock.
+		ExpectQuery("SELECT f.user_id").
+		WithArgs(suite.vacancy.Organization.ID).
+		WillReturnRows(rows)
+
+	_, name, err := suite.rep.GetRelatedUsers(suite.vacancy.Organization.ID)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), suite.organization.Name, name)
+}
+
+func (suite *vacancySuite) TestGetRelatedUsersFailedOne() {
+	suite.mock.
+		ExpectQuery("SELECT o.name").
+		WithArgs(suite.vacancy.Organization.ID).
+		WillReturnError(errors.New(""))
+
+	_, _, err := suite.rep.GetRelatedUsers(suite.vacancy.Organization.ID)
+	assert.Error(suite.T(), err)
+}
+
+func (suite *vacancySuite) TestGetRelatedUsersFailedTwo() {
+	rows := sqlmock.NewRows([]string{"name"}).AddRow(suite.organization.Name)
+	suite.mock.
+		ExpectQuery("SELECT o.name").
+		WithArgs(suite.vacancy.Organization.ID).
+		WillReturnRows(rows)
+
+	suite.mock.
+		ExpectQuery("SELECT f.user_id").
+		WithArgs(suite.vacancy.Organization.ID).
+		WillReturnError(errors.New(""))
+
+	_, _, err := suite.rep.GetRelatedUsers(suite.vacancy.Organization.ID)
+	assert.Error(suite.T(), err)
 }
 
 func (suite *vacancySuite) TestCreateVacancy() {
@@ -147,9 +192,6 @@ func (suite *vacancySuite) TestGetVacancyFailedTwo() {
 		WithArgs(suite.vacancy.ID).
 		WillReturnRows(rows)
 
-	rows = sqlmock.NewRows([]string{"organization_id", "tag", "email", "phone", "avatar", "name", "site"}).
-		AddRow(suite.user.OrganizationID, suite.user.Tag, suite.user.Email, suite.user.Phone, suite.user.Avatar,
-			suite.organization.Name, suite.organization.Site)
 	suite.mock.
 		ExpectQuery("SELECT organization_id, tag, email, phone, avatar, name, site").
 		WithArgs(suite.user.ID).
@@ -210,6 +252,38 @@ func (suite *vacancySuite) TestGetVacanciesFailedTwo() {
 
 	_, err := suite.rep.GetVacancies(1)
 	assert.Error(suite.T(), err)
+}
+
+func (suite *vacancySuite) TestCheckAuthor() {
+	rows := sqlmock.NewRows([]string{"id"}).AddRow(true)
+	suite.mock.
+		ExpectQuery("SELECT organization_id").
+		WithArgs(suite.vacancy.Organization.ID, suite.vacancy.ID).
+		WillReturnRows(rows)
+
+	err := suite.rep.CheckAuthor(suite.vacancy.ID, suite.vacancy.Organization.ID)
+	assert.NoError(suite.T(), err)
+}
+
+func (suite *vacancySuite) TestCheckAuthorFailed() {
+	suite.mock.
+		ExpectQuery("SELECT organization_id").
+		WithArgs(suite.vacancy.Organization.ID, suite.vacancy.ID).
+		WillReturnError(errors.New(""))
+
+	err := suite.rep.CheckAuthor(suite.vacancy.ID, suite.vacancy.Organization.ID)
+	assert.Error(suite.T(), err)
+}
+
+func (suite *vacancySuite) TestCheckAuthorNotAuthor() {
+	rows := sqlmock.NewRows([]string{"id"}).AddRow(false)
+	suite.mock.
+		ExpectQuery("SELECT organization_id").
+		WithArgs(suite.vacancy.Organization.ID, suite.vacancy.ID).
+		WillReturnRows(rows)
+
+	err := suite.rep.CheckAuthor(suite.vacancy.ID, suite.vacancy.Organization.ID)
+	assert.EqualError(suite.T(), vacancyInterfaces.ErrOrgIsNotOwner, err.Error())
 }
 
 func (suite *vacancySuite) TestChangeVacancy() {

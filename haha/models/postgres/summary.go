@@ -46,8 +46,10 @@ func ToPgSummary(s *baseModels.Summary) (summary *Summary, educations []*Educati
 			SummaryID:   summary.ID,
 			Institution: education.Institution,
 			Speciality:  education.Speciality,
-			Graduated:   sql.NullTime{education.Graduated, !education.Graduated.IsZero()},
-			Type:        education.Type,
+			Graduated: sql.NullTime{
+				Time:  education.Graduated,
+				Valid: !education.Graduated.IsZero()},
+			Type: education.Type,
 		})
 	}
 
@@ -57,8 +59,12 @@ func ToPgSummary(s *baseModels.Summary) (summary *Summary, educations []*Educati
 			CompanyName:      experience.CompanyName,
 			Role:             experience.Role,
 			Responsibilities: experience.Responsibilities,
-			Start:            sql.NullTime{experience.Start, !experience.Start.IsZero()},
-			Stop:             sql.NullTime{experience.Stop, !experience.Stop.IsZero()},
+			Start: sql.NullTime{
+				Time:  experience.Start,
+				Valid: !experience.Start.IsZero()},
+			Stop: sql.NullTime{
+				Time:  experience.Stop,
+				Valid: !experience.Stop.IsZero()},
 		})
 	}
 

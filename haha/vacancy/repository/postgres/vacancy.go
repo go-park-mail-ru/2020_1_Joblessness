@@ -15,6 +15,39 @@ func NewVacancyRepository(db *sql.DB) *VacancyRepository {
 	return &VacancyRepository{db}
 }
 
+func (r *VacancyRepository) GetRelatedUsers(organizationID uint64) (res []uint64, orgName string, err error) {
+	getName := `SELECT o.name
+					FROM users u
+					JOIN organization o on u.organization_id = o.id
+					WHERE u.id = $1;`
+	err = r.db.QueryRow(getName, organizationID).Scan(&orgName)
+	if err != nil {
+		return nil, orgName, err
+	}
+
+	res = make([]uint64, 0)
+	getRelated := `SELECT f.user_id
+					FROM favorite f
+					WHERE f.favorite_id = $1;`
+	rows, err := r.db.Query(getRelated, organizationID)
+	if err != nil {
+		return nil, orgName, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var userID uint64
+		err = rows.Scan(&userID)
+		if err != nil {
+			return nil, orgName, err
+		}
+
+		res = append(res, userID)
+	}
+
+	return res, orgName, nil
+}
+
 func (r *VacancyRepository) CreateVacancy(vacancy *baseModels.Vacancy) (vacancyID uint64, err error) {
 	vacancyDB := pgModels.ToPgVacancy(vacancy)
 
@@ -107,7 +140,7 @@ func (r *VacancyRepository) CheckAuthor(vacancyID, authorID uint64) (err error) 
 	var isAuthor bool
 
 	checkAuthor := `SELECT organization_id = $1 FROM vacancy WHERE id = $2`
-	if err = r.db.QueryRow(checkAuthor, authorID, vacancyID).Scan(&isAuthor); err != nil {
+	if err = r.db.QueryRow(checkAuthor, authorID, vacancyID).Scan(&isAuthor); err != nil || !isAuthor {
 		return vacancyInterfaces.ErrOrgIsNotOwner
 	}
 
@@ -118,8 +151,14 @@ func (r *VacancyRepository) ChangeVacancy(vacancy *baseModels.Vacancy) (err erro
 	vacancyDB := pgModels.ToPgVacancy(vacancy)
 
 	changeVacancy := `UPDATE vacancy
-					  SET name = $1, description = $2, salary_from = $3, salary_to = $4,
-						  with_tax = $5, responsibilities = $6, conditions = $7, keywords = $8
+					  SET name = COALESCE(NULLIF($1, ''), name), 
+					      description = COALESCE(NULLIF($2, ''), description), 
+					      salary_from = COALESCE(NULLIF($3, 0), salary_from), 
+					      salary_to = COALESCE(NULLIF($4, 0), salary_to),
+						  with_tax = $5, 
+					      responsibilities = COALESCE(NULLIF($6, ''), responsibilities), 
+					      conditions = COALESCE(NULLIF($7, ''), conditions), 
+					      keywords = COALESCE(NULLIF($8, ''), keywords)
 					  WHERE id = $9;`
 	_, err = r.db.Exec(changeVacancy, vacancyDB.Name, vacancyDB.Description,
 		vacancyDB.SalaryFrom, vacancyDB.SalaryTo, vacancyDB.WithTax, vacancyDB.Responsibilities,

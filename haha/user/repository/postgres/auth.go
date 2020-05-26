@@ -148,7 +148,7 @@ func (r *UserRepository) ChangeOrganization(o *baseModels.Organization) error {
 }
 
 func (r *UserRepository) GetListOfOrgs(page int) (result baseModels.Organizations, err error) {
-	getOrgs := `SELECT users.id as userId, name, site
+	getOrgs := `SELECT users.id as userID, name, site
 				FROM users, organization
 				WHERE users.organization_id = organization.id
 				ORDER BY registered desc
@@ -162,19 +162,19 @@ func (r *UserRepository) GetListOfOrgs(page int) (result baseModels.Organization
 	defer rows.Close()
 
 	var (
-		userId     uint64
+		userID     uint64
 		name, site string
 	)
 	result = make(baseModels.Organizations, 0)
 
 	for rows.Next() {
-		err := rows.Scan(&userId, &name, &site)
+		err := rows.Scan(&userID, &name, &site)
 		if err != nil {
 			return result, err
 		}
 
 		result = append(result, &baseModels.Organization{
-			ID:         userId,
+			ID:         userID,
 			Login:      "",
 			Password:   "",
 			Name:       name,
@@ -209,22 +209,24 @@ func (r *UserRepository) SetOrDeleteLike(userID, favoriteID uint64) (res bool, e
 }
 
 func (r *UserRepository) LikeExists(userID, favoriteID uint64) (res bool, err error) {
+	var count int
 	setLike := `SELECT count(*)
 				FROM favorite f
 				WHERE f.user_id = $1
 				AND f.favorite_id = $2;`
-	rows, err := r.db.Query(setLike, userID, favoriteID)
+	err = r.db.QueryRow(setLike, userID, favoriteID).Scan(&count)
 	if err != nil {
 		return false, err
 	}
-	defer rows.Close()
 
-	return rows.Next(), nil
+	return count != 0, nil
 }
 
 func (r *UserRepository) GetUserFavorite(userID uint64) (res baseModels.Favorites, err error) {
-	getFavorite := `SELECT u.id, u.tag, u.person_id
+	getFavorite := `SELECT u.id, u.tag, u.avatar, u.person_id, o.name, p.name, p.surname
 				FROM favorite f, users u 
+                     left JOIN organization o on u.organization_id = o.id
+                     left JOIN person p on u.person_id = p.id
 				WHERE f.favorite_id = u.id
 				AND f.user_id = $1;`
 	rows, err := r.db.Query(getFavorite, userID)
@@ -234,21 +236,27 @@ func (r *UserRepository) GetUserFavorite(userID uint64) (res baseModels.Favorite
 	defer rows.Close()
 
 	var (
-		personID sql.NullInt64
+		personID      sql.NullInt64
+		personName    sql.NullString
+		personSurname sql.NullString
+		orgName       sql.NullString
 	)
 	res = make(baseModels.Favorites, 0)
 
 	for rows.Next() {
 		var favorite baseModels.Favorite
-		err := rows.Scan(&favorite.ID, &favorite.Tag, &personID)
+		err := rows.Scan(&favorite.ID, &favorite.Tag, &favorite.Avatar, &personID, &orgName, &personName, &personSurname)
 		if err != nil {
 			return nil, err
 		}
 
 		if personID.Valid {
 			favorite.IsPerson = true
+			favorite.Name = personName.String
+			favorite.Surname = personSurname.String
 		} else {
 			favorite.IsPerson = false
+			favorite.Name = orgName.String
 		}
 		res = append(res, &favorite)
 	}

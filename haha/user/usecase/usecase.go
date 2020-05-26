@@ -20,61 +20,61 @@ func NewUserUseCase(userRepo userInterfaces.UserRepository, policy *bluemonday.P
 	}
 }
 
-func (a *UserUseCase) GetPerson(userID uint64) (*baseModels.Person, error) {
-	res, err := a.userRepo.GetPerson(userID)
+func (u *UserUseCase) GetPerson(userID uint64) (*baseModels.Person, error) {
+	res, err := u.userRepo.GetPerson(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	res.Sanitize(a.policy)
+	res.Sanitize(u.policy)
 	return res, nil
 }
 
-func (a *UserUseCase) ChangePerson(p *baseModels.Person) error {
-	return a.userRepo.ChangePerson(p)
+func (u *UserUseCase) ChangePerson(p *baseModels.Person) error {
+	return u.userRepo.ChangePerson(p)
 }
 
-func (a *UserUseCase) GetOrganization(userID uint64) (*baseModels.Organization, error) {
-	res, err := a.userRepo.GetOrganization(userID)
+func (u *UserUseCase) GetOrganization(userID uint64) (*baseModels.Organization, error) {
+	res, err := u.userRepo.GetOrganization(userID)
 	if err != nil {
 		return nil, err
 	}
 
-	res.Sanitize(a.policy)
+	res.Sanitize(u.policy)
 	return res, nil
 }
 
-func (a *UserUseCase) ChangeOrganization(o *baseModels.Organization) error {
-	return a.userRepo.ChangeOrganization(o)
+func (u *UserUseCase) ChangeOrganization(o *baseModels.Organization) error {
+	return u.userRepo.ChangeOrganization(o)
 }
 
-func (a *UserUseCase) GetListOfOrgs(page int) (result baseModels.Organizations, err error) {
-	res, err := a.userRepo.GetListOfOrgs(page)
+func (u *UserUseCase) GetListOfOrgs(page int) (result baseModels.Organizations, err error) {
+	res, err := u.userRepo.GetListOfOrgs(page)
 	if err != nil {
 		return nil, err
 	}
 
-	res.Sanitize(a.policy)
+	res.Sanitize(u.policy)
 	return res, nil
 }
 
-func (a *UserUseCase) SetAvatar(form *multipart.Form, userID uint64) (err error) {
+func (u *UserUseCase) SetAvatar(form *multipart.Form, userID uint64) (err error) {
 	link, err := sss.UploadAvatar(form, userID)
 	if err != nil {
 		return err
 	}
 
-	return a.userRepo.SaveAvatarLink(link, userID)
+	return u.userRepo.SaveAvatarLink(link, userID)
 }
 
-func (a *UserUseCase) LikeUser(userID, favoriteID uint64) (bool, error) {
-	return a.userRepo.SetOrDeleteLike(userID, favoriteID)
+func (u *UserUseCase) LikeUser(userID, favoriteID uint64) (bool, error) {
+	return u.userRepo.SetOrDeleteLike(userID, favoriteID)
 }
 
-func (a *UserUseCase) LikeExists(userID, favoriteID uint64) (bool, error) {
-	return a.userRepo.LikeExists(userID, favoriteID)
+func (u *UserUseCase) LikeExists(userID, favoriteID uint64) (bool, error) {
+	return u.userRepo.LikeExists(userID, favoriteID)
 }
 
-func (a *UserUseCase) GetUserFavorite(userID uint64) (baseModels.Favorites, error) {
-	return a.userRepo.GetUserFavorite(userID)
+func (u *UserUseCase) GetUserFavorite(userID uint64) (baseModels.Favorites, error) {
+	return u.userRepo.GetUserFavorite(userID)
 }

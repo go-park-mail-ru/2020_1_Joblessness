@@ -10,13 +10,12 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	authInterfaces "joblessness/haha/auth/interfaces"
+	"joblessness/haha/auth/interfaces"
 	"joblessness/haha/auth/usecase/mock"
 	"joblessness/haha/middleware"
 	"joblessness/haha/models/base"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 )
@@ -78,27 +77,10 @@ func TestSuite(t *testing.T) {
 	suite.Run(t, new(userSuite))
 }
 
-const message = `
---MyBoundary
-Content-Disposition: form-data; name="file"; filename="file.png"
-Content-Type: text/plain
-`
-
-func newTestMultipartRequest(t *testing.T) *http.Request {
-	b := strings.NewReader(strings.ReplaceAll(message, "\n", "\r\n"))
-	req, err := http.NewRequest("POST", "/api/users/12/avatar", b)
-	if err != nil {
-		t.Fatal("NewRequest:", err)
-	}
-	ctype := `multipart/form-data; boundary="MyBoundary"`
-	req.Header.Set("Content-type", ctype)
-	return req
-}
-
 func (suite *userSuite) TestRegistrationPerson() {
 
 	suite.uc.EXPECT().
-		RegisterPerson(&suite.person).
+		RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName).
 		Return(nil).
 		Times(1)
 
@@ -111,7 +93,7 @@ func (suite *userSuite) TestRegistrationPerson() {
 
 func (suite *userSuite) TestFailedRegistrationPerson() {
 	suite.uc.EXPECT().
-		RegisterPerson(&suite.person).
+		RegisterPerson(suite.person.Login, suite.person.Password, suite.person.FirstName).
 		Return(authInterfaces.ErrUserAlreadyExists).
 		Times(1)
 
@@ -124,7 +106,7 @@ func (suite *userSuite) TestFailedRegistrationPerson() {
 
 func (suite *userSuite) TestRegistrationOrganization() {
 	suite.uc.EXPECT().
-		RegisterOrganization(&suite.organization).
+		RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name).
 		Return(nil).
 		Times(1)
 
@@ -137,7 +119,7 @@ func (suite *userSuite) TestRegistrationOrganization() {
 
 func (suite *userSuite) TestFailedRegistrationOrganization() {
 	suite.uc.EXPECT().
-		RegisterOrganization(&suite.organization).
+		RegisterOrganization(suite.organization.Login, suite.organization.Password, suite.organization.Name).
 		Return(authInterfaces.ErrUserAlreadyExists).
 		Times(1)
 

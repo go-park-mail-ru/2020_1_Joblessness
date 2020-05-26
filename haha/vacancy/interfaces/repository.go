@@ -6,6 +6,7 @@ import (
 )
 
 type VacancyRepository interface {
+	GetRelatedUsers(organizationID uint64) (res []uint64, orgName string, err error)
 	CreateVacancy(vacancy *baseModels.Vacancy) (uint64, error)
 	GetVacancies(page int) (baseModels.Vacancies, error)
 	GetVacancyOrganization(organizationID uint64) (*pgModels.User, *pgModels.Organization, error)

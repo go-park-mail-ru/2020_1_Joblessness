@@ -2,10 +2,8 @@ package authPostgres
 
 import (
 	"database/sql"
-	"fmt"
-	"joblessness/haha/auth/interfaces"
-	"joblessness/haha/models/base"
-	"joblessness/haha/models/postgres"
+	"google.golang.org/grpc/status"
+	authInterfaces "joblessness/haha/auth/interfaces"
 	"joblessness/haha/utils/salt"
 	"time"
 )
@@ -20,98 +18,89 @@ func NewAuthRepository(db *sql.DB) *AuthRepository {
 	}
 }
 
-func (r AuthRepository) CreateUser(user *pgModels.User) (err error) {
-	user.Password, err = salt.HashAndSalt(user.Password)
+func (r AuthRepository) CreateUser(login, password string, personID, organizationID uint64) (err error) {
+	hashedPassword, err := salt.HashAndSalt(password)
+	if err != nil {
+		return err
+	}
 
-	insertUser := `INSERT INTO users (login, password, organization_id, person_id, email, phone, tag) 
-					VALUES(NULLIF($1, ''), NULLIF($2, ''), NULLIF($3, 0), NULLIF($4, 0), $5, $6, $7)`
-	_, err = r.db.Exec(insertUser, user.Login, user.Password, user.OrganizationID,
-		user.PersonID, user.Email, user.Phone, user.Tag)
+	insertUser := `INSERT INTO users (login, password, organization_id, person_id) 
+					VALUES(NULLIF($1, ''), NULLIF($2, ''), NULLIF($3, 0), NULLIF($4, 0))`
+	_, err = r.db.Exec(insertUser, login, hashedPassword, organizationID, personID)
 
 	return err
 }
 
-func (r *AuthRepository) CreatePerson(user *baseModels.Person) (err error) {
-	dbUser, dbPerson := pgModels.ToPgPerson(user)
-	if dbPerson.Birthday.IsZero() {
-		dbPerson.Birthday.AddDate(1950, 0, 0)
-	}
+func (r *AuthRepository) RegisterPerson(login, password, name string) (err error) {
+	var personID uint64
 
-	err = r.db.QueryRow("INSERT INTO person (name, surname, gender, birthday) VALUES($1, $2, $3, $4) RETURNING id",
-		dbPerson.Name, dbPerson.LastName, dbPerson.Gender, dbPerson.Birthday).
-		Scan(&dbUser.PersonID)
+	err = r.db.QueryRow("INSERT INTO person (name) VALUES($1) RETURNING id", name).
+		Scan(&personID)
 	if err != nil {
 		return err
 	}
 	//TODO исполнять как единая транзация
-	err = r.CreateUser(dbUser)
+	err = r.CreateUser(login, password, personID, 0)
 
 	return err
 }
 
-func (r *AuthRepository) CreateOrganization(org *baseModels.Organization) (err error) {
-	dbUser, dbOrg := pgModels.ToPgOrganization(org)
+func (r *AuthRepository) RegisterOrganization(login, password, name string) (err error) {
+	var organizationID uint64
 
-	err = r.db.QueryRow("INSERT INTO organization (name, site, about) VALUES($1, $2, $3) RETURNING id",
-		dbOrg.Name, dbOrg.Site, dbOrg.About).
-		Scan(&dbUser.OrganizationID)
+	err = r.db.QueryRow("INSERT INTO organization (name) VALUES($1) RETURNING id", name).
+		Scan(&organizationID)
 	if err != nil {
 		return err
 	}
 	//TODO исполнять как единая транзация
-	err = r.CreateUser(dbUser)
+	err = r.CreateUser(login, password, 0, organizationID)
 
 	return err
 }
 
-func (r *AuthRepository) Login(login, password, SID string) (userId uint64, err error) {
-	//TODO user_id, session_id уникальные
-
+func (r *AuthRepository) Login(login, password, SID string) (userID uint64, err error) {
 	checkUser := "SELECT id, password FROM users WHERE login = $1"
 	var hashedPwd string
 	rows := r.db.QueryRow(checkUser, login)
-	err = rows.Scan(&userId, &hashedPwd)
+	err = rows.Scan(&userID, &hashedPwd)
 	if err != nil || !salt.ComparePasswords(hashedPwd, password) {
-		return 0, fmt.Errorf("%w, login: %s, password: %s", authInterfaces.ErrWrongLoginOrPassword, login, password)
+		return 0, status.Error(authInterfaces.WrongLoginOrPassword, "wrong login or password")
 	}
 
 	insertSession := `INSERT INTO session (user_id, session_id, expires) 
 					VALUES($1, $2, $3)`
-	_, err = r.db.Exec(insertSession, userId, SID, time.Now().Add(time.Hour))
+	_, err = r.db.Exec(insertSession, userID, SID, time.Now().Add(10*time.Hour))
 
-	return userId, err
+	return userID, err
 }
 
-func (r *AuthRepository) Logout(sessionId string) (err error) {
-	//TODO user_id, session_id уникальные
-
+func (r *AuthRepository) Logout(sessionID string) (err error) {
 	deleteRow := "DELETE FROM session WHERE session_id = $1;"
-	_, err = r.db.Exec(deleteRow, sessionId)
+	_, err = r.db.Exec(deleteRow, sessionID)
 
 	return err
 }
 
-func (r *AuthRepository) SessionExists(sessionId string) (userId uint64, err error) {
-	//TODO session_id - pk, возвращать тип сессии
-
+func (r *AuthRepository) SessionExists(sessionID string) (userID uint64, err error) {
 	checkUser := "SELECT user_id, expires FROM session WHERE session_id = $1;"
 	var expires time.Time
-	err = r.db.QueryRow(checkUser, sessionId).Scan(&userId, &expires)
+	err = r.db.QueryRow(checkUser, sessionID).Scan(&userID, &expires)
 	if err != nil {
-		return 0, authInterfaces.ErrWrongSID
+		return 0, status.Error(authInterfaces.WrongSID, "wrong sid")
 	}
 
 	if expires.Before(time.Now()) {
 		deleteRow := "DELETE FROM session WHERE session_id = $1;"
-		_, err = r.db.Exec(deleteRow, sessionId)
+		_, err = r.db.Exec(deleteRow, sessionID)
 		if err != nil {
 			return 0, err
 		}
-		userId = 0
-		return userId, authInterfaces.ErrWrongSID
+		userID = 0
+		return userID, status.Error(authInterfaces.WrongSID, "wrong sid")
 	}
 
-	return userId, err
+	return userID, err
 }
 
 func (r *AuthRepository) DoesUserExists(login string) (err error) {
@@ -124,7 +113,7 @@ func (r *AuthRepository) DoesUserExists(login string) (err error) {
 	}
 
 	if columnCount != 0 {
-		return fmt.Errorf("%w, login: %s", authInterfaces.ErrUserAlreadyExists, login)
+		return status.Error(authInterfaces.AlreadyExists, "user already exists")
 	}
 	return nil
 }
@@ -134,7 +123,7 @@ func (r *AuthRepository) GetRole(userID uint64) (string, error) {
 	checkUser := "SELECT person_id, organization_id FROM users WHERE id = $1;"
 	err := r.db.QueryRow(checkUser, userID).Scan(&personID, &organizationID)
 	if err != nil {
-		return "", err
+		return "", status.Error(authInterfaces.NotFound, "not found")
 	}
 
 	if personID.Valid {

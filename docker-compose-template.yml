@@ -1,0 +1,82 @@
+version: '3'
+services:
+  app:
+    image: {repo}/app:{version}
+    depends_on:
+      - search
+      - interview
+      - auth
+    env_file:
+      - ../env.list
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+    working_dir: /go/src/haha/cmd/haha/
+    ports:
+      - "8001:8001"
+    stdin_open: true
+    tty: true
+    network_mode: host
+
+  search:
+    image: {repo}/search:{version}
+    env_file:
+      - ../env.list
+    working_dir: /go/src/haha/cmd/search/
+    ports:
+      - "8002:8002"
+    stdin_open: true
+    tty: true
+    network_mode: host
+
+  interview:
+    image: {repo}/interview:{version}
+    env_file:
+      - ../env.list
+    working_dir: /go/src/haha/cmd/interview/
+    ports:
+      - "8003:8003"
+    stdin_open: true
+    tty: true
+    network_mode: host
+
+  auth:
+    image: {repo}/auth:{version}
+    env_file:
+      - ../env.list
+    working_dir: /go/src/haha/cmd/auth/
+    ports:
+      - "8004:8004"
+    stdin_open: true
+    tty: true
+    network_mode: host
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./haha/prometheus/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    restart: always
+
+  nodeexporter:
+    image: prom/node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)"
+    ports:
+      - "9100:9100"
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - /home/grafana:/var/lib/grafana

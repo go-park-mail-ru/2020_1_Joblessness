@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package interviewService;
+option go_package = ".;interviewRpc";
+
+import "google/protobuf/timestamp.proto";
+
+service Interview {
+	rpc IsOrganizationVacancy(IsParameters) returns (Status) {}
+	rpc ResponseSummary(SendSummary) returns (Status) {}
+	rpc SaveMessage(Message) returns (Status) {}
+	rpc GetHistory(ChatParameters) returns (Messages) {}
+	rpc GetResponseCredentials(CredentialsParams) returns (SummaryCredentials) {}
+	rpc GetConversations(CredentialsParams) returns (Conversations) {}
+}
+
+message SendSummary {
+	uint64 VacancyID = 1;
+	uint64 SummaryID = 2;
+	uint64 UserID = 3;
+	uint64 OrganizationID = 4;
+	google.protobuf.Timestamp InterviewDate = 5;
+	bool Accepted = 6;
+	bool Denied = 7;
+}
+
+message Message {
+	string Message = 1;
+	uint64 UserOneId = 2;
+	string UserOne = 3;
+	uint64 UserTwoId = 4;
+	string UserTwo = 5;
+	google.protobuf.Timestamp Created = 6;
+}
+
+message Messages {
+	repeated Message From = 1;
+	repeated Message To = 2;
+}
+
+message ChatParameters {
+	uint64 From = 1;
+	uint64 To = 2;
+	uint64 Page = 3;
+}
+
+message IsParameters {
+	uint64 vacancyID = 1;
+	uint64 userID = 2;
+}
+
+message SummaryCredentials {
+	uint64 UserID = 1;
+	uint64 OrganizationID = 2;
+	string UserName = 3;
+	string OrganizationName = 4;
+}
+
+message CredentialsParams {
+	uint64 SummaryID = 1;
+	uint64 VacancyID = 2;
+	uint64 UserID = 3;
+}
+
+message ConversationTitle {
+	uint64 ChatterId = 1;
+	string Avatar = 2;
+	string Tag = 3;
+	string ChatterName = 4;
+	google.protobuf.Timestamp InterviewDate = 5;
+}
+
+message Conversations {
+	repeated ConversationTitle Title = 1;
+}
+
+message Status {
+	int64 Code = 1;
+}

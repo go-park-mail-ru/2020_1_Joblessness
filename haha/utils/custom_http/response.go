@@ -1,6 +1,8 @@
 package custom_http
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type StatusResponseWriter struct {
 	http.ResponseWriter

@@ -92,7 +92,7 @@ func (suite *userSuite) SetupTest() {
 		Tag:       suite.summary.Author.Tag,
 		VacancyID: uint64(7),
 		SummaryID: suite.summary.ID,
-		Keywords:  suite.summary.Keywords,
+		Avatar:    "adwawd",
 	}
 	responseJSON, err := json.Marshal(suite.response)
 	suite.responseByte = bytes.NewBuffer(responseJSON)
@@ -237,18 +237,18 @@ func (suite *userSuite) TestGetSummariesFailed() {
 }
 
 // TODO: Fix test
-//func (suite *userSuite) TestPrintSummaries() {
-//	suite.uc.EXPECT().
-//		GetSummary(suite.summary.ID).
-//		Return(&suite.summary, nil).
-//		Times(1)
-//
-//	r, _ := http.NewRequest("GET", "/api/summaries/3/print", bytes.NewBuffer([]byte{}))
-//	w := httptest.NewRecorder()
-//	suite.router.ServeHTTP(w, r)
-//
-//	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
-//}
+func (suite *userSuite) TestPrintSummaries() {
+	suite.uc.EXPECT().
+		GetSummary(suite.summary.ID).
+		Return(&suite.summary, nil).
+		Times(1)
+
+	r, _ := http.NewRequest("GET", "/api/summaries/3/print", bytes.NewBuffer([]byte{}))
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 200, w.Code, "Status is not 200")
+}
 
 func (suite *userSuite) TestPrintSummariesFailed() {
 	suite.uc.EXPECT().
@@ -385,6 +385,42 @@ func (suite *userSuite) TestChangeSummaryFailed() {
 	suite.router.ServeHTTP(w, r)
 
 	assert.Equal(suite.T(), 500, w.Code, "Status is not 500")
+}
+
+func (suite *userSuite) TestChangeSummaryNotFound() {
+	suite.uc.EXPECT().
+		ChangeSummary(&suite.summary).
+		Return(summaryInterfaces.ErrSummaryNotFound).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		PersonSession("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("PUT", "/api/summaries/3", suite.summaryByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 404, w.Code, "Status is not 404")
+}
+
+func (suite *userSuite) TestChangeSummaryNotOwner() {
+	suite.uc.EXPECT().
+		ChangeSummary(&suite.summary).
+		Return(summaryInterfaces.ErrPersonIsNotOwner).
+		Times(1)
+	suite.authUseCase.EXPECT().
+		PersonSession("username").
+		Return(uint64(12), nil).
+		Times(1)
+
+	r, _ := http.NewRequest("PUT", "/api/summaries/3", suite.summaryByte)
+	r.AddCookie(suite.cookie)
+	w := httptest.NewRecorder()
+	suite.router.ServeHTTP(w, r)
+
+	assert.Equal(suite.T(), 403, w.Code, "Status is not 403")
 }
 
 func (suite *userSuite) TestDeleteSummary() {

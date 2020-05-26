@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package searchService;
+option go_package = ".;searchRpc";
+
+import "google/protobuf/timestamp.proto";
+
+service Search {
+  rpc SearchPersons(SearchParams) returns (stream Person) {}
+  rpc SearchOrganizations(SearchParams) returns (stream Organization) {}
+  rpc SearchVacancies(SearchParams) returns (stream Vacancy) {}
+}
+
+message Vacancy {
+	uint64 ID = 1;
+	VacancyOrganization Organization = 2;
+	string Name = 3;
+	string Description = 4;
+	int64 SalaryFrom = 5;
+	int64 SalaryTo = 6;
+	bool WithTax = 7;
+	string Responsibilities = 8;
+	string Conditions = 9;
+	string Keywords = 10;
+}
+
+message VacancyOrganization {
+	uint64 ID = 1;
+	string Tag = 2;
+	string Email = 3;
+	string Phone = 4;
+	string Avatar = 5;
+	string Name = 6;
+	string Site = 7;
+}
+
+message Organization {
+	uint64 ID = 1;
+	string Login = 2;
+	string Password = 3;
+	string Tag = 4;
+	string Email = 5;
+	string Phone = 6;
+	google.protobuf.Timestamp Registered = 7;
+	string Avatar = 8;
+	string Name = 9;
+	string About = 10;
+	string Site = 11;
+}
+
+message Person {
+	uint64 ID = 1;
+	string Login = 2;
+	string Password = 3;
+	string Tag = 4;
+	string Email = 5;
+	string Phone = 6;
+	google.protobuf.Timestamp Registered = 7;
+	string Avatar = 8;
+	string FirstName = 9;
+	string LastName = 10;
+	string Gender = 11;
+	google.protobuf.Timestamp Birthday = 12;
+}
+
+message SearchParams {
+	string Request = 1;
+	string Since = 2;
+	string Desc = 3;
+}

@@ -6,7 +6,6 @@ package mock
 
 import (
 	gomock "github.com/golang/mock/gomock"
-	"joblessness/haha/models/base"
 	reflect "reflect"
 )
 
@@ -110,31 +109,31 @@ func (mr *MockAuthUseCaseMockRecorder) PersonSession(arg0 interface{}) *gomock.C
 }
 
 // RegisterOrganization mocks base method
-func (m *MockAuthUseCase) RegisterOrganization(arg0 *baseModels.Organization) error {
+func (m *MockAuthUseCase) RegisterOrganization(arg0, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterOrganization", arg0)
+	ret := m.ctrl.Call(m, "RegisterOrganization", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RegisterOrganization indicates an expected call of RegisterOrganization
-func (mr *MockAuthUseCaseMockRecorder) RegisterOrganization(arg0 interface{}) *gomock.Call {
+func (mr *MockAuthUseCaseMockRecorder) RegisterOrganization(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterOrganization", reflect.TypeOf((*MockAuthUseCase)(nil).RegisterOrganization), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterOrganization", reflect.TypeOf((*MockAuthUseCase)(nil).RegisterOrganization), arg0, arg1, arg2)
 }
 
 // RegisterPerson mocks base method
-func (m *MockAuthUseCase) RegisterPerson(arg0 *baseModels.Person) error {
+func (m *MockAuthUseCase) RegisterPerson(arg0, arg1, arg2 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterPerson", arg0)
+	ret := m.ctrl.Call(m, "RegisterPerson", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RegisterPerson indicates an expected call of RegisterPerson
-func (mr *MockAuthUseCaseMockRecorder) RegisterPerson(arg0 interface{}) *gomock.Call {
+func (mr *MockAuthUseCaseMockRecorder) RegisterPerson(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterPerson", reflect.TypeOf((*MockAuthUseCase)(nil).RegisterPerson), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterPerson", reflect.TypeOf((*MockAuthUseCase)(nil).RegisterPerson), arg0, arg1, arg2)
 }
 
 // SessionExists mocks base method
