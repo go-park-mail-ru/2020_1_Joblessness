@@ -83,6 +83,7 @@ func (r *RoomInstance) SendGeneratedMessage(message *Message) error {
 			}
 		}
 	}
+	golog.Errorf("Broken message generated: %+v", message)
 	return err
 }
 
@@ -123,6 +124,8 @@ func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 				}
 			}
 		}
+	} else {
+		golog.Errorf("Messages was not saved: %+v", message)
 	}
 }
 
