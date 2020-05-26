@@ -7,7 +7,7 @@ services:
       - interview
       - auth
     env_file:
-      - ../../env.list
+      - ../../../env.list
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
     working_dir: /go/src/haha/cmd/haha/
