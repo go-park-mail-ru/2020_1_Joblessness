@@ -9,7 +9,7 @@ import (
 
 const (
 	writeWait = 10 * time.Second
-	pongWait = 540 * time.Second
+	pongWait = 60 * time.Second
 	pingPeriod = (pongWait * 9) / 10
 )
 
@@ -151,8 +151,17 @@ type Chatter struct {
 func (c *Chatter) Read() {
 	var err error
 
-	_ = c.Socket.SetReadDeadline(time.Now().Add(pongWait))
-	c.Socket.SetPongHandler(func(string) error { _ = c.Socket.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+	err = c.Socket.SetReadDeadline(time.Now().Add(pongWait))
+	if err != nil {
+		golog.Error("Cannot set read deadline: ", err)
+	}
+	c.Socket.SetPongHandler(func(string) error {
+		err = c.Socket.SetReadDeadline(time.Now().Add(pongWait))
+		if err != nil {
+			golog.Error("Cannot set read deadline: ", err)
+		}
+		return err
+	})
 
 	for {
 		if _, msg, err := c.Socket.ReadMessage(); err == nil {
@@ -178,30 +187,34 @@ func (c *Chatter) Write() {
 	var err error
 	ticker := time.NewTicker(pingPeriod)
 
-	for msg := range c.Send {
-		golog.Errorf("Write by %d: %s", c.ID, msg)
-		_ = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
-		if err = c.Socket.WriteMessage(websocket.TextMessage, msg); err != nil {
-			break
-		}
-	}
-
 	LOOP: for {
 		select {
 		case message, ok := <-c.Send:
-			_ = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			err = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			if err != nil {
+				golog.Error("Cannot set write deadline: ", err)
+			}
+
 			if !ok {
-				_ = c.Socket.WriteMessage(websocket.CloseMessage, []byte{})
+				err = c.Socket.WriteMessage(websocket.CloseMessage, []byte{})
 				break LOOP
 			}
 
 			golog.Errorf("Write by %d: %s", c.ID, message)
-			_ = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			err = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			if err != nil {
+				golog.Error("Cannot set write deadline: ", err)
+			}
+
 			if err = c.Socket.WriteMessage(websocket.TextMessage, message); err != nil {
 				break LOOP
 			}
 		case <-ticker.C:
-			_ = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			err = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			if err != nil {
+				golog.Error("Cannot set write deadline: ", err)
+			}
+
 			if err := c.Socket.WriteMessage(websocket.PingMessage, nil); err != nil {
 				break LOOP
 			}
