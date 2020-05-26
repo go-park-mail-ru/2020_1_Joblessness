@@ -4,6 +4,13 @@ import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"github.com/kataras/golog"
+	"time"
+)
+
+const (
+	writeWait = 10 * time.Second
+	pongWait = 60 * time.Second
+	pingPeriod = (pongWait * 9) / 10
 )
 
 type RoomInstance struct {
@@ -143,6 +150,10 @@ type Chatter struct {
 
 func (c *Chatter) Read() {
 	var err error
+
+	_ = c.Socket.SetReadDeadline(time.Now().Add(pongWait))
+	c.Socket.SetPongHandler(func(string) error { _ = c.Socket.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+
 	for {
 		if _, msg, err := c.Socket.ReadMessage(); err == nil {
 			golog.Infof("Read by %d: %s", c.ID, msg)
@@ -165,14 +176,40 @@ func (c *Chatter) Read() {
 
 func (c *Chatter) Write() {
 	var err error
+	ticker := time.NewTicker(pingPeriod)
+
 	for msg := range c.Send {
 		golog.Errorf("Write by %d: %s", c.ID, msg)
+		_ = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
 		if err = c.Socket.WriteMessage(websocket.TextMessage, msg); err != nil {
 			break
 		}
 	}
+
+	LOOP: for {
+		select {
+		case message, ok := <-c.Send:
+			_ = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			if !ok {
+				_ = c.Socket.WriteMessage(websocket.CloseMessage, []byte{})
+				break LOOP
+			}
+
+			golog.Errorf("Write by %d: %s", c.ID, message)
+			_ = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			if err = c.Socket.WriteMessage(websocket.TextMessage, message); err != nil {
+				break LOOP
+			}
+		case <-ticker.C:
+			_ = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := c.Socket.WriteMessage(websocket.PingMessage, nil); err != nil {
+				break LOOP
+			}
+		}
+	}
 	golog.Error("Write to socket terminated: ", err)
 
+	ticker.Stop()
 	err = c.Socket.Close()
 	if err != nil {
 		golog.Error("Socket closed with error: ", err)

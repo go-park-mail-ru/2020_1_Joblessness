@@ -20,10 +20,9 @@ const (
 type Handler struct {
 	useCase  interviewInterfaces.InterviewUseCase
 	upGrader *websocket.Upgrader
-	//room     chat.Room
 }
 
-func NewHandler(useCase interviewInterfaces.InterviewUseCase /*, room chat.Room*/) *Handler {
+func NewHandler(useCase interviewInterfaces.InterviewUseCase) *Handler {
 	handler := &Handler{
 		useCase: useCase,
 		upGrader: &websocket.Upgrader{
@@ -33,9 +32,7 @@ func NewHandler(useCase interviewInterfaces.InterviewUseCase /*, room chat.Room*
 				return true
 			},
 		},
-		//room: room,
 	}
-	//go handler.room.Run()
 
 	return handler
 }
