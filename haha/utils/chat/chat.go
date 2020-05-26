@@ -10,7 +10,7 @@ type RoomInstance struct {
 	forwardChan chan []byte
 	joinChan    chan *Chatter
 	leaveChan   chan *Chatter
-	Chatters    map[uint64]*Chatter
+	Chatters    map[uint64]map[*websocket.Conn]*Chatter
 	messenger   Messenger
 }
 
@@ -19,7 +19,7 @@ func NewRoom(messenger Messenger) *RoomInstance {
 		forwardChan: make(chan []byte),
 		joinChan:    make(chan *Chatter),
 		leaveChan:   make(chan *Chatter),
-		Chatters:    make(map[uint64]*Chatter),
+		Chatters:    make(map[uint64]map[*websocket.Conn]*Chatter),
 		messenger:   messenger,
 	}
 }
@@ -42,10 +42,16 @@ func (r *RoomInstance) Run() {
 		select {
 		case chatter := <-r.joinChan:
 			golog.Infof("new chatter in room: %d", chatter.ID)
-			r.Chatters[chatter.ID] = chatter
+			if r.Chatters[chatter.ID] == nil {
+				r.Chatters[chatter.ID] = make(map[*websocket.Conn]*Chatter)
+			}
+			r.Chatters[chatter.ID][chatter.Socket] = chatter
 		case chatter := <-r.leaveChan:
 			golog.Infof("chatter leaving room: %d", chatter.ID)
-			delete(r.Chatters, chatter.ID)
+			delete(r.Chatters[chatter.ID], chatter.Socket)
+			if len(r.Chatters[chatter.ID]) == 0 {
+				delete(r.Chatters, chatter.ID)
+			}
 			close(chatter.Send)
 		case rawMessage := <-r.forwardChan:
 			r.HandleMessage(rawMessage)
@@ -56,15 +62,20 @@ func (r *RoomInstance) Run() {
 func (r *RoomInstance) SendGeneratedMessage(message *Message) error {
 	err := r.messenger.SaveMessage(message)
 	if err == nil {
-		receiver, existReceiver := r.Chatters[message.UserTwoID]
-		if existReceiver {
+		receivers, existReceivers := r.Chatters[message.UserTwoID]
+		if existReceivers {
 			rawMessage, err := json.Marshal(message)
 			if err == nil {
-				select {
-				case receiver.Send <- rawMessage:
-				default:
-					delete(r.Chatters, receiver.ID)
-					close(receiver.Send)
+				for _, receiver := range receivers{
+					select {
+					case receiver.Send <- rawMessage:
+					default:
+						delete(r.Chatters[receiver.ID], receiver.Socket)
+						if len(r.Chatters[receiver.ID]) == 0 {
+							delete(r.Chatters, receiver.ID)
+						}
+						close(receiver.Send)
+					}
 				}
 			} else {
 				golog.Errorf("Broken message: %+v", message)
@@ -84,22 +95,32 @@ func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 	golog.Infof("chatter '%v' writing message to room, message: %v", message.UserOne, message.Message)
 
 	if err := r.messenger.SaveMessage(message); err == nil {
-		receiver, existReceiver := r.Chatters[message.UserTwoID]
-		if existReceiver {
-			select {
-			case receiver.Send <- rawMessage:
-			default:
-				delete(r.Chatters, receiver.ID)
-				close(receiver.Send)
+		receivers, existReceivers := r.Chatters[message.UserTwoID]
+		if existReceivers {
+			for _, receiver := range receivers{
+				select {
+				case receiver.Send <- rawMessage:
+				default:
+					delete(r.Chatters[receiver.ID], receiver.Socket)
+					if len(r.Chatters[receiver.ID]) == 0 {
+						delete(r.Chatters, receiver.ID)
+					}
+					close(receiver.Send)
+				}
 			}
 		}
-		author, existAuthor := r.Chatters[message.UserOneID]
-		if existAuthor {
-			select {
-			case author.Send <- rawMessage:
-			default:
-				close(author.Send)
-				delete(r.Chatters, author.ID)
+		authors, existAuthors := r.Chatters[message.UserOneID]
+		if existAuthors {
+			for _, author := range authors {
+				select {
+				case author.Send <- rawMessage:
+				default:
+					delete(r.Chatters[author.ID], author.Socket)
+					if len(r.Chatters[author.ID]) == 0 {
+						delete(r.Chatters, author.ID)
+					}
+					close(author.Send)
+				}
 			}
 		}
 	}
