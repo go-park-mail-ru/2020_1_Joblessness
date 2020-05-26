@@ -110,7 +110,7 @@ func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 				}
 			}
 		} else {
-			golog.Infof("Receiver does not connected, message: %v", message.UserOneID, message.UserTwoID, message.Message)
+			golog.Infof("Receiver does not connected, message: %v", message.Message)
 		}
 
 		authors, existAuthors := r.Chatters[message.UserOneID]
@@ -127,7 +127,7 @@ func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 				}
 			}
 		} else {
-			golog.Infof("Author does not connected, message: %v", message.UserOneID, message.UserTwoID, message.Message)
+			golog.Infof("Author does not connected, message: %v", message.Message)
 		}
 	} else {
 		golog.Errorf("Messages was not saved: %+v", message)
