@@ -91,9 +91,9 @@ func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 	var message *Message
 	err := json.Unmarshal(rawMessage, &message)
 	if err != nil {
-		golog.Infof("broken message received: %v", err)
+		golog.Infof("Broken message received: %v", err)
 	}
-	golog.Infof("chatter '%v' writing message to room, message: %v", message.UserOne, message.Message)
+	golog.Infof("Chatter %d writing message to %d, message: %v", message.UserOneID, message.UserTwoID, message.Message)
 
 	if err := r.messenger.SaveMessage(message); err == nil {
 		receivers, existReceivers := r.Chatters[message.UserTwoID]
@@ -109,7 +109,10 @@ func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 					close(receiver.Send)
 				}
 			}
+		} else {
+			golog.Infof("Receiver does not connected, message: %v", message.UserOneID, message.UserTwoID, message.Message)
 		}
+
 		authors, existAuthors := r.Chatters[message.UserOneID]
 		if existAuthors {
 			for _, author := range authors {
@@ -123,6 +126,8 @@ func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 					close(author.Send)
 				}
 			}
+		} else {
+			golog.Infof("Author does not connected, message: %v", message.UserOneID, message.UserTwoID, message.Message)
 		}
 	} else {
 		golog.Errorf("Messages was not saved: %+v", message)
@@ -137,34 +142,38 @@ type Chatter struct {
 }
 
 func (c *Chatter) Read() {
+	var err error
 	for {
 		if _, msg, err := c.Socket.ReadMessage(); err == nil {
-			golog.Errorf("Received by %d: %s", c.ID, msg)
+			golog.Infof("Read by %d: %s", c.ID, msg)
 			if len(msg) != 0 {
 				c.Room.Forward(msg)
 			} else {
-				golog.Errorf("Received empty array by %d", c.ID)
+				golog.Infof("Read empty array by %d", c.ID)
 			}
 		} else {
 			break
 		}
 	}
+	golog.Error("Read from socket terminated: ", err)
 
-	err := c.Socket.Close()
+	err = c.Socket.Close()
 	if err != nil {
 		golog.Error("Socket closed with error: ", err)
 	}
 }
 
 func (c *Chatter) Write() {
+	var err error
 	for msg := range c.Send {
-		golog.Errorf("Send by %d: %s", c.ID, msg)
-		if err := c.Socket.WriteMessage(websocket.TextMessage, msg); err != nil {
+		golog.Errorf("Write by %d: %s", c.ID, msg)
+		if err = c.Socket.WriteMessage(websocket.TextMessage, msg); err != nil {
 			break
 		}
 	}
+	golog.Error("Write to socket terminated: ", err)
 
-	err := c.Socket.Close()
+	err = c.Socket.Close()
 	if err != nil {
 		golog.Error("Socket closed with error: ", err)
 	}
