@@ -74,7 +74,7 @@ func (r *InterviewRepository) getUserSendMessages(parameters *baseModels.ChatPar
 					AND user_two_id = $1)
 					ORDER BY created desc
 					LIMIT $3 OFFSET $4;`
-	rows, err := r.db.Query(saveMessage, parameters.From, parameters.To, 40, parameters.Page*20)
+	rows, err := r.db.Query(saveMessage, parameters.From, parameters.To, 40, parameters.Page*40)
 	if err != nil {
 		return from, to , err
 	}
