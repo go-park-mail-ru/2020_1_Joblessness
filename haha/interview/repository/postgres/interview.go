@@ -62,17 +62,21 @@ func (r *InterviewRepository) SaveMessage(message *chat.Message) (err error) {
 	return err
 }
 
-func (r *InterviewRepository) getUserSendMessages(parameters *baseModels.ChatParameters) (result []*chat.Message, err error) {
-	result = make([]*chat.Message, 0)
+func (r *InterviewRepository) getUserSendMessages(parameters *baseModels.ChatParameters) (from, to []*chat.Message, err error) {
+	from = make([]*chat.Message, 0)
+	to = make([]*chat.Message, 0)
+
 	saveMessage := `SELECT user_one_id, user_two_id, user_one, user_two, body, created
     				FROM message
-					WHERE user_one_id = $1
-					AND user_two_id = $2
+					WHERE (user_one_id = $1
+					AND user_two_id = $2)
+					OR (user_one_id = $2
+					AND user_two_id = $1)
 					ORDER BY created desc
 					LIMIT $3 OFFSET $4;`
-	rows, err := r.db.Query(saveMessage, parameters.From, parameters.To, 20, parameters.Page*20)
+	rows, err := r.db.Query(saveMessage, parameters.From, parameters.To, 40, parameters.Page*20)
 	if err != nil {
-		return result, err
+		return from, to , err
 	}
 	defer rows.Close()
 
@@ -82,28 +86,23 @@ func (r *InterviewRepository) getUserSendMessages(parameters *baseModels.ChatPar
 		err = rows.Scan(&message.UserOneID, &message.UserTwoID, &message.UserOne, &message.UserTwo, &message.Message,
 			&message.Created)
 		if err != nil {
-			return nil, err
+			return from, to , err
 		}
 
-		result = append(result, &message)
+		if message.UserOneID == parameters.From{
+			from = append(from, &message)
+		} else {
+			to = append(to, &message)
+		}
 	}
 
-	return result, nil
+	return from, to ,nil
 }
 
 func (r *InterviewRepository) GetHistory(parameters *baseModels.ChatParameters) (result baseModels.Messages, err error) {
-	from, err := r.getUserSendMessages(parameters)
-	if err != nil {
-		return baseModels.Messages{}, err
-	}
+	result.From, result.To, err = r.getUserSendMessages(parameters)
 
-	parameters.From, parameters.To = parameters.To, parameters.From
-	to, err := r.getUserSendMessages(parameters)
-
-	return baseModels.Messages{
-		From: from,
-		To:   to,
-	}, err
+	return result, err
 }
 
 func (r *InterviewRepository) GetResponseCredentials(summaryID, vacancyID uint64) (result *baseModels.SummaryCredentials, err error) {
