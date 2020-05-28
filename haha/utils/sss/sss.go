@@ -42,7 +42,9 @@ func UploadAvatar(form *multipart.Form, userID uint64) (link string, err error) 
 	splitName := strings.Split(fileHeaders[0].Filename, ".")
 	ext := splitName[len(splitName)-1]
 
-	link = strconv.FormatUint(userID, 10) + "-avatar." + ext
+	link = fmt.Sprintf("%d%d%d%d%d%d-%d", t.Year(), 
+			   t.Month(), t.Day(), t.Hour(), 
+			   t.Minute(), t.Second(), a) + "-avatar." + ext
 
 	_, err = svc.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String("imgs-hh"),
