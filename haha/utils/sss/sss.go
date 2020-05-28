@@ -3,6 +3,7 @@ package sss
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -10,10 +11,8 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
-	"strconv"
 	"strings"
 	"time"
-	"fmt"
 )
 
 var sess = session.Must(session.NewSession(&aws.Config{
