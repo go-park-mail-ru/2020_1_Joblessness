@@ -12,6 +12,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
+	"fmt"
 )
 
 var sess = session.Must(session.NewSession(&aws.Config{
@@ -41,10 +43,11 @@ func UploadAvatar(form *multipart.Form, userID uint64) (link string, err error) 
 	_, err = io.Copy(&buf, file)
 	splitName := strings.Split(fileHeaders[0].Filename, ".")
 	ext := splitName[len(splitName)-1]
-
+	
+	t := time.Now()
 	link = fmt.Sprintf("%d%d%d%d%d%d-%d", t.Year(), 
 			   t.Month(), t.Day(), t.Hour(), 
-			   t.Minute(), t.Second(), a) + "-avatar." + ext
+			   t.Minute(), t.Second(), userID) + "-avatar." + ext
 
 	_, err = svc.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String("imgs-hh"),
