@@ -10,6 +10,8 @@ import (
 	"joblessness/haha/utils/custom_http"
 	"math/rand"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -31,6 +33,16 @@ func genRequestNumber(n int) string {
 
 var rIDKey = "rID"
 
+func formatPath(path string) string {
+	pathArray := strings.Split(path[1:], "/")
+	for i := range pathArray {
+		if _, err := strconv.Atoi(pathArray[i]); err == nil {
+			pathArray[i] = "*"
+		}
+	}
+	return "/" + strings.Join(pathArray, "/")
+}
+
 func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sw := custom_http.NewStatusResponseWriter(w)
@@ -41,25 +53,31 @@ func (m *RecoveryHandler) LogMiddleware(next http.Handler) http.Handler {
 
 		labels := prometheus.Labels{
 			"method": r.Method,
-			"path":   r.URL.Path,
+			"path":   formatPath(r.URL.Path),
 		}
 
 		golog.Infof("#%s: %s %s", requestNumber, r.Method, r.URL)
-		prom.RequestCurrent.With(labels).Inc()
+		if r.URL.Path != "/api/metrics" {
+			prom.RequestCurrent.With(labels).Inc()
+		}
 		start := time.Now()
 
 		next.ServeHTTP(sw, r)
 
-		prom.RequestDuration.With(labels).Observe(time.Since(start).Seconds())
-		prom.RequestCurrent.With(labels).Dec()
+		if r.URL.Path != "/api/metrics" {
+			prom.RequestDuration.With(labels).Observe(float64(int(time.Since(start).Milliseconds())))
+			prom.RequestCurrent.With(labels).Dec()
+		}
 		golog.Infof("#%s: code %d", requestNumber, sw.StatusCode)
 
 		statusLabels := prometheus.Labels{
 			"method": r.Method,
-			"path":   r.URL.Path,
+			"path":   formatPath(r.URL.Path),
 			"status": fmt.Sprintf("%d", sw.StatusCode),
 		}
-		prom.RequestCount.With(statusLabels).Inc()
+		if r.URL.Path != "/api/metrics" {
+			prom.RequestCount.With(statusLabels).Inc()
+		}
 	})
 }
 

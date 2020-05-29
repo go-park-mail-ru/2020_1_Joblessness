@@ -3,6 +3,7 @@ package sss
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -10,8 +11,8 @@ import (
 	"io"
 	"mime/multipart"
 	"os"
-	"strconv"
 	"strings"
+	"time"
 )
 
 var sess = session.Must(session.NewSession(&aws.Config{
@@ -41,8 +42,11 @@ func UploadAvatar(form *multipart.Form, userID uint64) (link string, err error) 
 	_, err = io.Copy(&buf, file)
 	splitName := strings.Split(fileHeaders[0].Filename, ".")
 	ext := splitName[len(splitName)-1]
-
-	link = strconv.FormatUint(userID, 10) + "-avatar." + ext
+	
+	t := time.Now()
+	link = fmt.Sprintf("%d%d%d%d%d%d-%d", t.Year(), 
+			   t.Month(), t.Day(), t.Hour(), 
+			   t.Minute(), t.Second(), userID) + "-avatar." + ext
 
 	_, err = svc.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String("imgs-hh"),

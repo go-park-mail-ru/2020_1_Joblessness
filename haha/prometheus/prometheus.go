@@ -21,6 +21,11 @@ var (
 		Name: "request_duration",
 		Help: "Requests duration in second",
 	}, []string{"method", "path"})
+
+	MemoryPercent = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "memory_percent",
+		Help: "Memory percent",
+	}, []string{"percent"})
 )
 
 func RegisterPrometheus(router *mux.Router) {
@@ -29,4 +34,5 @@ func RegisterPrometheus(router *mux.Router) {
 	prometheus.MustRegister(RequestCount)
 	prometheus.MustRegister(RequestCurrent)
 	prometheus.MustRegister(RequestDuration)
+	prometheus.MustRegister(MemoryPercent)
 }

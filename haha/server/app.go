@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/kataras/golog"
 	"github.com/microcosm-cc/bluemonday"
+	"github.com/shirou/gopsutil/mem"
 	"google.golang.org/grpc"
 	"joblessness/haha/auth/delivery/http"
 	"joblessness/haha/auth/interfaces"
@@ -40,6 +41,7 @@ import (
 	"joblessness/haha/vacancy/repository/postgres"
 	"joblessness/haha/vacancy/usecase"
 	"net/http"
+	"time"
 )
 
 type App struct {
@@ -149,12 +151,26 @@ func (app *App) StartRouter() {
 
 	http.Handle("/", router)
 	golog.Infof("Server started at port :%d", *port)
-	err := http.ListenAndServeTLS(fmt.Sprintf(":%d", *port),
-		"/etc/letsencrypt/live/hahao.ru/fullchain.pem",
-		"/etc/letsencrypt/live/hahao.ru/privkey.pem",
-		nil)
-	//err := http.ListenAndServe(":8001", nil)
-	if err != nil {
-		golog.Error("Server haha failed: ", err)
+
+	go func() {
+		err := http.ListenAndServeTLS(fmt.Sprintf(":%d", *port),
+			"/etc/letsencrypt/live/hahao.ru/fullchain.pem",
+			"/etc/letsencrypt/live/hahao.ru/privkey.pem",
+			nil)
+
+		if err != nil {
+			golog.Error("Server haha failed: ", err)
+		}
+	}()
+
+	for {
+		v, err := mem.VirtualMemory()
+		if err != nil {
+			golog.Infof("get memory percent error: %s", err.Error())
+		}
+		percent := v.UsedPercent
+		golog.Infof("memory percent: %f", percent)
+		prometheus.MemoryPercent.WithLabelValues("memory").Set(percent)
+		time.Sleep(time.Second * 5)
 	}
 }

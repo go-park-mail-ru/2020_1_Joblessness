@@ -1,4 +1,3 @@
-![Docker build](https://github.com/go-park-mail-ru/2020_1_Joblessness/workflows/Docker%20build/badge.svg)
 # Joblessness
 ### Репозиторий бэкэнда команды Joblessness
 ### https://hahao.ru/

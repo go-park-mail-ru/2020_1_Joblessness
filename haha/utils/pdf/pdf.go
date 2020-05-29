@@ -24,7 +24,7 @@ func SummaryToPdf(w io.Writer, summary *baseModels.Summary) error {
 	tr := pdf.UnicodeTranslatorFromDescriptor("cp1251")
 
 	name := fmt.Sprintf("Имя: %s %s\n", summary.Author.FirstName, summary.Author.LastName)
-	personal := fmt.Sprintf("День рождени: %d-%d-%d\nПол: %s\n", summary.Author.Birthday.Year(),
+	personal := fmt.Sprintf("День рождения: %d-%d-%d\nПол: %s\n", summary.Author.Birthday.Year(),
 		summary.Author.Birthday.Month(), summary.Author.Birthday.Day(), genderToStr(summary.Author.Gender))
 	contacts := fmt.Sprintf("Почта: %s\nТелефон: %s\n", summary.Author.Email, summary.Author.Phone)
 	experience := experienceToStr(summary.Experiences)

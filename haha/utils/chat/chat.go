@@ -4,13 +4,20 @@ import (
 	"encoding/json"
 	"github.com/gorilla/websocket"
 	"github.com/kataras/golog"
+	"time"
+)
+
+const (
+	writeWait = 10 * time.Second
+	pongWait = 60 * time.Second
+	pingPeriod = (pongWait * 9) / 10
 )
 
 type RoomInstance struct {
 	forwardChan chan []byte
 	joinChan    chan *Chatter
 	leaveChan   chan *Chatter
-	Chatters    map[uint64]*Chatter
+	Chatters    map[uint64]map[*websocket.Conn]*Chatter
 	messenger   Messenger
 }
 
@@ -19,7 +26,7 @@ func NewRoom(messenger Messenger) *RoomInstance {
 		forwardChan: make(chan []byte),
 		joinChan:    make(chan *Chatter),
 		leaveChan:   make(chan *Chatter),
-		Chatters:    make(map[uint64]*Chatter),
+		Chatters:    make(map[uint64]map[*websocket.Conn]*Chatter),
 		messenger:   messenger,
 	}
 }
@@ -42,10 +49,16 @@ func (r *RoomInstance) Run() {
 		select {
 		case chatter := <-r.joinChan:
 			golog.Infof("new chatter in room: %d", chatter.ID)
-			r.Chatters[chatter.ID] = chatter
+			if r.Chatters[chatter.ID] == nil {
+				r.Chatters[chatter.ID] = make(map[*websocket.Conn]*Chatter)
+			}
+			r.Chatters[chatter.ID][chatter.Socket] = chatter
 		case chatter := <-r.leaveChan:
 			golog.Infof("chatter leaving room: %d", chatter.ID)
-			delete(r.Chatters, chatter.ID)
+			delete(r.Chatters[chatter.ID], chatter.Socket)
+			if len(r.Chatters[chatter.ID]) == 0 {
+				delete(r.Chatters, chatter.ID)
+			}
 			close(chatter.Send)
 		case rawMessage := <-r.forwardChan:
 			r.HandleMessage(rawMessage)
@@ -56,15 +69,20 @@ func (r *RoomInstance) Run() {
 func (r *RoomInstance) SendGeneratedMessage(message *Message) error {
 	err := r.messenger.SaveMessage(message)
 	if err == nil {
-		receiver, existReceiver := r.Chatters[message.UserTwoID]
-		if existReceiver {
+		receivers, existReceivers := r.Chatters[message.UserTwoID]
+		if existReceivers {
 			rawMessage, err := json.Marshal(message)
 			if err == nil {
-				select {
-				case receiver.Send <- rawMessage:
-				default:
-					delete(r.Chatters, receiver.ID)
-					close(receiver.Send)
+				for _, receiver := range receivers{
+					select {
+					case receiver.Send <- rawMessage:
+					default:
+						delete(r.Chatters[receiver.ID], receiver.Socket)
+						if len(r.Chatters[receiver.ID]) == 0 {
+							delete(r.Chatters, receiver.ID)
+						}
+						close(receiver.Send)
+					}
 				}
 			} else {
 				golog.Errorf("Broken message: %+v", message)
@@ -72,6 +90,7 @@ func (r *RoomInstance) SendGeneratedMessage(message *Message) error {
 			}
 		}
 	}
+	golog.Errorf("Broken message generated: %+v", message)
 	return err
 }
 
@@ -79,29 +98,46 @@ func (r *RoomInstance) HandleMessage(rawMessage []byte) {
 	var message *Message
 	err := json.Unmarshal(rawMessage, &message)
 	if err != nil {
-		golog.Infof("broken message received: %v", err)
+		golog.Infof("Broken message received: %v", err)
 	}
-	golog.Infof("chatter '%v' writing message to room, message: %v", message.UserOne, message.Message)
+	golog.Infof("Chatter %d writing message to %d, message: %v", message.UserOneID, message.UserTwoID, message.Message)
 
 	if err := r.messenger.SaveMessage(message); err == nil {
-		receiver, existReceiver := r.Chatters[message.UserTwoID]
-		if existReceiver {
-			select {
-			case receiver.Send <- rawMessage:
-			default:
-				delete(r.Chatters, receiver.ID)
-				close(receiver.Send)
+		receivers, existReceivers := r.Chatters[message.UserTwoID]
+		if existReceivers {
+			for _, receiver := range receivers{
+				select {
+				case receiver.Send <- rawMessage:
+				default:
+					delete(r.Chatters[receiver.ID], receiver.Socket)
+					if len(r.Chatters[receiver.ID]) == 0 {
+						delete(r.Chatters, receiver.ID)
+					}
+					close(receiver.Send)
+				}
 			}
+		} else {
+			golog.Infof("Receiver does not connected, message: %v", message.Message)
 		}
-		author, existAuthor := r.Chatters[message.UserOneID]
-		if existAuthor {
-			select {
-			case author.Send <- rawMessage:
-			default:
-				close(author.Send)
-				delete(r.Chatters, author.ID)
+
+		authors, existAuthors := r.Chatters[message.UserOneID]
+		if existAuthors {
+			for _, author := range authors {
+				select {
+				case author.Send <- rawMessage:
+				default:
+					delete(r.Chatters[author.ID], author.Socket)
+					if len(r.Chatters[author.ID]) == 0 {
+						delete(r.Chatters, author.ID)
+					}
+					close(author.Send)
+				}
 			}
+		} else {
+			golog.Infof("Author does not connected, message: %v", message.Message)
 		}
+	} else {
+		golog.Errorf("Messages was not saved: %+v", message)
 	}
 }
 
@@ -113,34 +149,82 @@ type Chatter struct {
 }
 
 func (c *Chatter) Read() {
+	var err error
+
+	err = c.Socket.SetReadDeadline(time.Now().Add(pongWait))
+	if err != nil {
+		golog.Error("Cannot set read deadline: ", err)
+	}
+	c.Socket.SetPongHandler(func(string) error {
+		err = c.Socket.SetReadDeadline(time.Now().Add(pongWait))
+		golog.Error("Ping")
+		if err != nil {
+			golog.Error("Cannot set read deadline: ", err)
+		}
+		return err
+	})
+
 	for {
 		if _, msg, err := c.Socket.ReadMessage(); err == nil {
-			golog.Errorf("Received by %d: %s", c.ID, msg)
+			golog.Infof("Read by %d: %s", c.ID, msg)
 			if len(msg) != 0 {
 				c.Room.Forward(msg)
 			} else {
-				golog.Errorf("Received empty array by %d", c.ID)
+				golog.Infof("Read empty array by %d", c.ID)
 			}
 		} else {
 			break
 		}
 	}
+	golog.Error("Read from socket terminated: ", err)
 
-	err := c.Socket.Close()
+	err = c.Socket.Close()
 	if err != nil {
 		golog.Error("Socket closed with error: ", err)
 	}
 }
 
 func (c *Chatter) Write() {
-	for msg := range c.Send {
-		golog.Errorf("Send by %d: %s", c.ID, msg)
-		if err := c.Socket.WriteMessage(websocket.TextMessage, msg); err != nil {
-			break
+	var err error
+	ticker := time.NewTicker(pingPeriod)
+
+	LOOP: for {
+		select {
+		case message, ok := <-c.Send:
+			err = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			if err != nil {
+				golog.Error("Cannot set write deadline: ", err)
+			}
+
+			if !ok {
+				err = c.Socket.WriteMessage(websocket.CloseMessage, []byte{})
+				break LOOP
+			}
+
+			golog.Errorf("Write by %d: %s", c.ID, message)
+			err = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			if err != nil {
+				golog.Error("Cannot set write deadline: ", err)
+			}
+
+			if err = c.Socket.WriteMessage(websocket.TextMessage, message); err != nil {
+				break LOOP
+			}
+		case <-ticker.C:
+			err = c.Socket.SetWriteDeadline(time.Now().Add(writeWait))
+			if err != nil {
+				golog.Error("Cannot set write deadline: ", err)
+			}
+
+			if err := c.Socket.WriteMessage(websocket.PingMessage, nil); err != nil {
+				break LOOP
+			}
 		}
 	}
+	golog.Error("Write to socket terminated: ", err)
 
-	err := c.Socket.Close()
+	ticker.Stop()
+	err = c.Socket.Close()
 	if err != nil {
 		golog.Error("Socket closed with error: ", err)
 	}

@@ -158,11 +158,7 @@ func (suite *summarySuite) TestGetHistory() {
 			suite.message.Message, suite.message.Created)
 	suite.mock.
 		ExpectQuery("SELECT user_one_id, user_two_id").
-		WithArgs(suite.message.UserOneID, suite.message.UserTwoID, uint64(20), uint64(0)).
-		WillReturnRows(rows)
-	suite.mock.
-		ExpectQuery("SELECT user_one_id, user_two_id").
-		WithArgs(suite.message.UserTwoID, suite.message.UserOneID, uint64(20), uint64(0)).
+		WithArgs(suite.message.UserOneID, suite.message.UserTwoID, uint64(40), uint64(0)).
 		WillReturnRows(rows)
 
 	_, err := suite.rep.GetHistory(&suite.params)
@@ -185,10 +181,10 @@ func (suite *summarySuite) TestGetUserSendMessages() {
 			suite.message.Message, suite.message.Created)
 	suite.mock.
 		ExpectQuery("SELECT user_one_id, user_two_id").
-		WithArgs(suite.message.UserOneID, suite.message.UserTwoID, uint64(20), uint64(0)).
+		WithArgs(suite.message.UserOneID, suite.message.UserTwoID, uint64(40), uint64(0)).
 		WillReturnRows(rows)
 
-	_, err := suite.rep.getUserSendMessages(&suite.params)
+	_, _, err := suite.rep.getUserSendMessages(&suite.params)
 	assert.NoError(suite.T(), err)
 }
 
@@ -198,7 +194,7 @@ func (suite *summarySuite) TestGetUserSendMessagesFailed() {
 		WithArgs(suite.message.UserOneID, suite.message.UserTwoID, uint64(20), uint64(0)).
 		WillReturnError(errors.New(""))
 
-	_, err := suite.rep.getUserSendMessages(&suite.params)
+	_, _, err := suite.rep.getUserSendMessages(&suite.params)
 	assert.Error(suite.T(), err)
 }
 

@@ -5,14 +5,10 @@ on:
     branches:
       - master
       - dev
-      - dev-dev
-      - microservice
   pull_request:
     branches:
       - master
       - dev
-      - dev-dev
-      - microservice
 
 jobs:
   lint:
@@ -39,10 +35,10 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/search:latest -f search.Dockerfile .
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/interview:latest -f interview.Dockerfile .
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/auth:latest -f auth.Dockerfile .
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/app:latest -f app.Dockerfile .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/search:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/search:latest -f docker/search.Dockerfile .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/interview:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/interview:latest -f docker/interview.Dockerfile .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/auth:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/auth:latest -f docker/auth.Dockerfile .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/app:${GITHUB_SHA::8} -t ${{ secrets.DOCKERHUB_USERNAME }}/app:latest -f docker/app.Dockerfile .
 
       - name: Push the images
         run: |
@@ -82,5 +78,5 @@ jobs:
             docker rmi $(docker images -q)
             cd /home/2020_1_Joblessness
             sed s/{version}/${GITHUB_SHA::8}/g docker-compose-template.yml > docker-compose.yml
-            sed s/{repo}/${{ secrets.DOCKERHUB_USERNAME }}/g docker-compose.yml
+            sed -i s/{repo}/${{ secrets.DOCKERHUB_USERNAME }}/g docker-compose.yml
             docker-compose up -d --build
