@@ -1,3 +1,4 @@
+![Docker build](https://github.com/go-park-mail-ru/2020_1_Joblessness/workflows/Docker%20build/badge.svg)
 # Joblessness
 ### Репозиторий бэкэнда команды Joblessness
 ### https://hahao.ru/
@@ -46,9 +47,9 @@ API в Swagger: https://app.swaggerhub.com/apis/maratishimbaev/hh.ru/1.0.0
 
 ### Авторы
 
-* **Ишимбаев Марат** - [@maratishimbaev](https://github.com/GavrilyukAG)
-* **Куклин Сергей** - [@huvalk](https://github.com/RusPatrick)
-* **Балицкий Михаил** - [@mikstime](https://github.com/makdenis)
+* **Ишимбаев Марат** - [@maratishimbaev](https://github.com/maratishimbaev)
+* **Куклин Сергей** - [@huvalk](https://github.com/huvalk)
+* **Балицкий Михаил** - [@mikstime](https://github.com/mikstime)
 
 
 
